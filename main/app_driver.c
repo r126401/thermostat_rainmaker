@@ -59,21 +59,21 @@ static void push_btn_cb(void *arg)
      */
     if (new_state) {
         esp_rmaker_param_update_and_notify(
-                esp_rmaker_device_get_param_by_name(switch_device, ESP_RMAKER_DEF_POWER_NAME),
+                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
                 esp_rmaker_bool(new_state));
     } else {
         esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(switch_device, ESP_RMAKER_DEF_POWER_NAME),
+                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
                 esp_rmaker_bool(new_state));
         esp_rmaker_raise_alert("Switch was turned off");
     }
 #else
     esp_rmaker_param_update_and_report(
-            esp_rmaker_device_get_param_by_name(switch_device, ESP_RMAKER_DEF_POWER_NAME),
+            esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
             esp_rmaker_bool(new_state));
     
     esp_rmaker_param_update_and_report(
-            esp_rmaker_device_get_param_by_name(switch_device, "temperatura"),
+            esp_rmaker_device_get_param_by_name(thermostat_device, "temperatura"),
             esp_rmaker_float(22.5));
 
 

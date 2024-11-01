@@ -34,8 +34,13 @@
 #include "esp_rmaker_mqtt_glue.h"
 #include "esp_rmaker_mqtt.h"
 
+
+#define NAME_DEVICE "Thermostat"
+
 static const char *TAG = "app_main";
-esp_rmaker_device_t *switch_device;
+esp_rmaker_device_t *thermostat_device;
+
+
 
 /* Callback to handle commands received from the RainMaker cloud */
 static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
@@ -196,7 +201,7 @@ void app_main()
     esp_rmaker_config_t rainmaker_cfg = {
         .enable_time_sync = false,
     };
-    esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "Switch");
+    esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "thermostat");
     if (!node) {
         ESP_LOGE(TAG, "Could not initialise node. Aborting!!!");
         vTaskDelay(5000/portTICK_PERIOD_MS);
@@ -204,38 +209,38 @@ void app_main()
     }
 
     /* Create a Switch device.
-     * You can optionally use the helper API esp_rmaker_switch_device_create() to
+     * You can optionally use the helper API esp_rmaker_thermostat_device_create() to
      * avoid writing code for adding the name and power parameters.
      */
-    switch_device = esp_rmaker_device_create("Switch", ESP_RMAKER_DEVICE_SWITCH, NULL);
+    thermostat_device = esp_rmaker_device_create(NAME_DEVICE, ESP_RMAKER_DEVICE_THERMOSTAT, NULL);
 
     /* Add the write callback for the device. We aren't registering any read callback yet as
      * it is for future use.
      */
-    esp_rmaker_device_add_cb(switch_device, write_cb, NULL);
+    esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);
 
     /* Add the standard name parameter (type: esp.param.name), which allows setting a persistent,
      * user friendly custom name from the phone apps. All devices are recommended to have this
      * parameter.
      */
-    esp_rmaker_device_add_param(switch_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Switch"));
+    esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Switch"));
 
     /* Add the standard power parameter (type: esp.param.power), which adds a boolean param
      * with a toggle switch ui-type.
      */
     esp_rmaker_param_t *power_param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
-    esp_rmaker_device_add_param(switch_device, power_param);
+    esp_rmaker_device_add_param(thermostat_device, power_param);
     esp_rmaker_param_t *extra_param = esp_rmaker_temperature_param_create("temperatura", 21.5);
-    esp_rmaker_device_add_param(switch_device, extra_param);
+    esp_rmaker_device_add_param(thermostat_device, extra_param);
 
 
     /* Assign the power parameter as the primary, so that it can be controlled from the
      * home screen of the phone apps.
      */
-    esp_rmaker_device_assign_primary_param(switch_device, power_param);
+    esp_rmaker_device_assign_primary_param(thermostat_device, power_param);
 
     /* Add this switch device to the node */
-    esp_rmaker_node_add_device(node, switch_device);
+    esp_rmaker_node_add_device(node, thermostat_device);
 
     /* Enable OTA */
     esp_rmaker_ota_enable_default();

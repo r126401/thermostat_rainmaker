@@ -42,10 +42,18 @@ esp_rmaker_device_t *thermostat_device;
 
 
 
+// Labels to params.
+#define DEFAULT_TEMPERATURE 21.0
+#define SETPOINT_TEMPERATURE "threshold"
+
+
+
+
 /* Callback to handle commands received from the RainMaker cloud */
 static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
             const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
 {
+
     if (ctx) {
         ESP_LOGI(TAG, "Received write request via : %s", esp_rmaker_device_cb_src_to_str(ctx->src));
     }
@@ -93,9 +101,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 ESP_LOGW(TAG, "Unhandled RainMaker Event: %"PRIi32, event_id);
         }
     } else if (event_base == RMAKER_COMMON_EVENT) {
-        esp_mqtt_event_handle_t event = event_data;
-        esp_mqtt_client_handle_t client = event->client;
-        //ESP_LOGI(TAG, "TOPIC: %s", event->topic);
+
  
         switch (event_id) {
         
@@ -168,8 +174,60 @@ static void event_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
+
+void register_parameters() 
+
+{
+
+
+
+
+
+    esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Thermostat"));
+
+    esp_rmaker_param_t *temperature_param = esp_rmaker_temperature_param_create(ESP_RMAKER_DEF_TEMPERATURE_NAME, DEFAULT_TEMPERATURE);
+    esp_rmaker_device_add_param(thermostat_device, temperature_param);
+
+
+ 
+
+    esp_rmaker_param_val_t paso, min, max;
+    paso.type = RMAKER_VAL_TYPE_FLOAT;
+    min.type = RMAKER_VAL_TYPE_FLOAT;
+    max.type = RMAKER_VAL_TYPE_FLOAT;
+    min.val.f= 0.0;
+    max.val.f = 40.0;
+    paso.val.f = 0.5;
+ 
+
+    esp_rmaker_device_assign_primary_param(thermostat_device, temperature_param);
+    esp_rmaker_param_add_bounds(temperature_param, min, max, paso);
+
+    esp_rmaker_param_t *threshold_temperature = esp_rmaker_cct_param_create(SETPOINT_TEMPERATURE, DEFAULT_TEMPERATURE);
+    esp_rmaker_param_add_bounds(threshold_temperature, min, max, paso);
+    esp_rmaker_param_add_ui_type(threshold_temperature, ESP_RMAKER_UI_SLIDER);
+    esp_rmaker_device_add_param(thermostat_device, threshold_temperature);
+
+    esp_rmaker_param_t *calibrate = esp_rmaker_param_create("calibrado", NULL, esp_rmaker_float(-2.0),PROP_FLAG_WRITE |  PROP_FLAG_READ);
+    esp_rmaker_device_add_param(thermostat_device, calibrate);
+
+    esp_rmaker_param_t *read_interval = esp_rmaker_param_create("read_interval", NULL, esp_rmaker_int(60), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_device_add_param(thermostat_device, read_interval);
+
+
+/* Add the write callback for the device. We aren't registering any read callback yet as
+     * it is for future use.
+     */
+    esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);  
+
+
+
+}
+
 void app_main()
 {
+
+    int i=0;
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
@@ -187,7 +245,10 @@ void app_main()
 
     /* Initialize Wi-Fi. Note that, this should be called before esp_rmaker_node_init()
      */
+    ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
     app_network_init();
+   ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
+
 
     /* Register an event handler to catch RainMaker events */
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
@@ -208,37 +269,21 @@ void app_main()
         abort();
     }
 
-    /* Create a Switch device.
+       ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
+
+
+    /* Create a Thermotat device.
      * You can optionally use the helper API esp_rmaker_thermostat_device_create() to
      * avoid writing code for adding the name and power parameters.
      */
     thermostat_device = esp_rmaker_device_create(NAME_DEVICE, ESP_RMAKER_DEVICE_THERMOSTAT, NULL);
 
-    /* Add the write callback for the device. We aren't registering any read callback yet as
-     * it is for future use.
+    /* Register all parameters
+     *     
      */
-    esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);
 
-    /* Add the standard name parameter (type: esp.param.name), which allows setting a persistent,
-     * user friendly custom name from the phone apps. All devices are recommended to have this
-     * parameter.
-     */
-    esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Switch"));
-
-    /* Add the standard power parameter (type: esp.param.power), which adds a boolean param
-     * with a toggle switch ui-type.
-     */
-    esp_rmaker_param_t *power_param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
-    esp_rmaker_device_add_param(thermostat_device, power_param);
-    esp_rmaker_param_t *extra_param = esp_rmaker_temperature_param_create("temperatura", 21.5);
-    esp_rmaker_device_add_param(thermostat_device, extra_param);
-
-
-    /* Assign the power parameter as the primary, so that it can be controlled from the
-     * home screen of the phone apps.
-     */
-    esp_rmaker_device_assign_primary_param(thermostat_device, power_param);
-
+    register_parameters();
+    
     /* Add this switch device to the node */
     esp_rmaker_node_add_device(node, thermostat_device);
 
@@ -261,6 +306,7 @@ void app_main()
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
 
+
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
 
@@ -270,16 +316,17 @@ void app_main()
      * else, it will start Wi-Fi provisioning. The function will return
      * after a connection has been successfully established
      */
+
+       ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
+
     err = app_network_start(POP_TYPE_RANDOM);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Could not start Wifi. Aborting!!!");
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     }
-    
-    esp_rmaker_mqtt_conn_params_t *param_mqtt = esp_rmaker_mqtt_get_conn_params();
-
-    ESP_LOGI(TAG, "CONEXION MQTT: %s", param_mqtt->client_key);
+ 
+   ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
 
 
 

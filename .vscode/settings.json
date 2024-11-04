@@ -14,6 +14,12 @@
     "idf.pythonBinPath": "/home/t126401/espidf/.espidftools/python_env/idf5.4_py3.12_env/bin/python",
     "idf.toolsPath": "/home/t126401/espidf/.espidftools",
     "files.associations": {
-        "app_priv.h": "c"
+        "app_priv.h": "c",
+        "esp_rmaker_standard_types.h": "c",
+        "cstring": "c",
+        "typeinfo": "c",
+        "thermostat_task.h": "c",
+        "esp_err.h": "c",
+        "cmath": "c"
     }
 }

@@ -9,8 +9,47 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <esp_rmaker_core.h>
+#include <esp_rmaker_standard_types.h>
+#include <esp_rmaker_standard_params.h>
+#include <esp_rmaker_standard_devices.h>
+#include <esp_rmaker_schedule.h>
+#include <esp_rmaker_scenes.h>
+#include <esp_rmaker_console.h>
+#include <esp_rmaker_ota.h>
+
+#include <esp_rmaker_common_events.h>
+
 #define DEFAULT_POWER  true
+// Labels to params.
+#define DEFAULT_TEMPERATURE 21.0
+#define SETPOINT_TEMPERATURE "threshold"
+#define CALIBRATE "calibrate"
+#define READ_INTERVAL "read_interval"
+#define MARGIN_TEMPERATURE "margin_temperature"
+#define ID_SENSOR "id_sensor"
+#define MODE "mode"
+#define NULSENSOR "Null"
+
 extern esp_rmaker_device_t *thermostat_device;
 void app_driver_init(void);
 int app_driver_set_state(bool state);
 bool app_driver_get_state(void);
+
+
+
+
+
+typedef struct app_params 
+{
+   esp_rmaker_param_t *mode;
+   esp_rmaker_param_t *temperature;
+   esp_rmaker_param_t *threshold;
+   esp_rmaker_param_t *calibrate;
+   esp_rmaker_param_t *read_interval;
+   esp_rmaker_param_t *power;
+   esp_rmaker_param_t *margin_temperature;
+   esp_rmaker_param_t *sensor;
+
+
+} app_params;

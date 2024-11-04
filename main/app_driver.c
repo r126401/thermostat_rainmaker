@@ -88,6 +88,7 @@ static void set_power_state(bool target)
 
 void app_driver_init()
 {
+
     button_handle_t btn_handle = iot_button_create(BUTTON_GPIO, BUTTON_ACTIVE_LEVEL);
     if (btn_handle) {
         /* Register a callback for a button tap (short press) event */

@@ -34,6 +34,8 @@
 #include "esp_rmaker_mqtt_glue.h"
 #include "esp_rmaker_mqtt.h"
 
+//#include "thermostat_task.h"
+
 
 #define NAME_DEVICE "Thermostat"
 
@@ -42,9 +44,7 @@ esp_rmaker_device_t *thermostat_device;
 
 
 
-// Labels to params.
-#define DEFAULT_TEMPERATURE 21.0
-#define SETPOINT_TEMPERATURE "threshold"
+
 
 
 
@@ -55,7 +55,7 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
 {
 
     if (ctx) {
-        ESP_LOGI(TAG, "Received write request via : %s", esp_rmaker_device_cb_src_to_str(ctx->src));
+        ESP_LOGI(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
     }
     if (strcmp(esp_rmaker_param_get_name(param), ESP_RMAKER_DEF_POWER_NAME) == 0) {
         ESP_LOGI(TAG, "Received value = %s for %s - %s",
@@ -175,44 +175,69 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 }
 
 
-void register_parameters() 
+void register_parameters(app_params *params) 
 
 {
 
 
-
-
-
+    /**
+     * Create temperature param
+     */
     esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Thermostat"));
 
-    esp_rmaker_param_t *temperature_param = esp_rmaker_temperature_param_create(ESP_RMAKER_DEF_TEMPERATURE_NAME, DEFAULT_TEMPERATURE);
-    esp_rmaker_device_add_param(thermostat_device, temperature_param);
+    params->temperature = esp_rmaker_temperature_param_create(ESP_RMAKER_DEF_TEMPERATURE_NAME, DEFAULT_TEMPERATURE);
+    esp_rmaker_device_add_param(thermostat_device, params->temperature);
+    esp_rmaker_device_assign_primary_param(thermostat_device, params->temperature);
 
-
+    /**
+     * Create threshold param
+     */
  
+    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(20.0), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
+    esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(0), esp_rmaker_float(40), esp_rmaker_float(0.5));
+    esp_rmaker_device_add_param(thermostat_device, params->threshold);
+    
+    /**
+     * Create calibrate param
+     */
 
-    esp_rmaker_param_val_t paso, min, max;
-    paso.type = RMAKER_VAL_TYPE_FLOAT;
-    min.type = RMAKER_VAL_TYPE_FLOAT;
-    max.type = RMAKER_VAL_TYPE_FLOAT;
-    min.val.f= 0.0;
-    max.val.f = 40.0;
-    paso.val.f = 0.5;
- 
+    params->calibrate = esp_rmaker_param_create(CALIBRATE, NULL, esp_rmaker_float(-2.0),PROP_FLAG_WRITE |  PROP_FLAG_READ);
+    esp_rmaker_device_add_param(thermostat_device, params->calibrate);
 
-    esp_rmaker_device_assign_primary_param(thermostat_device, temperature_param);
-    esp_rmaker_param_add_bounds(temperature_param, min, max, paso);
+    /**
+     * Create read interval param
+     */
+    params->read_interval = esp_rmaker_param_create(READ_INTERVAL, NULL, esp_rmaker_int(60), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_device_add_param(thermostat_device, params->read_interval);
 
-    esp_rmaker_param_t *threshold_temperature = esp_rmaker_cct_param_create(SETPOINT_TEMPERATURE, DEFAULT_TEMPERATURE);
-    esp_rmaker_param_add_bounds(threshold_temperature, min, max, paso);
-    esp_rmaker_param_add_ui_type(threshold_temperature, ESP_RMAKER_UI_SLIDER);
-    esp_rmaker_device_add_param(thermostat_device, threshold_temperature);
+    /**
+     * Create power param
+     */
+    params->power = esp_rmaker_power_param_create(ESP_RMAKER_PARAM_POWER, DEFAULT_POWER);
+    esp_rmaker_device_add_param(thermostat_device, params->power);
 
-    esp_rmaker_param_t *calibrate = esp_rmaker_param_create("calibrado", NULL, esp_rmaker_float(-2.0),PROP_FLAG_WRITE |  PROP_FLAG_READ);
-    esp_rmaker_device_add_param(thermostat_device, calibrate);
+    /**
+     * Create margin temperature. Its used to switch on/off thermostat in order direcction of temperature
+     */
+    params->margin_temperature = esp_rmaker_param_create(MARGIN_TEMPERATURE, NULL, esp_rmaker_float(0.5), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_device_add_param(thermostat_device, params->margin_temperature);
 
-    esp_rmaker_param_t *read_interval = esp_rmaker_param_create("read_interval", NULL, esp_rmaker_int(60), PROP_FLAG_READ | PROP_FLAG_WRITE);
-    esp_rmaker_device_add_param(thermostat_device, read_interval);
+    /**
+     * Create temperature sensor. If sensor is empty, sensor is into device. If sensor is a mac, sensor is remote.
+     */
+
+    params->sensor = esp_rmaker_param_create(ID_SENSOR, NULL, esp_rmaker_str("null"), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_param_add_ui_type(params->sensor, ESP_RMAKER_UI_QR_SCAN);
+    esp_rmaker_device_add_param(thermostat_device, params->sensor);
+
+    /**
+     * Create mode thermostat
+     */
+    static const char *list[] = {"AUTO", "MANUAL"};
+    params->mode = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(""), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    esp_rmaker_param_add_valid_str_list(params->mode, list, 2);
+    esp_rmaker_device_add_param(thermostat_device, params->mode);
 
 
 /* Add the write callback for the device. We aren't registering any read callback yet as
@@ -220,14 +245,14 @@ void register_parameters()
      */
     esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);  
 
-
-
 }
 
 void app_main()
 {
 
-    int i=0;
+    app_params params;
+
+
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
@@ -245,9 +270,7 @@ void app_main()
 
     /* Initialize Wi-Fi. Note that, this should be called before esp_rmaker_node_init()
      */
-    ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
     app_network_init();
-   ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
 
 
     /* Register an event handler to catch RainMaker events */
@@ -269,7 +292,6 @@ void app_main()
         abort();
     }
 
-       ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
 
 
     /* Create a Thermotat device.
@@ -282,7 +304,7 @@ void app_main()
      *     
      */
 
-    register_parameters();
+    register_parameters(&params);
     
     /* Add this switch device to the node */
     esp_rmaker_node_add_device(node, thermostat_device);
@@ -317,7 +339,6 @@ void app_main()
      * after a connection has been successfully established
      */
 
-       ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
 
     err = app_network_start(POP_TYPE_RANDOM);
     if (err != ESP_OK) {
@@ -325,10 +346,7 @@ void app_main()
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     }
- 
-   ESP_LOGI(TAG, "PASO------------------------------------>  %d", i++);
-
-
-
+    
+    //xTaskCreate(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL);
 
 }

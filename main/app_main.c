@@ -54,6 +54,8 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
             const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
 {
 
+    esp_rmaker_param_t *current_temperature;
+
     if (ctx) {
         ESP_LOGI(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
     }
@@ -61,10 +63,23 @@ static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_pa
         ESP_LOGI(TAG, "Received value = %s for %s - %s",
                 val.val.b? "true" : "false", esp_rmaker_device_get_name(device),
                 esp_rmaker_param_get_name(param));
-        app_driver_set_state(val.val.b);
+        relay_operation(val.val.b);
         esp_rmaker_param_update(param, val);
         
     }
+
+    if (strcmp(esp_rmaker_param_get_name(param), SETPOINT_TEMPERATURE) == 0) {
+        ESP_LOGI(TAG, "Received value threshold = %s for %s - %s",
+                val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
+                esp_rmaker_param_get_name(param));
+        current_temperature = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+        thermostat_action(esp_rmaker_param_get_val(current_temperature)->val.f);
+        esp_rmaker_param_update(param, val);
+        
+    }
+
+
+
     return ESP_OK;
 }
 /* Event handler for catching RainMaker events */
@@ -265,7 +280,6 @@ void app_main()
     esp_rmaker_console_init();
     app_driver_init();
     
-    app_driver_set_state(DEFAULT_POWER);
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();

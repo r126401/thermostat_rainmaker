@@ -54,7 +54,7 @@ typedef enum DEVICE_STATUS {
 
 extern esp_rmaker_device_t *thermostat_device;
 void app_driver_init(void);
-int app_driver_set_state(bool state);
+
 bool app_driver_get_state(void);
 enum ESTADO_RELE relay_operation(ESTADO_RELE op);
 

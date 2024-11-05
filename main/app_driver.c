@@ -36,24 +36,11 @@ static bool g_power_state = DEFAULT_POWER;
 #define WIFI_RESET_BUTTON_TIMEOUT       3
 #define FACTORY_RESET_BUTTON_TIMEOUT    10
 
-static void app_indicator_set(bool state)
-{
-    if (state) {
-       // ws2812_led_set_rgb(DEFAULT_RED, DEFAULT_GREEN, DEFAULT_BLUE);
-    } else {
-        //ws2812_led_clear();
-    }
-}
 
-static void app_indicator_init(void)
-{
-   // ws2812_led_init();
-    app_indicator_set(g_power_state);
-}
 static void push_btn_cb(void *arg)
 {
     bool new_state = !g_power_state;
-    app_driver_set_state(new_state);
+    relay_operation(new_state);
 #ifdef CONFIG_EXAMPLE_ENABLE_TEST_NOTIFICATIONS
     /* This snippet has been added just to demonstrate how the APIs esp_rmaker_param_update_and_notify()
      * and esp_rmaker_raise_alert() can be used to trigger push notifications on the phone apps.
@@ -83,11 +70,7 @@ static void push_btn_cb(void *arg)
 #endif
 }
 
-static void set_power_state(bool target)
-{
-    gpio_set_level(OUTPUT_GPIO, target);
-    app_indicator_set(target);
-}
+
 
 void gpio_rele_in_out() {
 	gpio_config_t io_conf;
@@ -102,7 +85,7 @@ void gpio_rele_in_out() {
 
 }
 
-enum ESTADO_RELE relay_operation(ESTADO_RELE op) {
+enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 
 	
 	if (gpio_get_level(CONFIG_RELAY_GPIO) == OFF){
@@ -147,26 +130,10 @@ void app_driver_init()
     }
 
     gpio_rele_in_out();
-/*
-    gpio_config_t io_conf = {
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = 1,
-    };
-    io_conf.pin_bit_mask = ((uint64_t)1 << GPIO_OUTPUT_PIN_SEL);
-    gpio_config(&io_conf);
-    */
-    app_indicator_init();
     relay_operation(false);
 }
 
-int IRAM_ATTR app_driver_set_state(bool state)
-{
-    if(g_power_state != state) {
-        g_power_state = state;
-        set_power_state(g_power_state);
-    }
-    return ESP_OK;
-}
+
 
 bool app_driver_get_state(void)
 {

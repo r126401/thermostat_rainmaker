@@ -20,26 +20,6 @@ menu "Task configuration"
     
 endmenu
 
-menu "Tipo de sensor a utilizar"
-
-    choice TEMPERATURE_SENSOR
-        prompt "Seleccion del tipo de sensor de temperatura"
-        help
-            Selecciona el tipo de sensor
-    
-        config DHT22
-            bool "DHT22"
-            prompt "DTH22"
-            help
-                DTH22
-    
-        config DS18B20
-            bool "DS18B20"
-            prompt "DS18B20"
-            help
-                DS18B20
-    endchoice    
-endmenu
 
     config SENSOR_THERMOSTAT_GPIO
         int "PIN SENSOR DS18B20"
@@ -47,7 +27,11 @@ endmenu
         help 
             Implement pin gpio to sensor DS18B20
 
-
+    config ERROR_READING_TEMPERATURE
+        int "Errors to read temperature from sensor"
+        default 3
+        help
+            Parameter to configure number of errors to send alarm to app
 
 
 

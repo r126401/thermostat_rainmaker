@@ -14,7 +14,6 @@
 #include <esp_rmaker_standard_params.h> 
 
 #include <app_reset.h>
-#include <ws2812_led.h>
 #include "app_priv.h"
 
 /* This is the button that is used for toggling the power */
@@ -36,15 +35,15 @@ static bool g_power_state = DEFAULT_POWER;
 static void app_indicator_set(bool state)
 {
     if (state) {
-        ws2812_led_set_rgb(DEFAULT_RED, DEFAULT_GREEN, DEFAULT_BLUE);
+       // ws2812_led_set_rgb(DEFAULT_RED, DEFAULT_GREEN, DEFAULT_BLUE);
     } else {
-        ws2812_led_clear();
+        //ws2812_led_clear();
     }
 }
 
 static void app_indicator_init(void)
 {
-    ws2812_led_init();
+   // ws2812_led_init();
     app_indicator_set(g_power_state);
 }
 static void push_btn_cb(void *arg)

@@ -34,7 +34,7 @@
 #include "esp_rmaker_mqtt_glue.h"
 #include "esp_rmaker_mqtt.h"
 
-//#include "thermostat_task.h"
+#include "thermostat_task.h"
 
 
 #define NAME_DEVICE "Thermostat"
@@ -227,7 +227,7 @@ void register_parameters(app_params *params)
      * Create temperature sensor. If sensor is empty, sensor is into device. If sensor is a mac, sensor is remote.
      */
 
-    params->sensor = esp_rmaker_param_create(ID_SENSOR, NULL, esp_rmaker_str("null"), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    params->sensor = esp_rmaker_param_create(ID_SENSOR, NULL, esp_rmaker_str(NULSENSOR), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_param_add_ui_type(params->sensor, ESP_RMAKER_UI_QR_SCAN);
     esp_rmaker_device_add_param(thermostat_device, params->sensor);
 
@@ -238,6 +238,12 @@ void register_parameters(app_params *params)
     params->mode = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(""), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_param_add_valid_str_list(params->mode, list, 2);
     esp_rmaker_device_add_param(thermostat_device, params->mode);
+
+    /**
+     * Create alarm sensor
+     */
+    params->alarm = esp_rmaker_param_create(ALARM, NULL, esp_rmaker_int(0), PROP_FLAG_READ);
+    esp_rmaker_device_add_param(thermostat_device, params->alarm);
 
 
 /* Add the write callback for the device. We aren't registering any read callback yet as
@@ -347,6 +353,6 @@ void app_main()
         abort();
     }
     
-    //xTaskCreate(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL);
+    xTaskCreate(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL);
 
 }

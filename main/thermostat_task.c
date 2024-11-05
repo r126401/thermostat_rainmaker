@@ -73,7 +73,8 @@ esp_err_t read_temperature(float *temperature_metered)
 	}
 	if ((error = ds18b20_get_temperature(*ds18b20s, temperature_metered)) == ESP_OK) {
 
-		//ESP_LOGI(TAG, "temperature read from DS18B20: %.2f", temperature_metered);	
+		//ESP_LOGI(TAG, "temperature read from DS18B20: %.2f C", temperature_metered);	
+		ESP_LOGI(TAG, "%s: TEMPERATURA ORIGINAL: %.02f C", esp_log_system_timestamp(), *temperature_metered);
 
 	}
 
@@ -109,6 +110,64 @@ char* write_date() {
 	return fecha_actual;
 
 }
+/*
+enum ESTADO_RELE relay_operation(DATOS_APLICACION *datosApp, enum TIPO_ACTUACION_RELE tipo, enum ESTADO_RELE operacion) {
+
+	enum ESTADO_RELE rele;
+
+	switch (tipo) {
+	case MANUAL:
+		if (gpio_get_level(CONFIG_GPIO_PIN_RELE) == OFF) {
+			ESP_LOGW(TAG, ""TRAZAR" ESTABA A OFF Y SE ENCIENDE", INFOTRAZA);
+			rele = ON;
+		} else {
+			ESP_LOGW(TAG, ""TRAZAR" ESTABA A On Y SE APAGA", INFOTRAZA);
+			rele = OFF;
+		}
+		break;
+	default:
+		rele = operacion;
+		break;
+	}
+	//gpio_rele_out();
+	gpio_set_level(CONFIG_GPIO_PIN_RELE, rele);
+	ESP_LOGW(TAG, ""TRAZAR"EL RELE SE HA PUESTO A %d", INFOTRAZA, rele);
+	lv_update_relay(rele);
+	if (get_current_status_application(datosApp) == FACTORY) {
+	}
+
+	return rele;
+}
+
+
+void thermostat_action(DATOS_APLICACION *datosApp) {
+
+	enum ESTADO_RELE accion_rele;
+	enum TIPO_ACCION_TERMOSTATO accion_termostato;
+	static float lecturaAnterior = -1000;
+
+	if (get_current_status_application(datosApp) == NORMAL_MANUAL) {
+		ESP_LOGW(TAG, ""TRAZAR"SE RETORNA PORQUE LA APLICACION ESTA EN ESTADO NORMAL_MANUAL", INFOTRAZA);
+		return;
+	}
+
+	ESP_LOGI(TAG, ""TRAZAR"accionar_termostato: LECTURA ANTERIOR: %.2f, LECTURA POSTERIOR: %.2f HA HABIDO CAMBIO DE TEMPERATURA", INFOTRAZA,
+			lecturaAnterior, datosApp->termostato.tempActual);
+
+    if (((accion_termostato = calcular_accion_termostato(datosApp, &accion_rele)) == ACCIONAR_TERMOSTATO)) {
+    	ESP_LOGI(TAG, ""TRAZAR"VAMOS A ACCIONAR EL RELE", INFOTRAZA);
+    	relay_operation(datosApp, TEMPORIZADA, accion_rele);
+    }
+
+    if ((accion_termostato == ACCIONAR_TERMOSTATO) || (lecturaAnterior != datosApp->termostato.tempActual)) {
+    	ESP_LOGI(TAG, ""TRAZAR"HA HABIDO CAMBIO DE TEMPERATURA", INFOTRAZA);
+        send_spontaneous_report(datosApp, CHANGE_TEMPERATURE);
+
+    }
+    lecturaAnterior = datosApp->termostato.tempActual;
+}
+
+*/
 
 float redondear_temperatura(float temperatura) {
 
@@ -149,46 +208,58 @@ float redondear_temperatura(float temperatura) {
 
 
 
-esp_err_t reading_local_temperature(app_params *datosApp) {
+esp_err_t reading_local_temperature() {
 
     esp_err_t error = ESP_FAIL;
 	float temperatura_a_redondear;
 	float temperature;
+	float calibrate;
+	esp_rmaker_param_t *param;
 
-	
 
-    ESP_LOGI(TAG, ""TRAZAR" Leyendo desde el sensor", INFOTRAZA);
-    while (error != ESP_OK) {
+	param = esp_rmaker_device_get_param_by_name(thermostat_device, CALIBRATE);
+	calibrate = esp_rmaker_param_get_val(param)->val.f;
 
-		error = read_temperature(&temperature);
-		if (error == ESP_OK) {
-			ESP_LOGI(TAG, ""TRAZAR" Lectura local correcta!. ", INFOTRAZA);
-			temperatura_a_redondear = temperature + esp_rmaker_param_get_val(datosApp->calibrate)->val.f;
-			temperature = redondear_temperatura(temperatura_a_redondear);
+	param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
 
-		} else {
 
-			ESP_LOGE(TAG, ""TRAZAR" Error al leer desde el sensor de temperatura", INFOTRAZA);
-		}
+    ESP_LOGI(TAG, ""TRAZAR" Leyendo desde el sensor. Calibrado: %.2f", INFOTRAZA, calibrate);
 
-	
+
+	error = read_temperature(&temperature);
+	if (error == ESP_OK) {
+		ESP_LOGI(TAG, ""TRAZAR" Lectura local correcta!. ", INFOTRAZA);
+		temperatura_a_redondear = temperature + calibrate;
+		temperature = redondear_temperatura(temperatura_a_redondear);
+		esp_rmaker_param_update_and_report(param, esp_rmaker_float(temperature));
+		ESP_LOGI(TAG, "Actualizada y enviada la temperatura actualizada: %.2f", temperature);
+	} else {
+		ESP_LOGE(TAG, ""TRAZAR" Error al leer desde el sensor de temperatura", INFOTRAZA);
 	}
+
+	
+
 
 	return error;
 }
 
-esp_err_t reading_remote_temperature(app_params *datosApp) {
+esp_err_t reading_remote_temperature() {
 
 
 	return ESP_OK;
 }
 
 
-void task_iotThermostat(void *args) 
+void task_iotThermostat() 
 {
 
-	app_params *datosApp = (app_params*) args;
 	esp_err_t error = ESP_OK ;
+	int value;
+	esp_rmaker_param_t *param;
+	char* id_sensor;
+	static uint8_t n_errors = 0;
+
+
 
 
 
@@ -197,30 +268,51 @@ void task_iotThermostat(void *args)
 	 * init driver ds18b20
 	 */
 	init_ds18b20();
-    ESP_LOGI(TAG, ""TRAZAR"COMIENZA LA TAREA DE LECTURA DE TEMPERATURA", INFOTRAZA);
-
-    //lv_update_relay(gpio_get_level(RELAY_GPIO));
+    ESP_LOGI(TAG, "COMIENZA LA TAREA DE LECTURA DE TEMPERATURA");
 
     while(1) {
 
-		if (strcmp(esp_rmaker_param_get_val(datosApp->sensor)->val.s, NULSENSOR) == 0) {
+		param = esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL);
+		value = esp_rmaker_param_get_val(param)->val.i;
+		param = esp_rmaker_device_get_param_by_name(thermostat_device, ID_SENSOR);
+		id_sensor = esp_rmaker_param_get_val(param)->val.s;
 
-			error = reading_remote_temperature(datosApp);
+		ESP_LOGI(TAG, "Intervalo lectura: %d, id_sensor: %s", value, id_sensor);
+
+
+
+		if (strcmp(id_sensor, NULSENSOR) == 0) {
+
+			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en local", INFOTRAZA);
+			error = reading_local_temperature();
+
+			
 
 		} else {
-			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en local", INFOTRAZA);
-			error = reading_local_temperature(datosApp);
+			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en remoto", INFOTRAZA);
+			error = reading_remote_temperature();
 
 		}
 
 		if (error == ESP_OK) {
-			vTaskDelay(esp_rmaker_param_get_val(datosApp->read_interval)->val.f * 1000 / portTICK_PERIOD_MS);
+			n_errors = 0;
+			vTaskDelay(value * 1000 / portTICK_PERIOD_MS);
 		} else {
-			vTaskDelay(esp_rmaker_param_get_val(datosApp->read_interval)->val.f * 500 / portTICK_PERIOD_MS);
+			n_errors++;
+			if (n_errors > CONFIG_ERROR_READING_TEMPERATURE) {
+
+				ESP_LOGI(TAG, "Llevamos %d errores de lectura consecutivos", n_errors);
+				esp_rmaker_param_update_and_notify(esp_rmaker_device_get_param_by_name(thermostat_device, ALARM), esp_rmaker_int(SENSOR_FAIL));
+
+			}
+
+			ESP_LOGE(TAG, "Error al leer la temperatura del dispositivo. Reintentamos en %d segundos", value);
+			vTaskDelay(value * 500 / portTICK_PERIOD_MS);
 		}
 
 
 	}
+	
 }
 
 

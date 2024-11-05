@@ -30,13 +30,18 @@
 #define ID_SENSOR "id_sensor"
 #define MODE "mode"
 #define NULSENSOR "Null"
+#define ALARM  "alarm"
 
 extern esp_rmaker_device_t *thermostat_device;
 void app_driver_init(void);
 int app_driver_set_state(bool state);
 bool app_driver_get_state(void);
 
+typedef enum DEVICE_STATUS {
 
+   DEVICE_OK,
+   SENSOR_FAIL
+} DEVICE_STATUS;
 
 
 
@@ -50,6 +55,7 @@ typedef struct app_params
    esp_rmaker_param_t *power;
    esp_rmaker_param_t *margin_temperature;
    esp_rmaker_param_t *sensor;
+   esp_rmaker_param_t *alarm;
 
 
 } app_params;

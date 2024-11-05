@@ -20,6 +20,14 @@
         "typeinfo": "c",
         "thermostat_task.h": "c",
         "esp_err.h": "c",
-        "cmath": "c"
+        "cmath": "c",
+        "*.tcc": "cpp",
+        "format": "cpp",
+        "thread": "cpp",
+        "esp_rmaker_console.h": "c",
+        "onewire_bus.h": "c",
+        "onewire_bus_impl_rmt.h": "c",
+        "time.h": "c",
+        "onewire_types.h": "c"
     }
 }

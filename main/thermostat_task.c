@@ -11,12 +11,16 @@
 #include "onewire_types.h"
 #include "ds18b20.h"
 #include <freertos/FreeRTOS.h>
+#include "driver/gpio.h"
 
 
 static const char *TAG = "thermostat_task";
 
 #define ONEWIRE_MAX_DS18B20 1
 ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DS18B20];
+
+
+
 
 void init_ds18b20()
 {
@@ -110,64 +114,98 @@ char* write_date() {
 	return fecha_actual;
 
 }
-/*
-enum ESTADO_RELE relay_operation(DATOS_APLICACION *datosApp, enum TIPO_ACTUACION_RELE tipo, enum ESTADO_RELE operacion) {
 
-	enum ESTADO_RELE rele;
 
-	switch (tipo) {
-	case MANUAL:
-		if (gpio_get_level(CONFIG_GPIO_PIN_RELE) == OFF) {
-			ESP_LOGW(TAG, ""TRAZAR" ESTABA A OFF Y SE ENCIENDE", INFOTRAZA);
-			rele = ON;
-		} else {
-			ESP_LOGW(TAG, ""TRAZAR" ESTABA A On Y SE APAGA", INFOTRAZA);
-			rele = OFF;
-		}
-		break;
-	default:
-		rele = operacion;
-		break;
-	}
-	//gpio_rele_out();
-	gpio_set_level(CONFIG_GPIO_PIN_RELE, rele);
-	ESP_LOGW(TAG, ""TRAZAR"EL RELE SE HA PUESTO A %d", INFOTRAZA, rele);
-	lv_update_relay(rele);
-	if (get_current_status_application(datosApp) == FACTORY) {
-	}
 
-	return rele;
+
+
+
+
+enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, float current_temperature) {
+
+	float margin_temperature;
+	float threshold_temperature;
+	esp_rmaker_param_t *param;
+
+	param = esp_rmaker_device_get_param_by_name(thermostat_device, MARGIN_TEMPERATURE);
+	margin_temperature = esp_rmaker_param_get_val(param)->val.f;
+
+	param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
+	threshold_temperature = esp_rmaker_param_get_val(param)->val.f;
+
+    if (gpio_get_level(CONFIG_RELAY_GPIO) == OFF) {
+               if (current_temperature <= (threshold_temperature - margin_temperature)) {
+            	   ESP_LOGI(TAG, ""TRAZAR"RELE OFF Y SE ENCIENDE. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
+                   *accion = ON;
+                   return ACCIONAR_TERMOSTATO;
+               } else {
+            	   ESP_LOGI(TAG, ""TRAZAR"RELE OFF Y DEBE SEGUIR SIGUE OFF. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
+                   *accion = OFF;
+                   return NO_ACCIONAR_TERMOSTATO;
+
+               }
+           } else {
+               if (current_temperature >= (threshold_temperature + margin_temperature) ) {
+            	   ESP_LOGI(TAG, ""TRAZAR"RELE ON Y SE APAGA. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
+                   *accion = OFF;
+                   return ACCIONAR_TERMOSTATO;
+               } else {
+            	   ESP_LOGI(TAG, ""TRAZAR"RELE ON Y DEBE SEGUIR SIGUE ON. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
+                   *accion = ON;
+                   return NO_ACCIONAR_TERMOSTATO;
+
+               }
+           }
+
 }
 
 
-void thermostat_action(DATOS_APLICACION *datosApp) {
+TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 
 	enum ESTADO_RELE accion_rele;
 	enum TIPO_ACCION_TERMOSTATO accion_termostato;
-	static float lecturaAnterior = -1000;
+	esp_rmaker_param_t *param;
+	float temperature;
 
-	if (get_current_status_application(datosApp) == NORMAL_MANUAL) {
-		ESP_LOGW(TAG, ""TRAZAR"SE RETORNA PORQUE LA APLICACION ESTA EN ESTADO NORMAL_MANUAL", INFOTRAZA);
-		return;
+	ESP_LOGI(TAG, "Estamos en thermostat_action");
+
+	param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+	if (strcmp(esp_rmaker_param_get_val(param)->val.s, AUTO) == 0) {
+
+		ESP_LOGW(TAG, "No se hace nada ya que tenemos el termostato en modo manual");
+		return NINGUNA_ACCION;
+
 	}
 
+	param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+	temperature = esp_rmaker_param_get_val(param)->val.f;
+
+	if (current_temperature != temperature) {
+
 	ESP_LOGI(TAG, ""TRAZAR"accionar_termostato: LECTURA ANTERIOR: %.2f, LECTURA POSTERIOR: %.2f HA HABIDO CAMBIO DE TEMPERATURA", INFOTRAZA,
-			lecturaAnterior, datosApp->termostato.tempActual);
+			temperature, current_temperature);
 
-    if (((accion_termostato = calcular_accion_termostato(datosApp, &accion_rele)) == ACCIONAR_TERMOSTATO)) {
+    if (((accion_termostato = calcular_accion_termostato(&accion_rele, current_temperature)) == ACCIONAR_TERMOSTATO)) {
     	ESP_LOGI(TAG, ""TRAZAR"VAMOS A ACCIONAR EL RELE", INFOTRAZA);
-    	relay_operation(datosApp, TEMPORIZADA, accion_rele);
-    }
+    	//*******hacer relay_operation(datosApp, TEMPORIZADA, accion_rele);
+		relay_operation(accion_rele);
+    } else {
+		accion_termostato = NO_ACCIONAR_TERMOSTATO;
+		//ESP_LOGW(TAG, "Temperatura anterior: %.2f, Temperatura actual: %.2f. No se hace nada porque son iguales.", temperature, current_temperature);
+		}
+	} else {
+		accion_termostato = NINGUNA_ACCION;
+				ESP_LOGW(TAG, "Temperatura anterior: %.2f, Temperatura actual: %.2f. No se hace nada porque son iguales.", temperature, current_temperature);
 
-    if ((accion_termostato == ACCIONAR_TERMOSTATO) || (lecturaAnterior != datosApp->termostato.tempActual)) {
-    	ESP_LOGI(TAG, ""TRAZAR"HA HABIDO CAMBIO DE TEMPERATURA", INFOTRAZA);
-        send_spontaneous_report(datosApp, CHANGE_TEMPERATURE);
+	}
 
-    }
-    lecturaAnterior = datosApp->termostato.tempActual;
+
+
+    
+	return accion_termostato;
 }
 
-*/
+
 
 float redondear_temperatura(float temperatura) {
 
@@ -212,7 +250,7 @@ esp_err_t reading_local_temperature() {
 
     esp_err_t error = ESP_FAIL;
 	float temperatura_a_redondear;
-	float temperature;
+	float current_temperature;
 	float calibrate;
 	esp_rmaker_param_t *param;
 
@@ -226,13 +264,14 @@ esp_err_t reading_local_temperature() {
     ESP_LOGI(TAG, ""TRAZAR" Leyendo desde el sensor. Calibrado: %.2f", INFOTRAZA, calibrate);
 
 
-	error = read_temperature(&temperature);
+	error = read_temperature(&current_temperature);
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR" Lectura local correcta!. ", INFOTRAZA);
-		temperatura_a_redondear = temperature + calibrate;
-		temperature = redondear_temperatura(temperatura_a_redondear);
-		esp_rmaker_param_update_and_report(param, esp_rmaker_float(temperature));
-		ESP_LOGI(TAG, "Actualizada y enviada la temperatura actualizada: %.2f", temperature);
+		temperatura_a_redondear = current_temperature + calibrate;
+		//current_temperature = redondear_temperatura(temperatura_a_redondear);
+		thermostat_action(current_temperature);
+		esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));
+		ESP_LOGI(TAG, "Actualizada y enviada la temperatura actualizada: %.2f", current_temperature);
 	} else {
 		ESP_LOGE(TAG, ""TRAZAR" Error al leer desde el sensor de temperatura", INFOTRAZA);
 	}

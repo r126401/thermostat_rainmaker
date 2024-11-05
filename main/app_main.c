@@ -193,7 +193,7 @@ void register_parameters(app_params *params)
      * Create threshold param
      */
  
-    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(20.0), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(35.0), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(0), esp_rmaker_float(40), esp_rmaker_float(0.5));
     esp_rmaker_device_add_param(thermostat_device, params->threshold);
@@ -208,13 +208,13 @@ void register_parameters(app_params *params)
     /**
      * Create read interval param
      */
-    params->read_interval = esp_rmaker_param_create(READ_INTERVAL, NULL, esp_rmaker_int(60), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    params->read_interval = esp_rmaker_param_create(READ_INTERVAL, NULL, esp_rmaker_int(20), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_device_add_param(thermostat_device, params->read_interval);
 
     /**
      * Create power param
      */
-    params->power = esp_rmaker_power_param_create(ESP_RMAKER_PARAM_POWER, DEFAULT_POWER);
+    params->power = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
     esp_rmaker_device_add_param(thermostat_device, params->power);
 
     /**
@@ -264,6 +264,7 @@ void app_main()
      */
     esp_rmaker_console_init();
     app_driver_init();
+    
     app_driver_set_state(DEFAULT_POWER);
 
     /* Initialize NVS. */

@@ -20,7 +20,7 @@
 
 #include <esp_rmaker_common_events.h>
 
-#define DEFAULT_POWER  true
+#define DEFAULT_POWER  false
 // Labels to params.
 #define DEFAULT_TEMPERATURE 21.0
 #define SETPOINT_TEMPERATURE "threshold"
@@ -31,17 +31,34 @@
 #define MODE "mode"
 #define NULSENSOR "Null"
 #define ALARM  "alarm"
+#define AUTO   "AUTO"
 
-extern esp_rmaker_device_t *thermostat_device;
-void app_driver_init(void);
-int app_driver_set_state(bool state);
-bool app_driver_get_state(void);
+typedef enum ESTADO_RELE {
+    INDETERMINADO = -1,
+    OFF = 0,
+    ON = 1
+}ESTADO_RELE;
+
+typedef enum TIPO_ACCION_TERMOSTATO {
+	NO_ACCIONAR_TERMOSTATO,
+	ACCIONAR_TERMOSTATO,
+   NINGUNA_ACCION
+}TIPO_ACCION_TERMOSTATO;
 
 typedef enum DEVICE_STATUS {
 
    DEVICE_OK,
    SENSOR_FAIL
 } DEVICE_STATUS;
+
+
+extern esp_rmaker_device_t *thermostat_device;
+void app_driver_init(void);
+int app_driver_set_state(bool state);
+bool app_driver_get_state(void);
+enum ESTADO_RELE relay_operation(ESTADO_RELE op);
+
+
 
 
 

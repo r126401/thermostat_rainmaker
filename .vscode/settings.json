@@ -28,6 +28,9 @@
         "onewire_bus.h": "c",
         "onewire_bus_impl_rmt.h": "c",
         "time.h": "c",
-        "onewire_types.h": "c"
+        "onewire_types.h": "c",
+        "rtc_io.h": "c",
+        "esp_rmaker_mqtt_glue.h": "c",
+        "esp_rmaker_scenes.h": "c"
     }
 }

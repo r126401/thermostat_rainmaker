@@ -15,6 +15,9 @@
 
 #include <app_reset.h>
 #include "app_priv.h"
+#include "esp_log.h"
+
+static const char *TAG = "app_driver";
 
 /* This is the button that is used for toggling the power */
 #define BUTTON_GPIO          CONFIG_EXAMPLE_BOARD_BUTTON_GPIO
@@ -23,6 +26,7 @@
 /* This is the GPIO on which the power will be set */
 #define OUTPUT_GPIO    CONFIG_EXAMPLE_OUTPUT_GPIO
 static bool g_power_state = DEFAULT_POWER;
+#define GPIO_OUTPUT_PIN_SEL  (1ULL<<CONFIG_SENSOR_THERMOSTAT_GPIO) || (1ULL<<CONFIG_RELAY_GPIO))
 
 /* These values correspoind to H,S,V = 120,100,10 */
 #define DEFAULT_RED     0
@@ -85,6 +89,52 @@ static void set_power_state(bool target)
     app_indicator_set(target);
 }
 
+void gpio_rele_in_out() {
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_DISABLE;
+	io_conf.pin_bit_mask = 1ULL<< CONFIG_RELAY_GPIO;
+	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
+    io_conf.pull_down_en = 0;
+    //disable pull-up mode
+    io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+    ESP_LOGW(TAG, "gpio rele en E/S");
+
+}
+
+enum ESTADO_RELE relay_operation(ESTADO_RELE op) {
+
+	
+	if (gpio_get_level(CONFIG_RELAY_GPIO) == OFF){
+		if (op == ON) {
+			gpio_set_level(CONFIG_RELAY_GPIO, op);
+			ESP_LOGE(TAG, "Accion: OFF->ON");
+            esp_rmaker_param_update_and_report(
+                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
+                esp_rmaker_bool(op));
+
+		} else {
+			ESP_LOGE(TAG, "Accion: OFF->OFF");
+			}
+	} else {
+
+		if (op == ON) {
+			ESP_LOGE(TAG, "Accion: ON->ON");
+		} else {
+			gpio_set_level(CONFIG_RELAY_GPIO, op);
+			ESP_LOGE(TAG, "Accion: ON->OFF");
+            esp_rmaker_param_update_and_report(
+                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
+                esp_rmaker_bool(op));
+
+			}
+	}
+
+
+	return gpio_get_level(CONFIG_RELAY_GPIO);
+}
+
+
 void app_driver_init()
 {
 
@@ -96,15 +146,17 @@ void app_driver_init()
         app_reset_button_register(btn_handle, WIFI_RESET_BUTTON_TIMEOUT, FACTORY_RESET_BUTTON_TIMEOUT);
     }
 
-    /* Configure power */
+    gpio_rele_in_out();
+/*
     gpio_config_t io_conf = {
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = 1,
     };
-    io_conf.pin_bit_mask = ((uint64_t)1 << OUTPUT_GPIO);
-    /* Configure the GPIO */
+    io_conf.pin_bit_mask = ((uint64_t)1 << GPIO_OUTPUT_PIN_SEL);
     gpio_config(&io_conf);
+    */
     app_indicator_init();
+    relay_operation(false);
 }
 
 int IRAM_ATTR app_driver_set_state(bool state)

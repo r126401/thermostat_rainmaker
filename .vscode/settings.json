@@ -31,6 +31,10 @@
         "onewire_types.h": "c",
         "rtc_io.h": "c",
         "esp_rmaker_mqtt_glue.h": "c",
-        "esp_rmaker_scenes.h": "c"
+        "esp_rmaker_scenes.h": "c",
+        "random": "c",
+        "cstdlib": "c",
+        "text_encoding": "cpp",
+        "stdio.h": "c"
     }
 }

@@ -35,6 +35,7 @@
 #include "esp_rmaker_mqtt.h"
 
 #include "thermostat_task.h"
+#include "local_events.h"
 
 
 #define NAME_DEVICE "Thermostat"
@@ -44,53 +45,12 @@ esp_rmaker_device_t *thermostat_device;
 
 
 
-
-
-
-
-
-/* Callback to handle commands received from the RainMaker cloud */
-static esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
-            const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
-{
-
-    esp_rmaker_param_t *current_temperature;
-
-    if (ctx) {
-        ESP_LOGI(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
-    }
-    if (strcmp(esp_rmaker_param_get_name(param), ESP_RMAKER_DEF_POWER_NAME) == 0) {
-        ESP_LOGI(TAG, "Received value = %s for %s - %s",
-                val.val.b? "true" : "false", esp_rmaker_device_get_name(device),
-                esp_rmaker_param_get_name(param));
-        relay_operation(val.val.b);
-        esp_rmaker_param_update(param, val);
-        
-    }
-
-    if (strcmp(esp_rmaker_param_get_name(param), SETPOINT_TEMPERATURE) == 0) {
-        ESP_LOGI(TAG, "Received value threshold = %s for %s - %s",
-                val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
-                esp_rmaker_param_get_name(param));
-        current_temperature = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
-        thermostat_action(esp_rmaker_param_get_val(current_temperature)->val.f);
-        esp_rmaker_param_update(param, val);
-        
-    }
-
-
-
-    return ESP_OK;
-}
 /* Event handler for catching RainMaker events */
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
 {
 
-
-
-
-
+    ESP_LOGW(TAG, "RECIBIDO EVENTO %s", event_base);
     
     if (event_base == RMAKER_EVENT) {
         switch (event_id) {
@@ -207,8 +167,8 @@ void register_parameters(app_params *params)
     /**
      * Create threshold param
      */
- 
-    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(35.0), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    //params->threshold = esp_rmaker_schedules_param_create(SETPOINT_TEMPERATURE, 10);
+    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(35.0), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
     esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(0), esp_rmaker_float(40), esp_rmaker_float(0.5));
     esp_rmaker_device_add_param(thermostat_device, params->threshold);
@@ -261,10 +221,6 @@ void register_parameters(app_params *params)
     esp_rmaker_device_add_param(thermostat_device, params->alarm);
 
 
-/* Add the write callback for the device. We aren't registering any read callback yet as
-     * it is for future use.
-     */
-    esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);  
 
 }
 
@@ -274,12 +230,13 @@ void app_main()
     app_params params;
 
 
+
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
     esp_rmaker_console_init();
     app_driver_init();
-    
+
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
@@ -293,12 +250,12 @@ void app_main()
      */
     app_network_init();
 
-
     /* Register an event handler to catch RainMaker events */
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_COMMON_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(APP_NETWORK_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_OTA_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+
 
     /* Initialize the ESP RainMaker Agent.
      * Note that this should be called after app_network_init() but before app_nenetworkk_start()
@@ -325,7 +282,17 @@ void app_main()
      *     
      */
 
-    register_parameters(&params);
+   register_parameters(&params);
+
+
+
+    /* Add the write callback for the device. We aren't registering any read callback yet as
+     * it is for future use.
+     */
+    esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);  
+
+    
+
     
     /* Add this switch device to the node */
     esp_rmaker_node_add_device(node, thermostat_device);

@@ -180,7 +180,8 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
 	temperature = esp_rmaker_param_get_val(param)->val.f;
 
-	if (current_temperature != temperature) {
+
+//	if (current_temperature != temperature) {
 
 	ESP_LOGI(TAG, ""TRAZAR"accionar_termostato: LECTURA ANTERIOR: %.2f, LECTURA POSTERIOR: %.2f HA HABIDO CAMBIO DE TEMPERATURA", INFOTRAZA,
 			temperature, current_temperature);
@@ -193,11 +194,11 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 		accion_termostato = NO_ACCIONAR_TERMOSTATO;
 		//ESP_LOGW(TAG, "Temperatura anterior: %.2f, Temperatura actual: %.2f. No se hace nada porque son iguales.", temperature, current_temperature);
 		}
-	} else {
-		accion_termostato = NINGUNA_ACCION;
-				ESP_LOGW(TAG, "Temperatura anterior: %.2f, Temperatura actual: %.2f. No se hace nada porque son iguales.", temperature, current_temperature);
+	//} else {
+	//	accion_termostato = NINGUNA_ACCION;
+	//			ESP_LOGW(TAG, "Temperatura anterior: %.2f, Temperatura actual: %.2f. No se hace nada porque son iguales.", temperature, current_temperature);
 
-	}
+	//}
 
 
 
@@ -268,7 +269,7 @@ esp_err_t reading_local_temperature() {
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR" Lectura local correcta!. ", INFOTRAZA);
 		temperatura_a_redondear = current_temperature + calibrate;
-		//current_temperature = redondear_temperatura(temperatura_a_redondear);
+		current_temperature = redondear_temperatura(temperatura_a_redondear);
 		thermostat_action(current_temperature);
 		esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));
 		ESP_LOGI(TAG, "Actualizada y enviada la temperatura actualizada: %.2f", current_temperature);

@@ -101,7 +101,7 @@ dependencies:
     source:
       path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp_rainmaker
       type: local
-    version: 1.5.0
+    version: 1.5.1
   espressif/esp_rcp_update:
     component_hash: c10afbd54a17f27eed880e61262b161656e6d36ad63376c307f9273e99d0abcd
     dependencies:
@@ -165,16 +165,15 @@ dependencies:
       type: service
     version: 1.4.0
   espressif/network_provisioning:
-    component_hash: ef2e10182fd1861e68b821491916327c25416ca7ae70e5a6e43313dbc71fe993
+    component_hash: 1c0f76f4a37c3f2101ae9735e9da901ef4469a07af9cc075fc8f08fee43281e4
     dependencies:
     - name: idf
-      registry_url: https://components.espressif.com
       require: private
       version: '>=5.1'
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.2
+    version: 1.0.3
   espressif/onewire_bus:
     component_hash: c4c781940d8bd988432b47ac3ee68479c69e14e01fdfba0b61365b233a3ba5d6
     dependencies:
@@ -219,6 +218,6 @@ direct_dependencies:
 - espressif/network_provisioning
 - espressif/rmaker_common
 - idf
-manifest_hash: 48a617c7af033dd42677f35f68479bd25b07d1b5cdef4e36315bbaa4744cb4b0
+manifest_hash: ffb2b69f1c9894d51440fec9a945aafe7b115a4a383e993b929b653ad11461f3
 target: esp32s3
 version: 2.0.0

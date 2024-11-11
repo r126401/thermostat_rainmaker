@@ -201,6 +201,13 @@ dependencies:
       path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/jsmn
       type: local
     version: 1.1.0
+  lvgl/lvgl:
+    component_hash: 096c69af22eaf8a2b721e3913da91918c5e6bf1a762a113ec01f401aa61337a0
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 9.2.2
 direct_dependencies:
 - espressif/cbor
 - espressif/ds18b20
@@ -218,6 +225,7 @@ direct_dependencies:
 - espressif/network_provisioning
 - espressif/rmaker_common
 - idf
-manifest_hash: ffb2b69f1c9894d51440fec9a945aafe7b115a4a383e993b929b653ad11461f3
+- lvgl/lvgl
+manifest_hash: 86025ff7a8660eacd720398f93dcf31ee916c9edfe8afb33d9b23b12a8f62a44
 target: esp32s3
 version: 2.0.0

@@ -10,7 +10,7 @@
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ],
-    "idf.port": "/dev/ttyACM0",
+    "idf.port": "/dev/ttyUSB0",
     "idf.pythonBinPath": "/home/t126401/espidf/.espidftools/python_env/idf5.4_py3.12_env/bin/python",
     "idf.toolsPath": "/home/t126401/espidf/.espidftools",
     "files.associations": {
@@ -36,5 +36,6 @@
         "cstdlib": "c",
         "text_encoding": "cpp",
         "stdio.h": "c"
-    }
+    },
+    "idf.flashType": "UART"
 }

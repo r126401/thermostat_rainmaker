@@ -36,6 +36,7 @@
 
 #include "thermostat_task.h"
 #include "local_events.h"
+#include "rgblcd.h"
 
 
 #define NAME_DEVICE "Thermostat"
@@ -224,7 +225,8 @@ void register_parameters(app_params *params)
 
 }
 
-void app_main()
+
+void init_app()
 {
 
     app_params params;
@@ -234,6 +236,7 @@ void app_main()
     /* Initialize Application specific hardware drivers and
      * set initial state.
      */
+    
     esp_rmaker_console_init();
     app_driver_init();
 
@@ -335,6 +338,18 @@ void app_main()
         abort();
     }
     
+    
     xTaskCreate(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL);
 
+    //xTaskCreate(init_lcdrgb, "Tarea rgb", 9125, (void*) NULL, 1, NULL);
+
+    //init_lcdrgb();
+
+    
+
+}
+
+void app_main() {
+
+    init_app();
 }

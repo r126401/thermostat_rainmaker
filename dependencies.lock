@@ -1,4 +1,18 @@
 dependencies:
+  atanisoft/esp_lcd_touch_xpt2046:
+    component_hash: 94c1d199922bc7468b5e14912ab0eb053a4a5a25680ce8a4ca2f4f18febbb01a
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    - name: espressif/esp_lcd_touch
+      registry_url: https://components.espressif.com
+      require: private
+      version: '>=1.0.4'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.5
   espressif/cbor:
     component_hash: 440f4ee4504841cc9b4f3a8ef755776a612ac9dace355514c68b999868f990ff
     dependencies:
@@ -68,6 +82,17 @@ dependencies:
       path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp-insights/components/esp_insights
       type: local
     version: 1.2.0
+  espressif/esp_lcd_touch:
+    component_hash: 779b4ba2464a3ae85681e4b860caa5fdc35801458c23f3039ee761bae7f442a4
+    dependencies:
+    - name: idf
+      registry_url: https://components.espressif.com
+      require: private
+      version: '>=4.4.2'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.1.2
   espressif/esp_rainmaker:
     dependencies:
     - name: espressif/mdns
@@ -208,6 +233,7 @@ dependencies:
       type: service
     version: 9.2.2
 direct_dependencies:
+- atanisoft/esp_lcd_touch_xpt2046
 - espressif/cbor
 - espressif/ds18b20
 - espressif/esp_diag_data_store
@@ -225,6 +251,6 @@ direct_dependencies:
 - espressif/rmaker_common
 - idf
 - lvgl/lvgl
-manifest_hash: 86025ff7a8660eacd720398f93dcf31ee916c9edfe8afb33d9b23b12a8f62a44
+manifest_hash: 31beb68dbe015e441b3b1911a9fe9df50cfdb5c1602c5552d5aa4605c130d199
 target: esp32s3
 version: 2.0.0

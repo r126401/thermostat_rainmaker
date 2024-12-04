@@ -9,6 +9,7 @@ extern lv_style_t style_buttons;
 extern lv_display_t * display;
 
 lv_style_t style_titles;
+extern lv_obj_t *screen_main_thermostat;
 
 
 
@@ -58,7 +59,8 @@ static void lv_event_handler_button_home(lv_event_t *event) {
      * Rutina de pulsado del boton home
      */
 
-    create_main_thermostat();
+    lv_screen_load(screen_main_thermostat);
+    //create_main_thermostat();
 
 
 
@@ -168,5 +170,12 @@ void create_factory_screen() {
         lv_obj_add_event_cb(button_home, lv_event_handler_button_home, LV_EVENT_CLICKED, NULL);
 
 
+}
+
+
+void lv_delete_init_thermostat() {
+
+	if (screen_init_thermostat != NULL)
+	lv_obj_del(screen_init_thermostat);
 }
 

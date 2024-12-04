@@ -19,6 +19,15 @@
 #include "lvgl.h"
 #include "lv_main_thermostat.h"
 
+#include "driver/spi_master.h"
+
+#include  "esp_lcd_touch_xpt2046.h"
+
+#define	I2C_HOST	0
+esp_lcd_touch_handle_t tp = NULL;
+static esp_timer_handle_t timer_backlight;
+
+
 static const char *TAG = "rgblcd";
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
@@ -253,4 +262,170 @@ void init_lcdrgb(void)
     //example_lvgl_demo_ui(display);
     create_main_thermostat(display);
     _lock_release(&lvgl_api_lock);
+
+    init_app_touch_xpt2046(display);
+    timing_backlight();
+}
+
+/*************************************************** driver touch ********************************************** */
+
+
+void lv_cancel_timing_backlight() {
+
+	if (esp_timer_is_active(timer_backlight)) {
+		ESP_LOGI(TAG, "se cancela temporizador");
+		esp_timer_stop(timer_backlight);
+	}
+
+
+}
+
+esp_err_t backlight_on() {
+
+
+    
+    if (gpio_get_level(CONFIG_PIN_NUM_BK_LIGHT) == 0) {
+		gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 1);
+		ESP_LOGE(TAG, "SE ENCIENDE LA PANTALLA");
+	} else {
+        lv_cancel_timing_backlight();
+	}
+    ESP_LOGW(TAG,"REINICIAMOS LA TEMPORIZACION PARA BACKLIGHT");
+    ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
+
+	return ESP_OK;
+}
+
+
+
+void backlight_off(void *arg) {
+
+
+
+ESP_LOGI(TAG, " TEMPORIZACION VENCIDA EN LA PANTALLA SIN TOCAR...");
+
+if (gpio_get_level(CONFIG_PIN_NUM_BK_LIGHT) == 1) {
+    gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 0);
+    ESP_LOGE(TAG, "PANTALLA APAGADA");
+    } else {
+        ESP_LOGE(TAG, "LA PANTALLA SIGUE ENCENDIDA");
+	}
+
+
+
+
+}
+
+
+void timing_backlight() {
+
+
+ESP_LOGI(TAG, "TEMPORIZADOR PARA LA PANTALLA");
+    const esp_timer_create_args_t backlight_shot_timer_args = {
+            .callback = &backlight_off,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "end schedule"
+    };
+
+
+
+	    ESP_ERROR_CHECK(esp_timer_create(&backlight_shot_timer_args, &timer_backlight));
+	    ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
+        ESP_LOGI(TAG, " TEMPORIZADOR PARA LA PANTALLA CREADO");
+
+}
+
+
+
+
+
+static void lvgl_touch_cb2(lv_indev_t * drv, lv_indev_data_t * data) {
+
+    uint16_t x[1];
+    uint16_t y[1];
+    uint16_t strength[1];
+    uint8_t count = 0;
+
+
+
+
+    // Update touch point data.
+   ESP_ERROR_CHECK(esp_lcd_touch_read_data(tp));
+
+    data->state = LV_INDEV_STATE_REL;
+
+    if (esp_lcd_touch_get_coordinates(tp, x, y, strength, &count, 1))
+    {
+        data->point.x = x[0];
+        data->point.y = y[0];
+        data->state = LV_INDEV_STATE_PR;
+        //ESP_LOGI(TAG, "XPT2046: x=%ud, y=%ud",data->point.x, data->point.y);
+        //backlight_on();
+
+    }
+
+    data->continue_reading = false;
+
+
+}
+
+
+
+
+void init_app_touch_xpt2046(lv_disp_t *display) {
+
+
+	// Inicializamos el bus
+
+    ESP_LOGI(TAG, "Initialize SPI bus");
+    spi_bus_config_t buscfg = {
+        .sclk_io_num = 12,
+        .mosi_io_num = 11,
+        .miso_io_num = 13,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = CONFIG_LCD_H_RES * 80 * sizeof(uint16_t),
+    };
+    ESP_ERROR_CHECK(spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO));
+
+
+	esp_lcd_panel_io_handle_t tp_io_handle = NULL;
+	esp_lcd_panel_io_spi_config_t tp_io_config = ESP_LCD_TOUCH_IO_SPI_XPT2046_CONFIG(38);
+    tp_io_config.spi_mode = 3;
+	ESP_ERROR_CHECK(esp_lcd_new_panel_io_spi((esp_lcd_spi_bus_handle_t)SPI2_HOST, &tp_io_config, &tp_io_handle));
+
+	    esp_lcd_touch_config_t tp_cfg = {
+	        .x_max = CONFIG_LCD_H_RES,
+	        .y_max = CONFIG_LCD_V_RES,
+	        .rst_gpio_num = -1,
+	        .int_gpio_num = 18,
+	        .flags = {
+	            .swap_xy = 0,
+	            .mirror_x = 0,
+	            .mirror_y = 0,
+	        },
+	    };
+
+	    ESP_LOGI(TAG, "Initialize touch controller XPT2046");
+	    ESP_ERROR_CHECK(esp_lcd_touch_new_spi_xpt2046(tp_io_handle, &tp_cfg, &tp));
+
+	    ESP_LOGE(TAG, "tp es nulo y no puede ser");
+
+        lv_indev_t * indev = lv_indev_create();
+        lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+        lv_indev_set_read_cb(indev, lvgl_touch_cb2);
+        
+/*
+	    static lv_indev_t indev_drv;    // Input device driver (Touch)
+	    lv_indev_drv_init(&indev_drv);
+	    indev_drv.type = LV_INDEV_TYPE_POINTER;
+	    indev_drv.disp = display;
+	    indev_drv.read_cb = lvgl_touch_cb2;
+	    indev_drv.user_data = tp;
+	    lv_indev_drv_register(&indev_drv);
+*/
+
+
+
+
 }

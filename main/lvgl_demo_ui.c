@@ -168,3 +168,5 @@ void example_lvgl_demo_ui(lv_display_t *disp)
     lv_anim_set_playback_duration(&a, 1800);
     lv_anim_start(&a);
 }
+
+

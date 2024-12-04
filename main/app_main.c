@@ -363,5 +363,5 @@ void app_main() {
     //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, NULL, 4, NULL, 1);
     init_lcdrgb();
 
-   init_app();
+   //init_app();
 }

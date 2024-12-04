@@ -10,6 +10,9 @@ const char* TAG = "lvgl_demo";
 
 #include "lvgl.h"
 
+
+
+
 static lv_style_t style_bullet;
 static lv_obj_t *scale1;
 static const lv_font_t *font_normal = &lv_font_montserrat_14;

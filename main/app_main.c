@@ -237,9 +237,13 @@ void init_app()
      * set initial state.
      */
     
+//init_lcdrgb();
+
+
     esp_rmaker_console_init();
     app_driver_init();
 
+    ESP_LOGE(TAG, "PASO 1");
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
@@ -252,6 +256,8 @@ void init_app()
     /* Initialize Wi-Fi. Note that, this should be called before esp_rmaker_node_init()
      */
     app_network_init();
+
+    ESP_LOGE(TAG, "PASO 2");
 
     /* Register an event handler to catch RainMaker events */
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
@@ -273,7 +279,7 @@ void init_app()
         abort();
     }
 
-
+    ESP_LOGE(TAG, "PASO 3");
 
     /* Create a Thermotat device.
      * You can optionally use the helper API esp_rmaker_thermostat_device_create() to
@@ -294,7 +300,7 @@ void init_app()
      */
     esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);  
 
-    
+    ESP_LOGE(TAG, "PASO 4");
 
     
     /* Add this switch device to the node */
@@ -319,7 +325,7 @@ void init_app()
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
 
-
+    ESP_LOGE(TAG, "PASO 5");
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
 
@@ -330,6 +336,8 @@ void init_app()
      * after a connection has been successfully established
      */
 
+    ESP_LOGE(TAG, "PASO 6");
+
 
     err = app_network_start(POP_TYPE_RANDOM);
     if (err != ESP_OK) {
@@ -338,12 +346,13 @@ void init_app()
         abort();
     }
     
-    
+ESP_LOGE(TAG, "PASO 7");
     xTaskCreate(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL);
 
-    //xTaskCreate(init_lcdrgb, "Tarea rgb", 9125, (void*) NULL, 1, NULL);
 
-    //init_lcdrgb();
+    //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, (void*) NULL, 1, NULL);
+
+    
 
     
 
@@ -351,5 +360,8 @@ void init_app()
 
 void app_main() {
 
-    init_app();
+    //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, NULL, 4, NULL, 1);
+    init_lcdrgb();
+
+   init_app();
 }

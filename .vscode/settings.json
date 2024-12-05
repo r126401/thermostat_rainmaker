@@ -35,7 +35,11 @@
         "random": "c",
         "cstdlib": "c",
         "text_encoding": "cpp",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "esp_log.h": "c",
+        "app_insights.h": "c",
+        "lv_main_thermostat.h": "c",
+        "lv_styles_thermostat.h": "c"
     },
     "idf.flashType": "UART"
 }

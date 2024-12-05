@@ -76,3 +76,8 @@ typedef struct app_params
 
 
 } app_params;
+
+void update_time_valid(bool timevalid);
+void time_refresh(void *arg);
+void reset_device();
+void factory_reset_device();

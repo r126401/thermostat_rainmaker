@@ -14,6 +14,10 @@
 #include <esp_log.h>
 #include <esp_event.h>
 #include <nvs_flash.h>
+#include <esp_sntp.h>
+#include <esp_timer.h>
+#include <esp_err.h>
+
 
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_standard_types.h>
@@ -23,6 +27,9 @@
 #include <esp_rmaker_scenes.h>
 #include <esp_rmaker_console.h>
 #include <esp_rmaker_ota.h>
+#include <esp_rmaker_utils.h>
+
+
 
 #include <esp_rmaker_common_events.h>
 
@@ -37,21 +44,31 @@
 #include "thermostat_task.h"
 #include "local_events.h"
 #include "rgblcd.h"
+#include "lv_main_thermostat.h"
+#include "lv_factory_thermostat.h"
 
 
 #define NAME_DEVICE "Thermostat"
 
 static const char *TAG = "app_main";
 esp_rmaker_device_t *thermostat_device;
+static esp_timer_handle_t timer_date_text;
 
 
+const esp_timer_create_args_t text_date_shot_timer_args = {
+    .callback = &time_refresh,
+    /* name is optional, but may help identify the timer when debugging */
+    .name = "time refresh date text"
+};
+
+char *text_qrcode;
 
 /* Event handler for catching RainMaker events */
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
 {
 
-    ESP_LOGW(TAG, "RECIBIDO EVENTO %s", event_base);
+    ESP_LOGW(TAG, "RECIBIDO EVENTO %s, EVENTID %d ", event_base, (int) event_id);
     
     if (event_base == RMAKER_EVENT) {
         switch (event_id) {
@@ -60,6 +77,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_CLAIM_STARTED:
                 ESP_LOGI(TAG, "RainMaker Claim Started.");
+                lv_qrcode_confirmed();
                 break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
                 ESP_LOGI(TAG, "RainMaker Claim Successful.");
@@ -69,6 +87,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
+                lv_qrcode_confirmed();
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STOPPED:
                 ESP_LOGI(TAG, "Local Control Stopped.");
@@ -92,9 +111,11 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_MQTT_EVENT_CONNECTED:
                 ESP_LOGI(TAG, "MQTT Connected.");
+                lv_update_broker_status(true);
                 break;
             case RMAKER_MQTT_EVENT_DISCONNECTED:
                 ESP_LOGI(TAG, "MQTT Disconnected.");
+                lv_update_broker_status(false);
                 break;
             case RMAKER_MQTT_EVENT_PUBLISHED:
                 ESP_LOGI(TAG, "MQTT Published. Msg id: %d.", *((int *)event_data));
@@ -107,6 +128,12 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         switch (event_id) {
             case APP_NETWORK_EVENT_QR_DISPLAY:
                 ESP_LOGI(TAG, "Provisioning QR : %s", (char *)event_data);
+                if (text_qrcode == NULL) {
+                    text_qrcode = (char*) calloc(strlen(event_data) + 1, sizeof(char));
+                }
+                create_instalation_button();
+                strncpy(text_qrcode, event_data, strlen(event_data));
+
                 break;
             case APP_NETWORK_EVENT_PROV_TIMEOUT:
                 ESP_LOGI(TAG, "Provisioning Timed Out. Please reboot.");
@@ -149,6 +176,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
         ESP_LOGW(TAG, "Invalid event received!");
     }
 }
+
 
 
 void register_parameters(app_params *params) 
@@ -264,7 +292,10 @@ void init_app()
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_COMMON_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(APP_NETWORK_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_OTA_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+    
 
+    
+ 
 
     /* Initialize the ESP RainMaker Agent.
      * Note that this should be called after app_network_init() but before app_nenetworkk_start()
@@ -344,24 +375,175 @@ void init_app()
         ESP_LOGE(TAG, "Could not start Wifi. Aborting!!!");
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
+    } else {
+        lv_update_wifi_status(true);
+        
     }
     
 ESP_LOGE(TAG, "PASO 7");
-    xTaskCreate(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL);
+    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL, 1);
 
 
     //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, (void*) NULL, 1, NULL);
 
-    
+    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 4, NULL,1);
+   
 
     
 
 }
 
+
+char* get_date_now() {
+
+	static char fecha_actual[6] = {0};
+
+	time_t now;
+	struct tm fecha;
+	//ESP_LOGI(TAG, ""TRAZAR"ACTUALIZAR_HORA", INFOTRAZA);
+    time(&now);
+    localtime_r(&now, &fecha);
+
+
+	sprintf(fecha_actual, "%02d:%02d",fecha.tm_min,fecha.tm_sec);
+
+	return fecha_actual;
+
+}
+
+static bool get_current_date(uint32_t *hour, uint32_t *min, uint32_t *sec) {
+
+    time_t now;
+	struct tm fecha;
+    time(&now);
+    localtime_r(&now, &fecha);
+
+    *hour = fecha.tm_hour;
+    *min = fecha.tm_min;
+    *sec = fecha.tm_sec;
+
+    return true;
+
+
+}
+
+void time_refresh(void *arg) {
+
+    uint32_t hour;
+    uint32_t min;
+    uint32_t sec;
+    uint32_t interval;
+    
+    
+    if (esp_sntp_get_sync_status() == SNTP_SYNC_STATUS_IN_PROGRESS) {
+        lv_update_time(-1, -1);
+        ESP_LOGI(TAG, "Hora invalida");
+        interval = 60;
+    } else {
+        get_current_date(&hour, &min, &sec);
+        lv_update_time(hour, min);
+        interval = 60 - sec;
+        ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
+    }
+    ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (interval * 1000000)));
+
+
+
+}
+
+
+
+
+void update_time_valid(bool timevalid) {
+
+
+    uint32_t hour;
+    uint32_t min;
+    uint32_t sec;
+    uint32_t resto = 0;
+    static bool sync = false;
+
+    if (timevalid) {
+        get_current_date(&hour, &min, &sec);
+
+        if (!sync) {
+            ESP_ERROR_CHECK(esp_timer_create(&text_date_shot_timer_args, &timer_date_text));
+            resto = 60 - sec;
+            ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (resto * 1000000)));
+            ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. Proximo intervalo :%d segundos", (int) hour, (int) min, (int) resto);
+
+            sync = true;
+            lv_update_time(hour, min);
+        } 
+
+    } else {
+        lv_update_time(-1, -1);
+    }
+
+
+
+
+}
+
+void event_handler_sync (struct timeval *tv) {
+
+    ESP_LOGE(TAG, "Evento de sincronizacion");
+
+    sntp_sync_status_t sync_status = sntp_get_sync_status();
+
+
+   ESP_LOGE(TAG, "SYNSTATUS ES %d", sync_status);
+
+   switch (sync_status) {
+
+    case SNTP_SYNC_STATUS_RESET:
+        ESP_LOGW(TAG, "La sincronizacion esta en estado reset");
+        break;
+
+    case SNTP_SYNC_STATUS_COMPLETED:
+        ESP_LOGI(TAG, "La sincronizacion esta completada");
+        update_time_valid(true);
+        break;
+
+
+    case SNTP_SYNC_STATUS_IN_PROGRESS:  
+        ESP_LOGE(TAG, "La sincronizacion esta en progreso");
+        update_time_valid(false);
+
+
+    break; // Smooth time sync in progress.
+    
+   }
+
+}
+
+
+
+
 void app_main() {
 
     //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, NULL, 4, NULL, 1);
+    //xTaskCreate(init_lcdrgb, "init_lcdrgb", CONFIG_RESOURCE_APP_TASK, (void*) NULL, 4, NULL);
     init_lcdrgb();
+   init_app();
+   sntp_sync_status_t sync_status = sntp_get_sync_status();
+   ESP_LOGE(TAG, "SYNSTATUS ES %d", sync_status);
+   sntp_set_time_sync_notification_cb(event_handler_sync);
 
-   //init_app();
+   
+}
+
+
+void reset_device() {
+
+    esp_restart();
+
+
+
+}
+
+
+void factory_reset_device() {
+
+    esp_rmaker_factory_reset(0,0);
 }

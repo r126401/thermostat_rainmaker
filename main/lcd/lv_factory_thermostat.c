@@ -1,9 +1,13 @@
 #include "lvgl.h"
 #include <string.h>
+#include <esp_log.h>
 
 #include "lv_factory_thermostat.h"
 #include "lv_main_thermostat.h"
 #include "lv_styles_thermostat.h"
+
+#include <esp_rmaker_core.h>
+#include <esp_rmaker_utils.h>
 
 extern lv_style_t style_buttons;
 extern lv_display_t * display;
@@ -23,8 +27,8 @@ lv_obj_t *label_button_home;
 lv_obj_t *qr;
 lv_obj_t *title_aplication;
 
-extern char *text_qrcode;;
-
+extern char *text_qrcode;
+static const char *TAG = "lv_factory_thermostat";
 
 
 
@@ -48,6 +52,9 @@ static void lv_event_handler_button_reset(lv_event_t *event) {
     /**
      * Rutina de pulsado del boton reset
      */
+
+    esp_rmaker_factory_reset(0, 0);
+    
 
 
 
@@ -83,11 +90,12 @@ lv_qrcode_set_size(qr, qr_size);
 // Posición en pantalla (opcional)
 lv_obj_align(qr, LV_ALIGN_CENTER, 0, 0);
 
-// Texto o URL que deseas codificar
-const char *data = qrcode;
+ESP_LOGI(TAG, "qrcode:%s", qrcode);
 
 // Actualizar el QR code con el contenido
-lv_qrcode_update(qr, data, strlen(data));
+lv_qrcode_update(qr, qrcode, strlen(qrcode));
+//free(qrcode);
+//qrcode = NULL;
 
 
 }
@@ -137,7 +145,7 @@ void create_factory_screen() {
         lv_obj_set_pos(button_reset, lv_pct(10), lv_pct(40));
         lv_obj_add_event_cb(button_reset, lv_event_handler_button_reset, LV_EVENT_CLICKED, NULL);
 
-        paint_qr_code("https://www.rapidtables.com/web/color/RGB_Color.html");
+        paint_qr_code(text_qrcode);
 
 
         /**
@@ -168,6 +176,7 @@ void create_factory_screen() {
         lv_obj_set_pos(button_home, lv_pct(80), lv_pct(40));
         lv_obj_add_flag(button_home, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(button_home, lv_event_handler_button_home, LV_EVENT_CLICKED, NULL);
+    
 
 
 }
@@ -179,3 +188,8 @@ void lv_delete_init_thermostat() {
 	lv_obj_del(screen_init_thermostat);
 }
 
+void lv_qrcode_confirmed() {
+    //lv_obj_del(screen_init_thermostat);
+    lv_screen_load(screen_main_thermostat);
+
+}

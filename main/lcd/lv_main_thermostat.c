@@ -5,6 +5,9 @@
 #include <string.h>
 #include "strings.h"
 #include <stdio.h>
+#include <esp_sntp.h>
+#include "esp_log.h"
+#include "app_priv.h"
 
 //#define CONFIG_LCD_H_RES 480
 //#define CONFIG_LCD_V_RES 272
@@ -53,13 +56,15 @@ lv_obj_t *icon_warning;
 lv_obj_t *icon_instalation;
 
 
+
 lv_obj_t *label_text_mode;
 lv_obj_t * label_mode;
 lv_obj_t *label_percent;
 bool pulse = false;
 lv_timer_t *mytimer;
 
-char *text_qrcode;
+extern char *text_qrcode;
+static const char *TAG = "lv_main_thermostat";
 
 
 
@@ -80,6 +85,7 @@ float incdec = 0.5;
 
 
 extern lv_display_t * display;
+
 
 
 
@@ -459,6 +465,26 @@ static void create_layout_buttons_threshold() {
 
 }
 
+static void event_handler_button_main_reset(lv_event_t *event) {
+
+    /**
+     * Rutina para tratar el reset del dispositivo
+     */
+
+    reset_device();
+  
+}
+
+
+static void event_handler_button_factory_reset(lv_event_t *event) {
+
+    /**
+     * Rutina para tratar el reset del dispositivo
+     */
+
+    factory_reset_device();
+  
+}
 
 static void create_button_reset() {
 
@@ -472,7 +498,8 @@ static void create_button_reset() {
     lv_obj_set_size(button_main_reset, 40, 40);
     lv_obj_set_style_text_font(label_main_reset, &lv_font_montserrat_20, LV_PART_MAIN);
     lv_obj_center(label_main_reset);
-
+    lv_obj_add_event_cb(button_main_reset, event_handler_button_main_reset, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(button_main_reset, event_handler_button_factory_reset, LV_EVENT_LONG_PRESSED, NULL);
 
 
 
@@ -599,9 +626,16 @@ void create_main_thermostat() {
 	//lv_example_button_2();
 	create_layout_buttons_threshold();
 	create_button_reset();
+    create_warning_icon();
+    lv_update_time(-1,-1);
+    lv_update_wifi_status(false);
+    lv_update_broker_status(false);
+
+/*
+
     create_layout_schedule();
     create_label_text_mode();
-    create_warning_icon();
+    
     create_instalation_button();
 
 
@@ -617,7 +651,7 @@ void create_main_thermostat() {
     lv_update_schedule(0, 100, 75);
     lv_update_text_schedule(0, 100);
     lv_update_percent(87);
-    
+  */  
    
 
 
@@ -705,12 +739,17 @@ void lv_update_broker_status(bool status) {
 
 void lv_update_heating(bool status) {
 
-    if (status == true) {
+    return;
+    if (icon_heating != NULL) {
+        if (status == true) {
 
-        lv_obj_add_flag(icon_heating, LV_OBJ_FLAG_HIDDEN);
-    } else {
-        lv_obj_clear_flag(icon_heating, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(icon_heating, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(icon_heating, LV_OBJ_FLAG_HIDDEN);
+        }
+
     }
+
 }
 
 void lv_update_threshold_temperature(float threshold) {
@@ -755,5 +794,14 @@ void lv_update_percent(int cursor) {
     if (!lv_obj_has_flag(label_percent, LV_OBJ_FLAG_HIDDEN)) {
         lv_label_set_text_fmt(label_percent, "%d%%", cursor);
     }
+}
+
+
+
+void lv_update_valid_time(bool timevalid) {
+
+
+
+
 }
 

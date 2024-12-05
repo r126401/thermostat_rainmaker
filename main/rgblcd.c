@@ -63,7 +63,7 @@ static const char *TAG = "rgblcd";
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define EXAMPLE_LVGL_DRAW_BUF_LINES    50 // number of display lines in each draw buffer
-#define EXAMPLE_LVGL_TICK_PERIOD_MS    2
+#define EXAMPLE_LVGL_TICK_PERIOD_MS    20
 #define EXAMPLE_LVGL_TASK_STACK_SIZE   (5 * 1024)
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
 
@@ -254,7 +254,7 @@ void init_lcdrgb(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
     ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+    xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL,1);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
@@ -264,7 +264,10 @@ void init_lcdrgb(void)
     _lock_release(&lvgl_api_lock);
 
     init_app_touch_xpt2046(display);
-    timing_backlight();
+    //timing_backlight();
+
+
+
 }
 
 /*************************************************** driver touch ********************************************** */

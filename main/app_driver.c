@@ -16,6 +16,7 @@
 #include <app_reset.h>
 #include "app_priv.h"
 #include "esp_log.h"
+#include "lv_main_thermostat.h"
 
 static const char *TAG = "app_driver";
 
@@ -113,6 +114,7 @@ enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 			}
 	}
 
+    lv_update_heating(op);
 
 	return gpio_get_level(CONFIG_RELAY_GPIO);
 }

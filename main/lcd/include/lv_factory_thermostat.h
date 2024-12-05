@@ -7,3 +7,4 @@
 
 void create_factory_screen();
 void lv_delete_init_thermostat();
+void lv_qrcode_confirmed();

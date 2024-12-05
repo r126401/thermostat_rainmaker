@@ -12,6 +12,7 @@
 #include "ds18b20.h"
 #include <freertos/FreeRTOS.h>
 #include "driver/gpio.h"
+#include "lv_main_thermostat.h"
 
 
 static const char *TAG = "thermostat_task";
@@ -117,7 +118,7 @@ char* write_date() {
 
 
 
-
+#define DEFAULT_THRESHOLD 21.0
 
 
 
@@ -128,10 +129,27 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 	esp_rmaker_param_t *param;
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, MARGIN_TEMPERATURE);
-	margin_temperature = esp_rmaker_param_get_val(param)->val.f;
+	if (param != NULL) {
+		margin_temperature = esp_rmaker_param_get_val(param)->val.f;
+	} else {
+		margin_temperature = 0.5;
+		ESP_LOGW(TAG, "rmaker no activo. Se introduce el valor por defecto para el margen de temperatura");
+	}
+	
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
-	threshold_temperature = esp_rmaker_param_get_val(param)->val.f;
+	if (param!= NULL) {
+		
+		threshold_temperature = esp_rmaker_param_get_val(param)->val.f;
+	} else {
+		ESP_LOGW(TAG, "rmaker no activo. Se introduce el valor por defecto para el threshold");
+		threshold_temperature = DEFAULT_THRESHOLD;
+
+	}
+
+	lv_update_threshold_temperature(threshold_temperature);
+	ESP_LOGI(TAG, "THRESHOLD : %.1f", threshold_temperature);
+	
 
     if (gpio_get_level(CONFIG_RELAY_GPIO) == OFF) {
                if (current_temperature <= (threshold_temperature - margin_temperature)) {
@@ -170,15 +188,22 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 	ESP_LOGI(TAG, "Estamos en thermostat_action");
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-	if (strcmp(esp_rmaker_param_get_val(param)->val.s, AUTO) == 0) {
+	if (param != NULL) {
 
-		ESP_LOGW(TAG, "No se hace nada ya que tenemos el termostato en modo manual");
-		return NINGUNA_ACCION;
+		if (strcmp(esp_rmaker_param_get_val(param)->val.s, AUTO) == 0) {
 
+			ESP_LOGW(TAG, "No se hace nada ya que tenemos el termostato en modo manual");
+			return NINGUNA_ACCION;
+
+		}
+
+		param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+		temperature = esp_rmaker_param_get_val(param)->val.f;
+
+
+	} else {
+		temperature = current_temperature;
 	}
-
-	param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
-	temperature = esp_rmaker_param_get_val(param)->val.f;
 
 
 //	if (current_temperature != temperature) {
@@ -247,32 +272,37 @@ float redondear_temperatura(float temperatura) {
 
 
 
-esp_err_t reading_local_temperature() {
+esp_err_t reading_local_temperature(float *current_temperature) {
 
     esp_err_t error = ESP_FAIL;
 	float temperatura_a_redondear;
-	float current_temperature;
+	//float current_temperature;
 	float calibrate;
 	esp_rmaker_param_t *param;
 
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, CALIBRATE);
-	calibrate = esp_rmaker_param_get_val(param)->val.f;
+	if (param != NULL) {
+		calibrate = esp_rmaker_param_get_val(param)->val.f;
 
-	param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+	} else {
+		calibrate = -3.5;
+		ESP_LOGW(TAG, "rmaker no activo. Se introduce el valor por defecto de calibrate");
+	}
+	
+
 
 
     ESP_LOGI(TAG, ""TRAZAR" Leyendo desde el sensor. Calibrado: %.2f", INFOTRAZA, calibrate);
 
 
-	error = read_temperature(&current_temperature);
+	error = read_temperature(current_temperature);
 	if (error == ESP_OK) {
 		ESP_LOGI(TAG, ""TRAZAR" Lectura local correcta!. ", INFOTRAZA);
-		temperatura_a_redondear = current_temperature + calibrate;
-		current_temperature = redondear_temperatura(temperatura_a_redondear);
-		thermostat_action(current_temperature);
-		esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));
-		ESP_LOGI(TAG, "Actualizada y enviada la temperatura actualizada: %.2f", current_temperature);
+		temperatura_a_redondear = *current_temperature + calibrate;
+		*current_temperature = redondear_temperatura(temperatura_a_redondear);
+		thermostat_action(*current_temperature);
+		ESP_LOGI(TAG, "Actualizada y enviada la temperatura actualizada: %.2f", *current_temperature);
 	} else {
 		ESP_LOGE(TAG, ""TRAZAR" Error al leer desde el sensor de temperatura", INFOTRAZA);
 	}
@@ -298,6 +328,11 @@ void task_iotThermostat()
 	esp_rmaker_param_t *param;
 	char* id_sensor;
 	static uint8_t n_errors = 0;
+	float current_temperature;
+
+
+	
+
 
 
 
@@ -313,9 +348,21 @@ void task_iotThermostat()
     while(1) {
 
 		param = esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL);
-		value = esp_rmaker_param_get_val(param)->val.i;
+		if (param != NULL) {
+			value = esp_rmaker_param_get_val(param)->val.i;
+
+		} else {
+			ESP_LOGW(TAG, "Rmaker no activo, read_interval se pone por defecto a 60sg");
+			value = 60;
+		}
 		param = esp_rmaker_device_get_param_by_name(thermostat_device, ID_SENSOR);
-		id_sensor = esp_rmaker_param_get_val(param)->val.s;
+		if (param != NULL) {
+			id_sensor = esp_rmaker_param_get_val(param)->val.s;
+		} else {
+			id_sensor = NULSENSOR;
+			ESP_LOGW(TAG, "Rmaker no activo, id sensor se pone a Null para la lectura en local");
+		}
+		
 
 		ESP_LOGI(TAG, "Intervalo lectura: %d, id_sensor: %s", value, id_sensor);
 
@@ -324,7 +371,18 @@ void task_iotThermostat()
 		if (strcmp(id_sensor, NULSENSOR) == 0) {
 
 			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en local", INFOTRAZA);
-			error = reading_local_temperature();
+			error = reading_local_temperature(&current_temperature);
+			if (error == ESP_OK) {
+				lv_update_temperature(current_temperature);
+				param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+				if (param != NULL) {
+					esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));
+				} else {
+					ESP_LOGW(TAG, "Rmaker no activo, No se reporta el valor de la temperatura");
+				}
+				
+
+			}
 
 			
 

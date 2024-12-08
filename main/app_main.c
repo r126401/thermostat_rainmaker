@@ -559,7 +559,7 @@ void event_handler_sync (struct timeval *tv) {
 
 void app_main() {
 
-    //create_event_task();
+    create_event_app_task();
     init_lcdrgb();
     xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
     init_app();

@@ -46,5 +46,21 @@ typedef struct event_lcd_t {
 }event_lcd_t;
 
 
+
+typedef enum EVENT_APP {
+
+    EVENT_APP_UP_THRESHOLD,
+    EVENT_APP_DOWN_THRESHOLD,
+    EVENT_APP_SETPOINT_THRESHOLD
+}EVENT_APP;
+
+typedef struct event_app_t {
+
+    float value;
+    EVENT_APP event_app;
+} event_app_t;
+
 void send_event(event_lcd_t event);
-void receive_event(event_lcd_t event);
+void create_event_app_task();
+void send_event_app(event_app_t event);
+char* event2mnemonic(EVENT_TYPE_LCD type_lcd);

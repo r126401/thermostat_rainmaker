@@ -1,4 +1,4 @@
-/*
+
 
 #include "events_app.h"
 #include <freertos/FreeRTOS.h>
@@ -10,7 +10,7 @@
 #include "lv_main_thermostat.h"
 #include "lv_factory_thermostat.h"
 
-extern xQueueHandle event_queue;
+xQueueHandle event_queue_app;
 static const char *TAG = "events_app";
 
 
@@ -18,9 +18,10 @@ static const char *TAG = "events_app";
 #include "strings.h"
 #include <stdio.h>
 
+
 char* event2mnemonic(EVENT_TYPE_LCD type_lcd) {
 
-    static char mnemonic[50];
+    static char mnemonic[31];
     switch (type_lcd) 
     {
 
@@ -100,116 +101,71 @@ char* event2mnemonic(EVENT_TYPE_LCD type_lcd) {
         return mnemonic;
 }
 
+char* event_app_2mnemonic(EVENT_APP type) {
 
+    static char mnemonic[30];
+    switch (type) 
+    {
 
-void receive_event(event_lcd_t event) {
-
-
-    //ESP_LOGW(TAG, "Recibido evento de tipo %s, %ld %ld %ld %d %s %.1f", event2mnemonic(event.event_type), event.par1, event.par2, event.par3, event.status, event.text, event.value);
-    ESP_LOGE(TAG, "Recibido evento %s", event2mnemonic(event.event_type));
-    switch (event.event_type) {
-
-        case UPDATE_TIME:
-        lv_update_time(event.par1, event.par2);
-
+        case EVENT_APP_UP_THRESHOLD:
+        strncpy(mnemonic, "EVENT_APP_UP_THRESHOLD", 30);
         break;
 
-        case UPDATE_TEXT_MODE:
-
-        lv_update_text_mode(event.text);
-
+        case EVENT_APP_DOWN_THRESHOLD:
+        strncpy(mnemonic, "EVENT_APP_DOWN_THRESHOLD", 30);
         break;
 
-        case UPDATE_LABEL_MODE:
-
-        lv_update_label_mode(event.text);
-
-        break;
-
-        case UPDATE_TEMPERATURE:
-
-        lv_update_temperature(event.value);
-
-        break;
-
-        case UPDATE_WIFI_STATUS:
-
-        lv_update_wifi_status(event.status);
-
-        break;
-
-        case UPDATE_BROKER_STATUS:
-        ESP_LOGE(TAG, "BROKER STATUS");
-        lv_update_broker_status(event.status);
-
-        break;
-
-        case UPDATE_HEATING:
-
-        lv_update_heating(event.status);
-
-        break;
-
-        case UPDATE_THRESHOLD_TEMPERATURE:
-
-        lv_update_threshold_temperature(event.value);
-
-        break;
-
-        case UPDATE_SCHEDULE:
-
-        lv_update_schedule(event.par1, event.par2, event.par3);
-
-        break;
-
-        case UPDATE_ICON_ERRORS:
-
-        lv_update_icon_errors(event.status);
-
-        break;
-
-        case UPDATE_TEXT_SCHEDULE:
-        lv_update_text_schedule(event.par1, event.par2);
-
-        break;
-
-        case UPDATE_PERCENT:
-
-        lv_update_percent(event.par1);
-        
-        break;
-
-        case QR_CONFIRMED:
-
-        lv_qrcode_confirmed();
-        break;
-
-
-
-        default:
-
-        ESP_LOGE(TAG, "COMANDO NO IMPLEMENTADO EN LCD");
-
-        break;
-
+        case EVENT_APP_SETPOINT_THRESHOLD:
+        strncpy(mnemonic, "EVENT_APP_SETPOINT_THRESHOLD", 30);
     }
 
+
+        return mnemonic;
+}
+
+
+
+void receive_event_app(event_app_t event) {
+
+
+    switch (event.event_app) 
+    {
+
+        case EVENT_APP_UP_THRESHOLD:
+
+        ESP_LOGI(TAG, "Recibido evento threshold up");
+
+        break;
+
+        case EVENT_APP_DOWN_THRESHOLD:
+
+        ESP_LOGI(TAG, "Recibido evento threshold down");
+
+        break;
+
+        case EVENT_APP_SETPOINT_THRESHOLD:
+
+        ESP_LOGI(TAG, "Recibido evento EVENT_APP_SETPOINT_THRESHOLD. Threshold = %.1f", event.value); 
+        break;
+
+
+    }
 
 }
 
 
-void event_task(void *arg) {
+void event_app_task(void *arg) {
 
-	event_lcd_t event;
+	event_app_t event;
 
 
-	event_queue = xQueueCreate(1, sizeof(event_lcd_t));
+	event_queue_app = xQueueCreate(5, sizeof(event_app_t));
 
 	for(;;) {
-		ESP_LOGI(TAG, "ESPERANDO EVENTO...Memoria libre: %d", (int) esp_get_free_heap_size());
-		if (xQueueReceive(event_queue, &event,  portMAX_DELAY) == pdTRUE) {
+		ESP_LOGI(TAG, "ESPERANDO EVENTO DE APLICACION...Memoria libre: %d", (int) esp_get_free_heap_size());
+		if (xQueueReceive(event_queue_app, &event,  portMAX_DELAY) == pdTRUE) {
 
-			receive_event(event);
+			receive_event_app(event);
 
 
 		} else {
@@ -222,25 +178,26 @@ void event_task(void *arg) {
 
 }
 
-void create_event_task() {
+void create_event_app_task() {
 
 
 
-	xTaskCreatePinnedToCore(event_task, "event_task", 1024*4, NULL, 2, NULL,0);
-	ESP_LOGW(TAG, "TAREA DE EVENTOS DE LCD CREADA");
+	xTaskCreatePinnedToCore(event_app_task, "event_app_task", 1024*4, NULL, 2, NULL,0);
+	ESP_LOGW(TAG, "TAREA DE EVENTOS DE APLICACION CREADA CREADA");
 
 
 }
 
 
-void send_event(event_lcd_t event) {
+void send_event_app(event_app_t event) {
 
 
-	ESP_LOGW(TAG, " envio de evento lcd %s", event2mnemonic(event.event_type));
-	if ( xQueueSend(event_queue, &event,portMAX_DELAY) != pdPASS) {
+	ESP_LOGW(TAG, " envio de evento lcd %s", event_app_2mnemonic(event.event_app));
+	if ( xQueueSend(event_queue_app, &event, portMAX_DELAY) != pdPASS) {
 		ESP_LOGE(TAG, "no se ha podido enviar el evento");
 
 	}
 
 }
-*/
+
+

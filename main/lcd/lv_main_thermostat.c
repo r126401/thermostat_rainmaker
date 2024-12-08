@@ -8,6 +8,7 @@
 #include <esp_sntp.h>
 #include "esp_log.h"
 #include "app_priv.h"
+#include "events_app.h"
 
 //#define CONFIG_LCD_H_RES 480
 //#define CONFIG_LCD_V_RES 272
@@ -204,6 +205,15 @@ static void create_heating_icon() {
 
 void timer_cb(lv_timer_t *timer) {
 
+    
+    event_app_t event;
+    float *threshold = lv_timer_get_user_data(timer);
+    ESP_LOGI(TAG, "THRESHOLD VALE, %.1f", *threshold);
+    event.event_app = EVENT_APP_SETPOINT_THRESHOLD;
+    event.value = *threshold;
+
+    send_event_app(event);
+    
     lv_obj_set_style_text_color(text_threshold, lv_color_hex(LV_COLOR_TEXT_NOTIFICATION), LV_PART_MAIN);
     pulse = false;
 
@@ -217,7 +227,7 @@ static void lv_event_handler_button_up(lv_event_t *event) {
      */
     
     char *data;
-    float threshold;
+    static float threshold;
     
 
     data = (char*) lv_label_get_text(text_threshold);
@@ -235,8 +245,12 @@ static void lv_event_handler_button_up(lv_event_t *event) {
         lv_timer_delete(mytimer);
         mytimer = NULL;
     }
-    mytimer = lv_timer_create(timer_cb, 3000, NULL);
+    
+    mytimer = lv_timer_create(timer_cb, 3000, &threshold);
     lv_timer_set_repeat_count(mytimer, 1);
+    
+
+
     
     
 }
@@ -266,7 +280,7 @@ static void lv_event_handler_button_down(lv_event_t *event) {
      * Rutina de pulsado del boton down
      */
     char *data;
-    float threshold;
+    static float threshold;
 
     data = (char*) lv_label_get_text(text_threshold);
     sscanf(data, "%f", &threshold);
@@ -282,7 +296,8 @@ static void lv_event_handler_button_down(lv_event_t *event) {
         lv_timer_delete(mytimer);
         mytimer = NULL;
     }
-    mytimer = lv_timer_create(timer_cb, 3000, NULL);
+    
+    mytimer = lv_timer_create(timer_cb, 3000, &threshold);
     lv_timer_set_repeat_count(mytimer, 1);
 
 

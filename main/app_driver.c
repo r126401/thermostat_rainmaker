@@ -29,7 +29,7 @@ static const char *TAG = "app_driver";
 /* This is the GPIO on which the power will be set */
 #define OUTPUT_GPIO    CONFIG_EXAMPLE_OUTPUT_GPIO
 static bool g_power_state = DEFAULT_POWER;
-#define GPIO_OUTPUT_PIN_SEL  (1ULL<<CONFIG_SENSOR_THERMOSTAT_GPIO) || (1ULL<<CONFIG_RELAY_GPIO) || (1ULL<<CONFIG_PIN_NUM_BK_LIGHT)
+#define GPIO_OUTPUT_PIN_SEL  (1ULL<<CONFIG_SENSOR_THERMOSTAT_GPIO) || (1ULL<< CONFIG_RELAY_GPIO)
 #define GPIO_INPUT_PIN_SEL  (1ULL<<CONFIG_RELAY_GPIO) || (1ULL<<CONFIG_PIN_NUM_BK_LIGHT)
 /* These values correspoind to H,S,V = 120,100,10 */
 #define DEFAULT_RED     0

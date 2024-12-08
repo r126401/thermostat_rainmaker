@@ -28,6 +28,7 @@
 #include <freertos/task.h>
 #include <freertos/queue.h>
 
+
 #define	I2C_HOST	0
 esp_lcd_touch_handle_t tp = NULL;
 static esp_timer_handle_t timer_backlight;
@@ -41,10 +42,10 @@ static const char *TAG = "rgblcd";
 // Refresh Rate = 18000000/(1+40+20+800)/(1+10+5+480) = 42Hz
 #define LCD_H_RES              480
 #define LCD_V_RES              272
-#define LCD_HSYNC              1
+#define LCD_HSYNC              0
 #define LCD_HBP                40
 #define LCD_HFP                20
-#define LCD_VSYNC              1
+#define LCD_VSYNC              0
 #define LCD_VBP                10
 #define LCD_VFP                5
 
@@ -80,89 +81,6 @@ static _lock_t lvgl_api_lock;
 lv_display_t *display;
 
 /********************************************************************************* */
-
-char* event2mnemonic(EVENT_TYPE_LCD type_lcd) {
-
-    static char mnemonic[50];
-    switch (type_lcd) 
-    {
-
-        case UPDATE_TIME:
-        strncpy(mnemonic, "UPDATE_TIME", 30);
-
-        break;
-
-        case UPDATE_TEXT_MODE:
-
-        strncpy(mnemonic, "UPDATE_TEXT_MODE", 30);
-
-        break;
-
-        case UPDATE_LABEL_MODE:
-
-        strncpy(mnemonic, "UPDATE_LABEL_MODE", 30);
-
-        break;
-
-        case UPDATE_TEMPERATURE:
-
-        strncpy(mnemonic, "UPDATE_TEMPERTAURE", 30);
-
-        break;
-
-        case UPDATE_WIFI_STATUS:
-
-        strncpy(mnemonic, "UPDATE_WIFI_STATUS", 30);
-
-        break;
-
-        case UPDATE_BROKER_STATUS:
-        strncpy(mnemonic, "UPDATE_BROKER_STATUS", 30);
-
-        break;
-
-        case UPDATE_HEATING:
-
-        strncpy(mnemonic, "UPDATE_HEATING", 30);
-
-        break;
-
-        case UPDATE_THRESHOLD_TEMPERATURE:
-
-        strncpy(mnemonic, "UPDATE_THRESHOLD_TEMPERATURE", 30);
-
-        break;
-
-        case UPDATE_SCHEDULE:
-
-       strncpy(mnemonic, "UPDATE_SCHEDULE", 30);
-        break;
-
-        case UPDATE_ICON_ERRORS:
-
-        strncpy(mnemonic, "UPDATE_ICON_ERRORS", 30);
-
-        break;
-
-        case UPDATE_TEXT_SCHEDULE:
-        strncpy(mnemonic, "UPDATE_TEXT_SCHEDULE", 30);
-
-        break;
-
-        case UPDATE_PERCENT:
-
-        strncpy(mnemonic, "UPDATE_PERCENT", 30);
-        
-        break;
-
-        case QR_CONFIRMED:
-
-        strncpy(mnemonic, "QR_CONFIRMED", 30);
-    }
-
-        return mnemonic;
-}
-
 
 
 void receive_event(event_lcd_t event) {
@@ -417,8 +335,8 @@ void init_lcdrgb(void)
 #endif
         },
         .timings = {
-            //.pclk_hz = CONFIG_RGB_LCD_PIXEL_CLOCK_HZ,
-            .pclk_hz = 10000000,
+            .pclk_hz = CONFIG_RGB_LCD_PIXEL_CLOCK_HZ,
+            //.pclk_hz = 7000000,
             .h_res = CONFIG_LCD_H_RES,
             .v_res = CONFIG_LCD_V_RES,
             .hsync_back_porch = LCD_HBP,
@@ -545,13 +463,7 @@ void backlight_off(void *arg) {
 
 ESP_LOGI(TAG, " TEMPORIZACION VENCIDA EN LA PANTALLA SIN TOCAR...");
 
-if (gpio_get_level(CONFIG_PIN_NUM_BK_LIGHT) == 1) {
-    gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 0);
-    ESP_LOGE(TAG, "PANTALLA APAGADA");
-    } else {
-        ESP_LOGE(TAG, "LA PANTALLA SIGUE ENCENDIDA");
-	}
-
+gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 0);
 
 
 
@@ -652,18 +564,6 @@ void init_app_touch_xpt2046(lv_disp_t *display) {
         lv_indev_t * indev = lv_indev_create();
         lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
         lv_indev_set_read_cb(indev, lvgl_touch_cb2);
-        
-/*
-	    static lv_indev_t indev_drv;    // Input device driver (Touch)
-	    lv_indev_drv_init(&indev_drv);
-	    indev_drv.type = LV_INDEV_TYPE_POINTER;
-	    indev_drv.disp = display;
-	    indev_drv.read_cb = lvgl_touch_cb2;
-	    indev_drv.user_data = tp;
-	    lv_indev_drv_register(&indev_drv);
-*/
-
-
 
 
 }

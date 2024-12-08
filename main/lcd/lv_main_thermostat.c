@@ -727,6 +727,7 @@ void lv_update_wifi_status(bool status) {
 
 void lv_update_broker_status(bool status) {
 
+    ESP_LOGI(TAG, "Cambiamos el broker a %d", status);
     if (status == true) {
         lv_obj_set_style_text_color(icon_broker, lv_color_hex(LV_COLOR_TEXT_NOTIFICATION), LV_PART_MAIN);
     } else {
@@ -739,7 +740,7 @@ void lv_update_broker_status(bool status) {
 
 void lv_update_heating(bool status) {
 
-    return;
+
     if (icon_heating != NULL) {
         if (status == true) {
 

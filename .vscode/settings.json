@@ -39,7 +39,17 @@
         "esp_log.h": "c",
         "app_insights.h": "c",
         "lv_main_thermostat.h": "c",
-        "lv_styles_thermostat.h": "c"
+        "lv_styles_thermostat.h": "c",
+        "charconv": "c",
+        "chrono": "c",
+        "optional": "c",
+        "ratio": "c",
+        "system_error": "c",
+        "array": "c",
+        "functional": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c"
     },
     "idf.flashType": "UART"
 }

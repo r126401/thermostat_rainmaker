@@ -13,6 +13,7 @@
 #include <freertos/FreeRTOS.h>
 #include "driver/gpio.h"
 #include "lv_main_thermostat.h"
+#include "events_app.h"
 
 
 static const char *TAG = "thermostat_task";
@@ -127,6 +128,9 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 	float margin_temperature;
 	float threshold_temperature;
 	esp_rmaker_param_t *param;
+	event_lcd_t event;
+	event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
+
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, MARGIN_TEMPERATURE);
 	if (param != NULL) {
@@ -147,7 +151,9 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 
 	}
 
-	lv_update_threshold_temperature(threshold_temperature);
+	event.value = threshold_temperature;
+	send_event(event);
+	//lv_update_threshold_temperature(threshold_temperature);
 	ESP_LOGI(TAG, "THRESHOLD : %.1f", threshold_temperature);
 	
 
@@ -329,14 +335,8 @@ void task_iotThermostat()
 	char* id_sensor;
 	static uint8_t n_errors = 0;
 	float current_temperature;
-
-
-	
-
-
-
-
-
+	event_lcd_t event;
+	event.event_type = UPDATE_TEMPERATURE;
 
 
 	/**
@@ -373,7 +373,10 @@ void task_iotThermostat()
 			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en local", INFOTRAZA);
 			error = reading_local_temperature(&current_temperature);
 			if (error == ESP_OK) {
-				lv_update_temperature(current_temperature);
+				event.value = current_temperature;
+				send_event(event);
+				ESP_LOGI(TAG, "Enviada la temperatura al display");
+				//lv_update_temperature(current_temperature);
 				param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
 				if (param != NULL) {
 					esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));

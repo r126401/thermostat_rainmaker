@@ -46,6 +46,7 @@
 #include "rgblcd.h"
 #include "lv_main_thermostat.h"
 #include "lv_factory_thermostat.h"
+#include "events_app.h"
 
 
 #define NAME_DEVICE "Thermostat"
@@ -62,11 +63,17 @@ const esp_timer_create_args_t text_date_shot_timer_args = {
 };
 
 char *text_qrcode;
+app_params params;
+
 
 /* Event handler for catching RainMaker events */
 static void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
 {
+
+    event_lcd_t event_lcd;
+
+
 
     ESP_LOGW(TAG, "RECIBIDO EVENTO %s, EVENTID %d ", event_base, (int) event_id);
     
@@ -77,7 +84,9 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_CLAIM_STARTED:
                 ESP_LOGI(TAG, "RainMaker Claim Started.");
-                lv_qrcode_confirmed();
+                event_lcd.event_type = QR_CONFIRMED;
+                //lv_qrcode_confirmed();
+                send_event(event_lcd);
                 break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
                 ESP_LOGI(TAG, "RainMaker Claim Successful.");
@@ -87,7 +96,9 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
-                lv_qrcode_confirmed();
+                event_lcd.event_type = QR_CONFIRMED;
+                send_event(event_lcd);
+
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STOPPED:
                 ESP_LOGI(TAG, "Local Control Stopped.");
@@ -111,11 +122,20 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_MQTT_EVENT_CONNECTED:
                 ESP_LOGI(TAG, "MQTT Connected.");
-                lv_update_broker_status(true);
+                event_lcd.event_type = UPDATE_BROKER_STATUS;
+                event_lcd.status = true;
+                send_event(event_lcd);
+
+                //lv_update_broker_status(true);
                 break;
             case RMAKER_MQTT_EVENT_DISCONNECTED:
                 ESP_LOGI(TAG, "MQTT Disconnected.");
-                lv_update_broker_status(false);
+                event_lcd.event_type = UPDATE_BROKER_STATUS;
+                event_lcd.status = false;
+                send_event(event_lcd);
+
+                //lv_update_broker_status(false);
+
                 break;
             case RMAKER_MQTT_EVENT_PUBLISHED:
                 ESP_LOGI(TAG, "MQTT Published. Msg id: %d.", *((int *)event_data));
@@ -257,7 +277,8 @@ void register_parameters(app_params *params)
 void init_app()
 {
 
-    app_params params;
+    //app_params params;
+    event_lcd_t event;
 
 
 
@@ -265,7 +286,6 @@ void init_app()
      * set initial state.
      */
     
-//init_lcdrgb();
 
 
     esp_rmaker_console_init();
@@ -324,6 +344,7 @@ void init_app()
 
    register_parameters(&params);
 
+   
 
 
     /* Add the write callback for the device. We aren't registering any read callback yet as
@@ -376,18 +397,16 @@ void init_app()
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     } else {
-        lv_update_wifi_status(true);
+        event.event_type = UPDATE_WIFI_STATUS;
+        event.status = true;
+        send_event(event);
+        //lv_update_wifi_status(true);
         
     }
     
-ESP_LOGE(TAG, "PASO 7");
-    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 1, NULL, 1);
-
-
-    //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, (void*) NULL, 1, NULL);
-
-    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_APP_TASK, (void*) &params, 4, NULL,1);
-   
+    ESP_LOGE(TAG, "PASO 7");
+    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
+    
 
     
 
@@ -433,15 +452,25 @@ void time_refresh(void *arg) {
     uint32_t min;
     uint32_t sec;
     uint32_t interval;
+
+    event_lcd_t event;
+
+    event.event_type = UPDATE_TIME;
     
     
     if (esp_sntp_get_sync_status() == SNTP_SYNC_STATUS_IN_PROGRESS) {
-        lv_update_time(-1, -1);
+        event.par1 = -1;
+        event.par2 = -1;
+        send_event(event);
+        //lv_update_time(-1, -1);
         ESP_LOGI(TAG, "Hora invalida");
         interval = 60;
     } else {
         get_current_date(&hour, &min, &sec);
-        lv_update_time(hour, min);
+        event.par1 = hour;
+        event.par2 = min;
+        send_event(event);
+        //lv_update_time(hour, min);
         interval = 60 - sec;
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
     }
@@ -462,6 +491,8 @@ void update_time_valid(bool timevalid) {
     uint32_t sec;
     uint32_t resto = 0;
     static bool sync = false;
+    event_lcd_t event;
+    event.event_type = UPDATE_TIME;
 
     if (timevalid) {
         get_current_date(&hour, &min, &sec);
@@ -473,11 +504,17 @@ void update_time_valid(bool timevalid) {
             ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. Proximo intervalo :%d segundos", (int) hour, (int) min, (int) resto);
 
             sync = true;
-            lv_update_time(hour, min);
+            event.par1 = hour;
+            event.par2 = min;
+            send_event(event);
+            //lv_update_time(hour, min);
         } 
 
     } else {
-        lv_update_time(-1, -1);
+        event.par1 = -1;
+        event.par2 = -1;
+        send_event(event);
+        //lv_update_time(-1, -1);
     }
 
 
@@ -522,13 +559,16 @@ void event_handler_sync (struct timeval *tv) {
 
 void app_main() {
 
-    //xTaskCreatePinnedToCore(init_lcdrgb, "Tarea rgb", 8192, NULL, 4, NULL, 1);
-    //xTaskCreate(init_lcdrgb, "init_lcdrgb", CONFIG_RESOURCE_APP_TASK, (void*) NULL, 4, NULL);
+    //create_event_task();
     init_lcdrgb();
-   init_app();
-   sntp_sync_status_t sync_status = sntp_get_sync_status();
-   ESP_LOGE(TAG, "SYNSTATUS ES %d", sync_status);
+    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
+    init_app();
+    
+   //sntp_sync_status_t sync_status = sntp_get_sync_status();
+   //ESP_LOGE(TAG, "SYNSTATUS ES %d", sync_status);
+   
    sntp_set_time_sync_notification_cb(event_handler_sync);
+   ESP_LOGE(TAG, "FIN DE LA APLICACION");
 
    
 }

@@ -4,6 +4,7 @@ idf_component_register(SRCS
 ./thermostat_task.c 
 ./local_events.c 
 ./rgblcd.c
+./events_app.c
 lcd/lv_factory_thermostat.c 
 lcd/lv_main_thermostat.c 
 lcd/lv_styles_thermostat.c

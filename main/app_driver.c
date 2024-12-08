@@ -17,6 +17,8 @@
 #include "app_priv.h"
 #include "esp_log.h"
 #include "lv_main_thermostat.h"
+#include "events_app.h"
+#include "lvgl.h"
 
 static const char *TAG = "app_driver";
 
@@ -27,8 +29,8 @@ static const char *TAG = "app_driver";
 /* This is the GPIO on which the power will be set */
 #define OUTPUT_GPIO    CONFIG_EXAMPLE_OUTPUT_GPIO
 static bool g_power_state = DEFAULT_POWER;
-#define GPIO_OUTPUT_PIN_SEL  (1ULL<<CONFIG_SENSOR_THERMOSTAT_GPIO) || (1ULL<<CONFIG_RELAY_GPIO))
-
+#define GPIO_OUTPUT_PIN_SEL  (1ULL<<CONFIG_SENSOR_THERMOSTAT_GPIO) || (1ULL<<CONFIG_RELAY_GPIO) || (1ULL<<CONFIG_PIN_NUM_BK_LIGHT)
+#define GPIO_INPUT_PIN_SEL  (1ULL<<CONFIG_RELAY_GPIO) || (1ULL<<CONFIG_PIN_NUM_BK_LIGHT)
 /* These values correspoind to H,S,V = 120,100,10 */
 #define DEFAULT_RED     0
 #define DEFAULT_GREEN   25
@@ -76,7 +78,7 @@ static void push_btn_cb(void *arg)
 void gpio_rele_in_out() {
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_DISABLE;
-	io_conf.pin_bit_mask = 1ULL<< CONFIG_RELAY_GPIO;
+	io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
 	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
     io_conf.pull_down_en = 0;
     //disable pull-up mode
@@ -88,6 +90,8 @@ void gpio_rele_in_out() {
 
 enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 
+    event_lcd_t event;
+    event.event_type = UPDATE_HEATING;
 	
 	if (gpio_get_level(CONFIG_RELAY_GPIO) == OFF){
 		if (op == ON) {
@@ -114,7 +118,16 @@ enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 			}
 	}
 
-    lv_update_heating(op);
+    if (op == ON) {
+        event.status = true;
+    } else {
+        event.status = false;
+    }
+
+   send_event(event);
+
+    //lv_update_heating(event.status);
+    //lv_timer_handler();
 
 	return gpio_get_level(CONFIG_RELAY_GPIO);
 }

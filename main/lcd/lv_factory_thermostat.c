@@ -29,7 +29,7 @@ lv_obj_t *title_aplication;
 
 extern char *text_qrcode;
 static const char *TAG = "lv_factory_thermostat";
-
+extern _lock_t lock_lv;
 
 
 void set_style_titles() {
@@ -189,7 +189,8 @@ void lv_delete_init_thermostat() {
 }
 
 void lv_qrcode_confirmed() {
-    //lv_obj_del(screen_init_thermostat);
-    lv_screen_load(screen_main_thermostat);
+
+
+        lv_screen_load(screen_main_thermostat);
 
 }

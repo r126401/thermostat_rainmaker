@@ -18,14 +18,20 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "lv_main_thermostat.h"
+#include "lv_factory_thermostat.h"
 
 #include "driver/spi_master.h"
 
 #include  "esp_lcd_touch_xpt2046.h"
+#include "events_app.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/queue.h>
 
 #define	I2C_HOST	0
 esp_lcd_touch_handle_t tp = NULL;
 static esp_timer_handle_t timer_backlight;
+xQueueHandle event_queue;
 
 
 static const char *TAG = "rgblcd";
@@ -46,7 +52,7 @@ static const char *TAG = "rgblcd";
 #define LCD_BK_LIGHT_OFF_LEVEL !LCD_BK_LIGHT_ON_LEVEL
 
 
-#if CONFIG_EXAMPLE_USE_DOUBLE_FB
+#if CONFIG_DOUBLE_FB
 #define EXAMPLE_LCD_NUM_FB             2
 #else
 #define EXAMPLE_LCD_NUM_FB             1
@@ -63,16 +69,229 @@ static const char *TAG = "rgblcd";
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define EXAMPLE_LVGL_DRAW_BUF_LINES    50 // number of display lines in each draw buffer
-#define EXAMPLE_LVGL_TICK_PERIOD_MS    20
+#define EXAMPLE_LVGL_TICK_PERIOD_MS    2
 #define EXAMPLE_LVGL_TASK_STACK_SIZE   (5 * 1024)
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
+
 lv_display_t *display;
 
-extern void example_lvgl_demo_ui(lv_display_t *disp);
+/********************************************************************************* */
+
+char* event2mnemonic(EVENT_TYPE_LCD type_lcd) {
+
+    static char mnemonic[50];
+    switch (type_lcd) 
+    {
+
+        case UPDATE_TIME:
+        strncpy(mnemonic, "UPDATE_TIME", 30);
+
+        break;
+
+        case UPDATE_TEXT_MODE:
+
+        strncpy(mnemonic, "UPDATE_TEXT_MODE", 30);
+
+        break;
+
+        case UPDATE_LABEL_MODE:
+
+        strncpy(mnemonic, "UPDATE_LABEL_MODE", 30);
+
+        break;
+
+        case UPDATE_TEMPERATURE:
+
+        strncpy(mnemonic, "UPDATE_TEMPERTAURE", 30);
+
+        break;
+
+        case UPDATE_WIFI_STATUS:
+
+        strncpy(mnemonic, "UPDATE_WIFI_STATUS", 30);
+
+        break;
+
+        case UPDATE_BROKER_STATUS:
+        strncpy(mnemonic, "UPDATE_BROKER_STATUS", 30);
+
+        break;
+
+        case UPDATE_HEATING:
+
+        strncpy(mnemonic, "UPDATE_HEATING", 30);
+
+        break;
+
+        case UPDATE_THRESHOLD_TEMPERATURE:
+
+        strncpy(mnemonic, "UPDATE_THRESHOLD_TEMPERATURE", 30);
+
+        break;
+
+        case UPDATE_SCHEDULE:
+
+       strncpy(mnemonic, "UPDATE_SCHEDULE", 30);
+        break;
+
+        case UPDATE_ICON_ERRORS:
+
+        strncpy(mnemonic, "UPDATE_ICON_ERRORS", 30);
+
+        break;
+
+        case UPDATE_TEXT_SCHEDULE:
+        strncpy(mnemonic, "UPDATE_TEXT_SCHEDULE", 30);
+
+        break;
+
+        case UPDATE_PERCENT:
+
+        strncpy(mnemonic, "UPDATE_PERCENT", 30);
+        
+        break;
+
+        case QR_CONFIRMED:
+
+        strncpy(mnemonic, "QR_CONFIRMED", 30);
+    }
+
+        return mnemonic;
+}
+
+
+
+void receive_event(event_lcd_t event) {
+
+
+    //ESP_LOGW(TAG, "Recibido evento de tipo %s, %ld %ld %ld %d %s %.1f", event2mnemonic(event.event_type), event.par1, event.par2, event.par3, event.status, event.text, event.value);
+    ESP_LOGE(TAG, "Recibido evento %s", event2mnemonic(event.event_type));
+    switch (event.event_type) {
+
+        case UPDATE_TIME:
+        lv_update_time(event.par1, event.par2);
+
+        break;
+
+        case UPDATE_TEXT_MODE:
+
+        lv_update_text_mode(event.text);
+
+        break;
+
+        case UPDATE_LABEL_MODE:
+
+        lv_update_label_mode(event.text);
+
+        break;
+
+        case UPDATE_TEMPERATURE:
+
+        lv_update_temperature(event.value);
+
+        break;
+
+        case UPDATE_WIFI_STATUS:
+
+        lv_update_wifi_status(event.status);
+
+        break;
+
+        case UPDATE_BROKER_STATUS:
+        ESP_LOGE(TAG, "BROKER STATUS");
+        lv_update_broker_status(event.status);
+
+        break;
+
+        case UPDATE_HEATING:
+
+        lv_update_heating(event.status);
+
+        break;
+
+        case UPDATE_THRESHOLD_TEMPERATURE:
+
+        lv_update_threshold_temperature(event.value);
+
+        break;
+
+        case UPDATE_SCHEDULE:
+
+        lv_update_schedule(event.par1, event.par2, event.par3);
+
+        break;
+
+        case UPDATE_ICON_ERRORS:
+
+        lv_update_icon_errors(event.status);
+
+        break;
+
+        case UPDATE_TEXT_SCHEDULE:
+        lv_update_text_schedule(event.par1, event.par2);
+
+        break;
+
+        case UPDATE_PERCENT:
+
+        lv_update_percent(event.par1);
+        
+        break;
+
+        case QR_CONFIRMED:
+
+        lv_qrcode_confirmed();
+        break;
+
+
+
+        default:
+
+        ESP_LOGE(TAG, "COMANDO NO IMPLEMENTADO EN LCD");
+
+        break;
+
+    }
+
+
+}
+
+void send_event(event_lcd_t event) {
+
+
+	ESP_LOGW(TAG, " envio de evento lcd %s", event2mnemonic(event.event_type));
+	if ( xQueueSend(event_queue, &event,portMAX_DELAY) != pdPASS) {
+		ESP_LOGE(TAG, "no se ha podido enviar el evento");
+
+	}
+
+}
+
+
+
+
+
+
+
+
+
+void backlight_off(void *arg);
+
+
+    const esp_timer_create_args_t backlight_shot_timer_args = {
+            .callback = &backlight_off,
+            /* name is optional, but may help identify the timer when debugging */
+            .name = "end schedule"
+    };
+
+
+
+
+
 
 static bool example_notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx)
 {
@@ -90,6 +309,7 @@ static void example_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uin
     int offsety2 = area->y2;
     // pass the draw buffer to the driver
     esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, px_map);
+
 }
 
 static void example_increase_lvgl_tick(void *arg)
@@ -102,9 +322,22 @@ static void example_lvgl_port_task(void *arg)
 {
     ESP_LOGI(TAG, "Starting LVGL task");
     uint32_t time_till_next_ms = 0;
+    event_lcd_t event;
+
+
+	event_queue = xQueueCreate(1, sizeof(event_lcd_t));
+
     while (1) {
         _lock_acquire(&lvgl_api_lock);
         time_till_next_ms = lv_timer_handler();
+        if (xQueueReceive(event_queue, &event,  0) == pdTRUE) {
+
+			receive_event(event);
+
+
+		}
+
+        
         _lock_release(&lvgl_api_lock);
 
         // in case of task watch dog timeout, set the minimal delay to 10ms
@@ -184,7 +417,8 @@ void init_lcdrgb(void)
 #endif
         },
         .timings = {
-            .pclk_hz = CONFIG_RGB_LCD_PIXEL_CLOCK_HZ,
+            //.pclk_hz = CONFIG_RGB_LCD_PIXEL_CLOCK_HZ,
+            .pclk_hz = 10000000,
             .h_res = CONFIG_LCD_H_RES,
             .v_res = CONFIG_LCD_V_RES,
             .hsync_back_porch = LCD_HBP,
@@ -219,11 +453,11 @@ void init_lcdrgb(void)
     // create draw buffers
     void *buf1 = NULL;
     void *buf2 = NULL;
-#if CONFIG_EXAMPLE_USE_DOUBLE_FB
+#if CONFIG_DOUBLE_FB
     ESP_LOGI(TAG, "Use frame buffers as LVGL draw buffers");
     ESP_ERROR_CHECK(esp_lcd_rgb_panel_get_frame_buffer(panel_handle, 2, &buf1, &buf2));
     // set LVGL draw buffers and direct mode
-    lv_display_set_buffers(display, buf1, buf2, EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES * EXAMPLE_PIXEL_SIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
+    lv_display_set_buffers(display, buf1, buf2, CONFIG_LCD_H_RES * CONFIG_LCD_V_RES * EXAMPLE_PIXEL_SIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
 #else
     ESP_LOGI(TAG, "Allocate LVGL draw buffers");
     // it's recommended to allocate the draw buffer from internal memory, for better performance
@@ -262,9 +496,8 @@ void init_lcdrgb(void)
     //example_lvgl_demo_ui(display);
     create_main_thermostat(display);
     _lock_release(&lvgl_api_lock);
-
     init_app_touch_xpt2046(display);
-    //timing_backlight();
+    timing_backlight();
 
 
 
@@ -294,7 +527,12 @@ esp_err_t backlight_on() {
         lv_cancel_timing_backlight();
 	}
     ESP_LOGW(TAG,"REINICIAMOS LA TEMPORIZACION PARA BACKLIGHT");
-    ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
+    if (!esp_timer_is_active(timer_backlight)) {
+
+        ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
+
+    }
+    
 
 	return ESP_OK;
 }
@@ -320,21 +558,18 @@ if (gpio_get_level(CONFIG_PIN_NUM_BK_LIGHT) == 1) {
 }
 
 
+
+
+
 void timing_backlight() {
 
 
-ESP_LOGI(TAG, "TEMPORIZADOR PARA LA PANTALLA");
-    const esp_timer_create_args_t backlight_shot_timer_args = {
-            .callback = &backlight_off,
-            /* name is optional, but may help identify the timer when debugging */
-            .name = "end schedule"
-    };
 
+    ESP_LOGI(TAG, "TEMPORIZADOR PARA LA PANTALLA");
 
-
-	    ESP_ERROR_CHECK(esp_timer_create(&backlight_shot_timer_args, &timer_backlight));
-	    ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
-        ESP_LOGI(TAG, " TEMPORIZADOR PARA LA PANTALLA CREADO");
+    ESP_ERROR_CHECK(esp_timer_create(&backlight_shot_timer_args, &timer_backlight));
+    ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
+    ESP_LOGI(TAG, " TEMPORIZADOR PARA LA PANTALLA CREADO");
 
 }
 
@@ -362,8 +597,8 @@ static void lvgl_touch_cb2(lv_indev_t * drv, lv_indev_data_t * data) {
         data->point.x = x[0];
         data->point.y = y[0];
         data->state = LV_INDEV_STATE_PR;
-        //ESP_LOGI(TAG, "XPT2046: x=%ud, y=%ud",data->point.x, data->point.y);
-        //backlight_on();
+        ESP_LOGI(TAG, "XPT2046: x=%d, y=%d", (int) data->point.x, (int) data->point.y);
+        backlight_on();
 
     }
 

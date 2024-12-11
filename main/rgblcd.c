@@ -87,7 +87,7 @@ void receive_event(event_lcd_t event) {
 
 
     //ESP_LOGW(TAG, "Recibido evento de tipo %s, %ld %ld %ld %d %s %.1f", event2mnemonic(event.event_type), event.par1, event.par2, event.par3, event.status, event.text, event.value);
-    ESP_LOGE(TAG, "Recibido evento %s", event2mnemonic(event.event_type));
+    //ESP_LOGE(TAG, "Recibido evento %s", event2mnemonic(event.event_type));
     switch (event.event_type) {
 
         case UPDATE_TIME:
@@ -120,7 +120,6 @@ void receive_event(event_lcd_t event) {
         break;
 
         case UPDATE_BROKER_STATUS:
-        ESP_LOGE(TAG, "BROKER STATUS");
         lv_update_broker_status(event.status);
 
         break;
@@ -181,7 +180,7 @@ void receive_event(event_lcd_t event) {
 void send_event(event_lcd_t event) {
 
 
-	ESP_LOGW(TAG, " envio de evento lcd %s", event2mnemonic(event.event_type));
+	//ESP_LOGW(TAG, " envio de evento lcd %s", event2mnemonic(event.event_type));
 	if ( xQueueSend(event_queue, &event,portMAX_DELAY) != pdPASS) {
 		ESP_LOGE(TAG, "no se ha podido enviar el evento");
 

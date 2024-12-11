@@ -31,6 +31,10 @@
 
 
 
+
+
+
+
 #include <esp_rmaker_common_events.h>
 
 #include <app_network.h>
@@ -47,9 +51,13 @@
 #include "lv_main_thermostat.h"
 #include "lv_factory_thermostat.h"
 #include "events_app.h"
+#include "schedule_app.h"
 
 
 #define NAME_DEVICE "Thermostat"
+
+
+
 
 static const char *TAG = "app_main";
 esp_rmaker_device_t *thermostat_device;
@@ -64,6 +72,21 @@ const esp_timer_create_args_t text_date_shot_timer_args = {
 
 char *text_qrcode;
 app_params params;
+
+
+
+void topic_cb (const char *topic, void *payload, size_t payload_len, void *priv_data) {
+
+    char *text;
+
+    text = (char*) calloc(payload_len+1, sizeof(char));
+    memcpy(text, payload, payload_len);
+
+    ESP_LOGE(TAG, "Se ha recibido informacion: %s", text);
+
+
+}
+
 
 
 /* Event handler for catching RainMaker events */
@@ -125,6 +148,17 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = true;
                 send_event(event_lcd);
+                char *id_node = esp_rmaker_get_node_id();
+                char topic[80] = {0};
+                sprintf(topic, "node/%s/params/remote", id_node);
+                ESP_LOGW(TAG, "Suscrito al topic: %s", topic);
+                esp_err_t error = esp_rmaker_mqtt_subscribe(topic, topic_cb, 0, NULL);
+
+                if (error == ESP_OK) {
+                    ESP_LOGE(TAG, "Bien suscrito");
+                } else {
+                    ESP_LOGE(TAG, "Mal suscrito");
+                }
 
                 //lv_update_broker_status(true);
                 break;
@@ -133,6 +167,8 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = false;
                 send_event(event_lcd);
+
+
 
                 //lv_update_broker_status(false);
 
@@ -221,6 +257,9 @@ void register_parameters(app_params *params)
     esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(0), esp_rmaker_float(40), esp_rmaker_float(0.5));
     esp_rmaker_device_add_param(thermostat_device, params->threshold);
+
+
+
     
     /**
      * Create calibrate param
@@ -271,6 +310,7 @@ void register_parameters(app_params *params)
 
 
 
+
 }
 
 
@@ -312,6 +352,8 @@ void init_app()
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_COMMON_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(APP_NETWORK_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_OTA_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
+
+   
     
 
     
@@ -476,8 +518,6 @@ void time_refresh(void *arg) {
     }
     ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (interval * 1000000)));
 
-
-
 }
 
 
@@ -540,6 +580,7 @@ void event_handler_sync (struct timeval *tv) {
     case SNTP_SYNC_STATUS_COMPLETED:
         ESP_LOGI(TAG, "La sincronizacion esta completada");
         update_time_valid(true);
+
         break;
 
 
@@ -555,19 +596,33 @@ void event_handler_sync (struct timeval *tv) {
 }
 
 
-
-
 void app_main() {
+
 
     create_event_app_task();
     init_lcdrgb();
     xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
     init_app();
-    
-   //sntp_sync_status_t sync_status = sntp_get_sync_status();
-   //ESP_LOGE(TAG, "SYNSTATUS ES %d", sync_status);
-   
-   sntp_set_time_sync_notification_cb(event_handler_sync);
+    sntp_set_time_sync_notification_cb(event_handler_sync);
+
+    esp_rmaker_device *device;
+    esp_rmaker_param *params;
+
+
+    device = (esp_rmaker_device*) thermostat_device;
+    params = (esp_rmaker_param*) device->params;
+
+    while (params != NULL) {
+        ESP_LOGE(TAG, "parametro: %s", params->name);
+        params = params->next;
+    }
+
+    get_schedules_app();
+
+
+
+
+ 
    ESP_LOGE(TAG, "FIN DE LA APLICACION");
 
    
@@ -579,7 +634,6 @@ void reset_device() {
     esp_restart();
 
 
-
 }
 
 
@@ -587,3 +641,4 @@ void factory_reset_device() {
 
     esp_rmaker_factory_reset(0,0);
 }
+

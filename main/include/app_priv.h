@@ -73,6 +73,7 @@ typedef struct app_params
    esp_rmaker_param_t *margin_temperature;
    esp_rmaker_param_t *sensor;
    esp_rmaker_param_t *alarm;
+   esp_rmaker_param_t *programacion;
 
 
 } app_params;

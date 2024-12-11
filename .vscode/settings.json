@@ -51,7 +51,22 @@
         "type_traits": "c",
         "utility": "c",
         "events_app.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "schedule_app.h": "c",
+        "esp_idf_version.h": "c",
+        "esp_rmaker_internal.h": "c",
+        "esp_rmaker_core.h": "c",
+        "esp_event.h": "c",
+        "esp_rmaker_console_internal.h": "c",
+        "local_events.h": "c",
+        "esp_rmaker_standard_params.h": "c",
+        "string.h": "c",
+        "inttypes.h": "c",
+        "esp_rmaker_schedule.h": "c",
+        "esp_sntp.h": "c",
+        "task.h": "c",
+        "esp_rmaker_standard_devices.h": "c",
+        "lv_factory_thermostat.h": "c"
     },
     "idf.flashType": "UART"
 }

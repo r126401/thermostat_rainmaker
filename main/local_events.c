@@ -28,6 +28,10 @@ static const char *TAG = "local_events";
 
 
 
+
+
+
+
 /* Callback to handle commands received from the RainMaker cloud */
 esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
             const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx)
@@ -36,9 +40,10 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
     esp_rmaker_param_t *parameter;
 
+
  
     if (ctx) {
-        ESP_LOGI(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
+        ESP_LOGE(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
     }
 
 
@@ -141,3 +146,30 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
     return ESP_OK;
 }
+
+esp_err_t get_schedules_app() {
+
+    esp_rmaker_schedule_t *list_schedules;
+
+    list_schedules = esp_rmaker_get_schedule_list();
+    if (list_schedules != NULL) {
+
+        while(list_schedules != NULL) {
+            char action[40];
+            strncpy(action, (char*) list_schedules->action.data, list_schedules->action.data_len);
+
+            ESP_LOGE(TAG, "SCHEDULES: name = %s, action = %s", list_schedules->name, action );
+            
+            list_schedules = list_schedules->next;
+        }
+
+        
+    } else {
+        ESP_LOGE(TAG, "SCHEDULES SON NULOS");
+    }
+
+    return ESP_OK;
+}
+
+
+

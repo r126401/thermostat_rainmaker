@@ -66,7 +66,13 @@
         "esp_sntp.h": "c",
         "task.h": "c",
         "esp_rmaker_standard_devices.h": "c",
-        "lv_factory_thermostat.h": "c"
+        "lv_factory_thermostat.h": "c",
+        "timers.h": "c",
+        "esp_timer.h": "c",
+        "stdint.h": "c",
+        "strings.h": "c",
+        "esp_schedule.h": "c",
+        "esp_rmaker_ota.h": "c"
     },
     "idf.flashType": "UART"
 }

@@ -14,6 +14,7 @@
 #include "driver/gpio.h"
 #include "lv_main_thermostat.h"
 #include "events_app.h"
+#include "schedule_app.h"
 
 
 static const char *TAG = "thermostat_task";
@@ -94,28 +95,7 @@ esp_err_t read_temperature(float *temperature_metered)
 
 
 
-char* write_date() {
 
-	static char fecha_actual[120] = {0};
-
-	time_t now;
-	struct tm fecha;
-	//ESP_LOGI(TAG, ""TRAZAR"ACTUALIZAR_HORA", INFOTRAZA);
-    time(&now);
-    localtime_r(&now, &fecha);
-
-
-	sprintf(fecha_actual, "%02d/%02d/%04d %02d:%02d:%02d",
-			fecha.tm_mday,
-    		fecha.tm_mon + 1,
-			fecha.tm_year + 1900,
-			fecha.tm_hour,
-			fecha.tm_min,
-			fecha.tm_sec);
-
-	return fecha_actual;
-
-}
 
 
 
@@ -180,6 +160,8 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 
                }
            }
+
+		
 
 }
 
@@ -342,10 +324,13 @@ void task_iotThermostat()
 	/**
 	 * init driver ds18b20
 	 */
+
+	
 	init_ds18b20();
     ESP_LOGI(TAG, "COMIENZA LA TAREA DE LECTURA DE TEMPERATURA");
 
     while(1) {
+
 
 		param = esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL);
 		if (param != NULL) {
@@ -395,6 +380,7 @@ void task_iotThermostat()
 
 		}
 
+		ESP_LOGE(TAG, "LOS HEMOS LEIDO");
 		if (error == ESP_OK) {
 			n_errors = 0;
 			vTaskDelay(value * 1000 / portTICK_PERIOD_MS);

@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "app_priv.h"
 #include "events_app.h"
+#include "schedule_app.h"
 
 //#define CONFIG_LCD_H_RES 480
 //#define CONFIG_LCD_V_RES 272
@@ -525,6 +526,7 @@ void create_layout_schedule() {
 
     set_style_layout_schedule();
 	layout_schedule = lv_obj_create(screen_main_thermostat);
+    lv_obj_add_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN);
 
 	lv_obj_set_flex_flow(layout_schedule, LV_FLEX_FLOW_ROW);
     lv_obj_set_size(layout_schedule, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
@@ -540,7 +542,7 @@ void create_layout_schedule() {
 	lv_label_set_text(text_to_schedule, "18:50");
     lv_obj_set_style_text_font(text_from_schedule, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_font(text_to_schedule, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_pos(layout_schedule, lv_pct(10), lv_pct(80));
+    lv_obj_set_pos(layout_schedule, lv_pct(5), lv_pct(80));
 	//lv_obj_align_to(layout_schedule, screen_main_thermostat, LV_ALIGN_BOTTOM_MID, 10, -20);
 
 
@@ -550,6 +552,7 @@ void create_layout_schedule() {
     lv_obj_align_to(label_percent, layout_schedule, LV_ALIGN_OUT_TOP_MID, -40, 10);
     lv_obj_add_flag(label_percent, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_style_text_font(label_percent, &lv_font_montserrat_16, LV_PART_MAIN);
+    
 
     
 
@@ -646,11 +649,11 @@ void create_main_thermostat() {
     lv_update_wifi_status(false);
     lv_update_broker_status(false);
 
-/*
+
 
     create_layout_schedule();
     create_label_text_mode();
-    
+/*
     create_instalation_button();
 
 
@@ -777,11 +780,58 @@ void lv_update_threshold_temperature(float threshold) {
 }
 
 
-void lv_update_schedule(int min, int max, int cursor) {
+void lv_update_schedule(bool show, int max, int min) {
+
+    int cursor;
+    time_t now;
+    static int inicio = 0;
+    struct tm date;
+
+    ESP_LOGW(TAG,"lv_update_schedule min: %d, max:%d", min, max );
+
+    if (min == -1) {
+        inicio = time(&now);
+        cursor = inicio;
+        ESP_LOGE(TAG, "Primera vez. Fijamos el inicio a %d", inicio);
+        return;
+    } else {
+        if (inicio > min) {
+            ESP_LOGE(TAG, "El schedule no es valido todavia: %d", max);
+            return;
+        }
+        cursor = time(&now) - inicio;
+        ESP_LOGE(TAG, "Resto. cursor a %d", cursor);
+    }
+
+    localtime_r(&now, &date);
+    lv_label_set_text_fmt(text_from_schedule, "%02d:%02d", date.tm_hour, date.tm_min);
+    now = max;
+    localtime_r(&now, &date);
+    
+    lv_label_set_text_fmt(text_to_schedule, "%02d:%02d", date.tm_hour, date.tm_min);
 
 
-    lv_bar_set_range(progress_schedule, min, max);
-    lv_bar_set_value(progress_schedule, cursor, LV_ANIM_OFF);
+
+
+    max = max - inicio;
+    min = 0;
+    
+    ESP_LOGW(TAG, "min: %d, max: %d, puntero: %d", min, max, cursor);
+
+    cursor = (cursor * 100)/max;
+    ESP_LOGW(TAG, "min: %d, max: %d, puntero en %%: %d", min, max, cursor);
+   
+
+    if (show) {
+        lv_obj_remove_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN);
+        lv_bar_set_range(progress_schedule, 0, 100);
+        lv_bar_set_value(progress_schedule, cursor, LV_ANIM_OFF);
+
+
+    } else {
+        lv_obj_add_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN);
+    }
+
 
 }
 

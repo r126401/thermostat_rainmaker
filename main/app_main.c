@@ -494,13 +494,16 @@ void time_refresh(void *arg) {
     uint32_t min;
     uint32_t sec;
     uint32_t interval;
+    uint32_t time_end = 0;
+    uint32_t duration = 0;
 
     event_lcd_t event;
 
-    event.event_type = UPDATE_TIME;
+    
     
     
     if (esp_sntp_get_sync_status() == SNTP_SYNC_STATUS_IN_PROGRESS) {
+        event.event_type = UPDATE_TIME;
         event.par1 = -1;
         event.par2 = -1;
         send_event(event);
@@ -508,14 +511,24 @@ void time_refresh(void *arg) {
         ESP_LOGI(TAG, "Hora invalida");
         interval = 60;
     } else {
+        event.event_type = UPDATE_TIME;
         get_current_date(&hour, &min, &sec);
         event.par1 = hour;
         event.par2 = min;
         send_event(event);
-        //lv_update_time(hour, min);
         interval = 60 - sec;
+
+        event.event_type = UPDATE_SCHEDULE;
+        event.status = true;
+        get_next_schedule(&hour);
+        event.par1 = hour;
+        event.par2 = hour;
+        send_event(event);
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
     }
+
+    get_next_schedule(&time_end);
+
     ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (interval * 1000000)));
 
 }
@@ -535,9 +548,11 @@ void update_time_valid(bool timevalid) {
     event.event_type = UPDATE_TIME;
 
     if (timevalid) {
-        get_current_date(&hour, &min, &sec);
+
+
 
         if (!sync) {
+            get_current_date(&hour, &min, &sec);
             ESP_ERROR_CHECK(esp_timer_create(&text_date_shot_timer_args, &timer_date_text));
             resto = 60 - sec;
             ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (resto * 1000000)));
@@ -547,7 +562,13 @@ void update_time_valid(bool timevalid) {
             event.par1 = hour;
             event.par2 = min;
             send_event(event);
-            //lv_update_time(hour, min);
+
+            event.event_type = UPDATE_SCHEDULE;
+            event.status = true;
+            get_next_schedule(&hour);
+            event.par1 = hour;
+            event.par2 = -1;
+            send_event(event);
         } 
 
     } else {
@@ -566,6 +587,9 @@ void event_handler_sync (struct timeval *tv) {
 
     ESP_LOGE(TAG, "Evento de sincronizacion");
 
+    uint32_t time_end = 0;
+
+
     sntp_sync_status_t sync_status = sntp_get_sync_status();
 
 
@@ -581,12 +605,14 @@ void event_handler_sync (struct timeval *tv) {
         ESP_LOGI(TAG, "La sincronizacion esta completada");
         update_time_valid(true);
 
+
+        
+
         break;
 
 
     case SNTP_SYNC_STATUS_IN_PROGRESS:  
         ESP_LOGE(TAG, "La sincronizacion esta en progreso");
-        update_time_valid(false);
 
 
     break; // Smooth time sync in progress.
@@ -605,19 +631,9 @@ void app_main() {
     init_app();
     sntp_set_time_sync_notification_cb(event_handler_sync);
 
-    esp_rmaker_device *device;
-    esp_rmaker_param *params;
 
 
-    device = (esp_rmaker_device*) thermostat_device;
-    params = (esp_rmaker_param*) device->params;
 
-    while (params != NULL) {
-        ESP_LOGE(TAG, "parametro: %s", params->name);
-        params = params->next;
-    }
-
-    get_schedules_app();
 
 
 

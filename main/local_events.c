@@ -23,6 +23,8 @@
 
 #include "esp_err.h"
 
+#include "schedule_app.h"
+#include "events_app.h"
 
 static const char *TAG = "local_events";
 
@@ -39,6 +41,10 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
 
     esp_rmaker_param_t *parameter;
+    uint32_t time_end;
+    event_lcd_t event;
+    
+
 
 
  
@@ -53,6 +59,15 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
             ESP_LOGI(TAG, "Received start schedule ");
             esp_rmaker_param_update_and_report(param, val);
+            get_next_schedule(&time_end);
+            event.event_type = UPDATE_SCHEDULE;
+            event.par1 = time_end;
+            event.par2 = -1;
+            send_event(event);
+            
+
+
+
             break;
 
         case ESP_RMAKER_REQ_SRC_CLOUD:
@@ -147,29 +162,8 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
     return ESP_OK;
 }
 
-esp_err_t get_schedules_app() {
 
-    esp_rmaker_schedule_t *list_schedules;
 
-    list_schedules = esp_rmaker_get_schedule_list();
-    if (list_schedules != NULL) {
-
-        while(list_schedules != NULL) {
-            char action[40];
-            strncpy(action, (char*) list_schedules->action.data, list_schedules->action.data_len);
-
-            ESP_LOGE(TAG, "SCHEDULES: name = %s, action = %s", list_schedules->name, action );
-            
-            list_schedules = list_schedules->next;
-        }
-
-        
-    } else {
-        ESP_LOGE(TAG, "SCHEDULES SON NULOS");
-    }
-
-    return ESP_OK;
-}
 
 
 

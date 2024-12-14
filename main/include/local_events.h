@@ -13,6 +13,8 @@
 
 #include "esp_rmaker_schedule.h"
 
+
+/*
 typedef enum {
     ESP_RMAKER_STATE_DEINIT = 0,
     ESP_RMAKER_STATE_INIT_DONE,
@@ -82,7 +84,7 @@ typedef struct {
 } _esp_rmaker_node_t;
 
 
-
+*/
 
 
 

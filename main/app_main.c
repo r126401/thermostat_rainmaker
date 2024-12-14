@@ -82,7 +82,15 @@ void topic_cb (const char *topic, void *payload, size_t payload_len, void *priv_
     text = (char*) calloc(payload_len+1, sizeof(char));
     memcpy(text, payload, payload_len);
 
+    /**
+     * Es necesario extraer la info para refrescar el schedule de la pantalla.
+     * {"Schedule":{"Schedules":[{"id":"GO41","operation":"enable"}]}}
+     */
+
     ESP_LOGE(TAG, "Se ha recibido informacion: %s", text);
+    
+    
+
 
 
 }

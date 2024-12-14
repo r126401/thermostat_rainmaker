@@ -1,0 +1,144 @@
+
+
+
+
+#include "esp_log.h"
+#include "esp_err.h"
+#include "nvs.h"
+#include "schedule_app.h"
+#include <strings.h>
+#include <string.h>
+
+#include <esp_rmaker_core.h>
+#include <esp_rmaker_standard_types.h>
+#include <esp_rmaker_standard_params.h>
+#include <esp_rmaker_standard_devices.h>
+#include <esp_rmaker_schedule.h>
+#include <esp_rmaker_scenes.h>
+#include <esp_rmaker_console.h>
+#include <esp_rmaker_ota.h>
+
+
+
+
+
+
+
+
+
+static const char *TAG = "schedule_app";
+
+
+
+char* write_date(time_t now) {
+
+	static char fecha_actual[120] = {0};
+
+	//time_t now;
+	struct tm fecha;
+	//ESP_LOGI(TAG, ""TRAZAR"ACTUALIZAR_HORA", INFOTRAZA);
+    //time(&now);
+    localtime_r(&now, &fecha);
+
+
+	sprintf(fecha_actual, "%02d/%02d/%04d %02d:%02d:%02d",
+			fecha.tm_mday,
+    		fecha.tm_mon + 1,
+			fecha.tm_year + 1900,
+			fecha.tm_hour,
+			fecha.tm_min,
+			fecha.tm_sec);
+
+	return fecha_actual;
+
+}
+
+
+esp_err_t get_next_schedule(uint32_t *time_end) {
+
+    esp_rmaker_schedule_t *list;
+    esp_schedule_t *schedule = NULL;
+    esp_schedule_t *next_schedule = NULL;
+    uint32_t diff = -1;
+    bool init_diff = true;
+    TickType_t tick = 0;
+
+
+    list = esp_rmaker_get_schedule_list();
+
+    if (list == NULL) {
+        ESP_LOGW(TAG, "No hay schedules configurados");
+        return ESP_FAIL;
+    }
+
+
+    while (list != NULL) {
+
+        schedule = (esp_schedule_t*) list->handle;
+        if (schedule->next_scheduled_time_diff != 0) {
+
+            time_t a = schedule->trigger.next_scheduled_time_utc - schedule->next_scheduled_time_diff;
+
+
+            ESP_LOGE(TAG, "fecha anterior: %s", write_date(a));
+            
+            ESP_LOGE(TAG, "name: %s, diff: %ld, schedule_diff: %ld, tick: %ld, proximo: %s", schedule->name, diff, schedule->next_scheduled_time_diff, tick, write_date(schedule->trigger.next_scheduled_time_utc));
+
+            if (init_diff) {
+                init_diff = false;
+                diff = schedule->next_scheduled_time_diff;
+                tick = xTimerGetExpiryTime(schedule->timer);
+                next_schedule = schedule;
+            } else {
+                if (diff > schedule->next_scheduled_time_diff) {
+                    diff = schedule->next_scheduled_time_diff;
+                    tick = xTimerGetExpiryTime(schedule->timer);
+                    next_schedule = schedule;
+                }
+            }
+        }
+
+        list = list->next;
+    }
+
+    *time_end = next_schedule->trigger.next_scheduled_time_utc;
+
+
+
+    ESP_LOGE(TAG, "El proximo schedule es : %s, fecha fin: %ld", next_schedule->name, *time_end);
+
+
+
+    return ESP_OK;
+
+}
+
+esp_err_t get_thermostat_schedules_app() {
+
+    esp_rmaker_schedule_t *list_schedules;
+    esp_schedule_t *schedule;
+
+
+
+    list_schedules = esp_rmaker_get_schedule_list();
+    if (list_schedules != NULL) {
+
+        while(list_schedules != NULL) {
+            char action[40];
+
+            schedule = (esp_schedule_t*) list_schedules->handle;
+            
+            strncpy(action, (char*) list_schedules->action.data, list_schedules->action.data_len);
+
+            ESP_LOGE(TAG, "SCHEDULES: name = %s, action = %s, temporizador = %ld", list_schedules->name, action, schedule->next_scheduled_time_diff);
+            
+            list_schedules = list_schedules->next;
+        }
+
+        
+    } else {
+        ESP_LOGE(TAG, "SCHEDULES SON NULOS");
+    }
+
+    return ESP_OK;
+}

@@ -502,10 +502,11 @@ void time_refresh(void *arg) {
     uint32_t min;
     uint32_t sec;
     uint32_t interval;
-    uint32_t time_end = 0;
-    uint32_t duration = 0;
+    uint32_t index;
+
 
     event_lcd_t event;
+
 
     
     
@@ -528,14 +529,14 @@ void time_refresh(void *arg) {
 
         event.event_type = UPDATE_SCHEDULE;
         event.status = true;
-        get_next_schedule(&hour);
+        index = get_next_schedule(&hour);
         event.par1 = hour;
-        event.par2 = hour;
+        event.par2 = index;
         send_event(event);
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
     }
 
-    get_next_schedule(&time_end);
+    //get_next_schedule(name, &time_end);
 
     ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (interval * 1000000)));
 
@@ -551,6 +552,7 @@ void update_time_valid(bool timevalid) {
     uint32_t min;
     uint32_t sec;
     uint32_t resto = 0;
+    uint32_t index;
     static bool sync = false;
     event_lcd_t event;
     event.event_type = UPDATE_TIME;
@@ -573,9 +575,9 @@ void update_time_valid(bool timevalid) {
 
             event.event_type = UPDATE_SCHEDULE;
             event.status = true;
-            get_next_schedule(&hour);
+            index = get_next_schedule(&hour);
             event.par1 = hour;
-            event.par2 = -1;
+            event.par2 = index;
             send_event(event);
         } 
 
@@ -595,7 +597,6 @@ void event_handler_sync (struct timeval *tv) {
 
     ESP_LOGE(TAG, "Evento de sincronizacion");
 
-    uint32_t time_end = 0;
 
 
     sntp_sync_status_t sync_status = sntp_get_sync_status();

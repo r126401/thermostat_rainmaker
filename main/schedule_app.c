@@ -54,62 +54,57 @@ char* write_date(time_t now) {
 }
 
 
-esp_err_t get_next_schedule(uint32_t *time_end) {
+uint32_t get_next_schedule(uint32_t *time_end) {
 
     esp_rmaker_schedule_t *list;
     esp_schedule_t *schedule = NULL;
     esp_schedule_t *next_schedule = NULL;
     uint32_t diff = -1;
     bool init_diff = true;
-    TickType_t tick = 0;
+    uint32_t index = -1;
+
 
 
     list = esp_rmaker_get_schedule_list();
 
     if (list == NULL) {
         ESP_LOGW(TAG, "No hay schedules configurados");
-        return ESP_FAIL;
+        return index;
     }
 
 
     while (list != NULL) {
 
         schedule = (esp_schedule_t*) list->handle;
+
+        ESP_LOGI(TAG, "schedule %s, index %ld", schedule->name, list->index);
         if (schedule->next_scheduled_time_diff != 0) {
-
-            time_t a = schedule->trigger.next_scheduled_time_utc - schedule->next_scheduled_time_diff;
-
-
-            ESP_LOGE(TAG, "fecha anterior: %s", write_date(a));
-            
-            ESP_LOGE(TAG, "name: %s, diff: %ld, schedule_diff: %ld, tick: %ld, proximo: %s", schedule->name, diff, schedule->next_scheduled_time_diff, tick, write_date(schedule->trigger.next_scheduled_time_utc));
-
             if (init_diff) {
                 init_diff = false;
                 diff = schedule->next_scheduled_time_diff;
-                tick = xTimerGetExpiryTime(schedule->timer);
+                index = list->index;
                 next_schedule = schedule;
             } else {
                 if (diff > schedule->next_scheduled_time_diff) {
                     diff = schedule->next_scheduled_time_diff;
-                    tick = xTimerGetExpiryTime(schedule->timer);
+                    index = list->index;
                     next_schedule = schedule;
                 }
             }
+        } else {
+            ESP_LOGW(TAG, "El schedule %s esta inactivo", schedule->name);
         }
 
         list = list->next;
     }
 
+    
     *time_end = next_schedule->trigger.next_scheduled_time_utc;
+    ESP_LOGE(TAG, "El proximo schedule es : %s, fecha fin: %ld, index %ld", next_schedule->name, *time_end, index);
 
 
 
-    ESP_LOGE(TAG, "El proximo schedule es : %s, fecha fin: %ld", next_schedule->name, *time_end);
-
-
-
-    return ESP_OK;
+    return index;
 
 }
 

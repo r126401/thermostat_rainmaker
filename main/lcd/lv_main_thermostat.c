@@ -780,28 +780,52 @@ void lv_update_threshold_temperature(float threshold) {
 }
 
 
-void lv_update_schedule(bool show, int max, int min) {
+void lv_update_schedule(bool show, int max, int index) {
 
     int cursor;
     time_t now;
     static int inicio = 0;
     struct tm date;
+    static uint32_t index_schedule;
+    static int max_schedule;
 
-    ESP_LOGW(TAG,"lv_update_schedule min: %d, max:%d", min, max );
+    ESP_LOGW(TAG,"lv_update_schedule index: %d, max:%d", index, max );
 
-    if (min == -1) {
+    //Programa aun no valido
+
+    if (index == -1) {
         inicio = time(&now);
         cursor = inicio;
+        index_schedule = index;
         ESP_LOGE(TAG, "Primera vez. Fijamos el inicio a %d", inicio);
         return;
-    } else {
-        if (inicio > min) {
-            ESP_LOGE(TAG, "El schedule no es valido todavia: %d", max);
-            return;
-        }
-        cursor = time(&now) - inicio;
-        ESP_LOGE(TAG, "Resto. cursor a %d", cursor);
     }
+
+    // programa recien programado
+    if (index_schedule == -1) {
+        index_schedule = index;
+        max_schedule = max;
+        //cursor = time(&now) - inicio;
+        ESP_LOGE(TAG, "schedule ya valido");
+    } else {
+
+        if ((index_schedule != index) || (max_schedule != max)) {
+            inicio = time(&now);
+            index_schedule = index;
+            max_schedule = max;
+            ESP_LOGW(TAG, "Hemos cambiado de programa. El nuevo index es %d, con max %d", index, max);
+
+
+        } else {
+            ESP_LOGW(TAG, "Nada cambia. Es el mismo programa. El nuevo index es %d, con max %d", index, max);
+        }
+    }
+
+    //Se comprueba si es el mismo programa o se ha cambiado.
+
+    cursor = time(&now) - inicio;
+    
+    now = inicio;
 
     localtime_r(&now, &date);
     lv_label_set_text_fmt(text_from_schedule, "%02d:%02d", date.tm_hour, date.tm_min);
@@ -814,12 +838,11 @@ void lv_update_schedule(bool show, int max, int min) {
 
 
     max = max - inicio;
-    min = 0;
     
-    ESP_LOGW(TAG, "min: %d, max: %d, puntero: %d", min, max, cursor);
+    ESP_LOGW(TAG, "index: %d, max: %d, puntero: %d", index, max, cursor);
 
     cursor = (cursor * 100)/max;
-    ESP_LOGW(TAG, "min: %d, max: %d, puntero en %%: %d", min, max, cursor);
+    ESP_LOGW(TAG, "index: %d, max: %d, puntero en %%: %d", index, max, cursor);
    
 
     if (show) {

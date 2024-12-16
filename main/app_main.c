@@ -78,7 +78,7 @@ app_params params;
 
 static void timer_delay_next_schedule(void *arg) {
 
-    update_lcd_schedule();
+    lv_update_lcd_schedule();
     ESP_LOGI(TAG, "UPDATE LCD SCHEDULE EJECUTADO DESPUES DE UNA OPERACION CON LOS SCHEDULES");
 
 }
@@ -561,15 +561,7 @@ void time_refresh(void *arg) {
         send_event(event);
         interval = 60 - sec;
 
-        update_lcd_schedule();
-/*
-        event.event_type = UPDATE_SCHEDULE;
-        event.status = true;
-        index = get_next_schedule(&hour);
-        event.par1 = hour;
-        event.par2 = index;
-        send_event(event);
-        */
+        lv_update_lcd_schedule();
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
     }
 
@@ -610,15 +602,8 @@ void update_time_valid(bool timevalid) {
             event.par2 = min;
             send_event(event);
 
-            update_lcd_schedule();
-            /*
-            event.event_type = UPDATE_SCHEDULE;
-            event.status = true;
-            index = get_next_schedule(&hour);
-            event.par1 = hour;
-            event.par2 = index;
-            send_event(event);
-            */
+            lv_update_lcd_schedule();
+
         } 
 
     } else {

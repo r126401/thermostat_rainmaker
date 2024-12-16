@@ -83,7 +83,8 @@
         "string_view": "c",
         "initializer_list": "c",
         "span": "c",
-        "regex": "c"
+        "regex": "c",
+        "rgblcd.h": "c"
     },
     "idf.flashType": "UART"
 }

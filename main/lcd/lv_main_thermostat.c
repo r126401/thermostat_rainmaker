@@ -11,6 +11,7 @@
 #include "events_app.h"
 #include "schedule_app.h"
 
+
 //#define CONFIG_LCD_H_RES 480
 //#define CONFIG_LCD_V_RES 272
 #define SIZE_BUTTONS_THRESHOLD 55
@@ -91,7 +92,22 @@ extern lv_display_t * display;
 
 
 
+void lv_update_lcd_schedule() {
 
+    event_lcd_t event;
+    int index;
+    uint32_t hour;
+
+
+
+    event.event_type = UPDATE_SCHEDULE;
+    event.status = true;
+    index = get_next_schedule(&hour);
+    event.par1 = hour;
+    event.par2 = index;
+    send_event(event);
+
+}
 
 
 static void create_layout_notification() {

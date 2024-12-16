@@ -3,6 +3,7 @@
 #include "local_events.h"
 #include "app_priv.h"
 #include "thermostat_task.h"
+#include "lv_main_thermostat.h"
 
 #include <string.h>
 #include <inttypes.h>
@@ -41,13 +42,6 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
 
     esp_rmaker_param_t *parameter;
-    uint32_t time_end;
-    event_lcd_t event;
-    uint32_t index;
-    
-
-
-
  
     if (ctx) {
         ESP_LOGE(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
@@ -60,14 +54,8 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
             ESP_LOGI(TAG, "Received start schedule ");
             esp_rmaker_param_update_and_report(param, val);
-            /*
-            index = get_next_schedule(&time_end);
-            event.event_type = UPDATE_SCHEDULE;
-            event.par1 = time_end;
-            event.par2 = index;
-            send_event(event);
-            */
-           update_lcd_schedule();
+            lv_update_lcd_schedule();
+
 
 
 

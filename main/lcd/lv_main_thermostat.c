@@ -786,7 +786,7 @@ void lv_update_schedule(bool show, int max, int index) {
     time_t now;
     static int inicio = 0;
     struct tm date;
-    static uint32_t index_schedule;
+    static int index_schedule;
     static int max_schedule;
 
     ESP_LOGW(TAG,"lv_update_schedule index: %d, max:%d", index, max );
@@ -806,19 +806,25 @@ void lv_update_schedule(bool show, int max, int index) {
         index_schedule = index;
         max_schedule = max;
         //cursor = time(&now) - inicio;
-        ESP_LOGE(TAG, "schedule ya valido");
+        ESP_LOGW(TAG, "Schedule activao en el display. El nuevo index es %d, con max %d", index_schedule, max);
     } else {
-
-        if ((index_schedule != index) || (max_schedule != max)) {
-            inicio = time(&now);
-            index_schedule = index;
+        // El tiempo ha cambiado pero el programa es el mismo
+        if ((index_schedule == index) && (max_schedule != max)) {
             max_schedule = max;
-            ESP_LOGW(TAG, "Hemos cambiado de programa. El nuevo index es %d, con max %d", index, max);
-
+            ESP_LOGW(TAG, "Ha cambiado la duracion del programa pero sigue siendo el mismo. El trigger nuevo es : %d", max);
 
         } else {
-            ESP_LOGW(TAG, "Nada cambia. Es el mismo programa. El nuevo index es %d, con max %d", index, max);
+            //ha cambiado el programa
+            if ((index_schedule != index) || (max_schedule != max)) {
+                inicio = time(&now);
+                index_schedule = index;
+                max_schedule = max;
+                ESP_LOGW(TAG, "Hemos cambiado de programa. El nuevo index es %d, con max %d", index_schedule, max);
+                }
+
         }
+
+
     }
 
     //Se comprueba si es el mismo programa o se ha cambiado.

@@ -53,9 +53,20 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
         case ESP_RMAKER_REQ_SRC_SCHEDULE:
 
             ESP_LOGI(TAG, "Received start schedule ");
-            esp_rmaker_param_update_and_report(param, val);
-            lv_update_lcd_schedule();
+            if (param == esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE)){
+                esp_rmaker_param_update_and_report(param, val);
+                lv_update_lcd_schedule();
+                ESP_LOGI(TAG, "Enviado threshold al cliente despues de inicio del trigger");
+                event_lcd_t event;
+                event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
+                event.value = esp_rmaker_param_get_val(param)->val.f;
+                send_event(event);
+                parameter = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+                thermostat_action(esp_rmaker_param_get_val(parameter)->val.f);
 
+ 
+            }
+ 
 
 
 

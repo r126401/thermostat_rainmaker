@@ -338,7 +338,7 @@ void init_lcdrgb(void)
         },
         .timings = {
             .pclk_hz = CONFIG_RGB_LCD_PIXEL_CLOCK_HZ,
-            //.pclk_hz = 7000000,
+            //.pclk_hz = 8000000,
             .h_res = CONFIG_LCD_H_RES,
             .v_res = CONFIG_LCD_V_RES,
             .hsync_back_porch = LCD_HBP,

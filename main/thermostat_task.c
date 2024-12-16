@@ -133,7 +133,6 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 
 	event.value = threshold_temperature;
 	send_event(event);
-	//lv_update_threshold_temperature(threshold_temperature);
 	ESP_LOGI(TAG, "THRESHOLD : %.1f", threshold_temperature);
 	
 
@@ -361,7 +360,6 @@ void task_iotThermostat()
 				event.value = current_temperature;
 				send_event(event);
 				ESP_LOGI(TAG, "Enviada la temperatura al display");
-				//lv_update_temperature(current_temperature);
 				param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
 				if (param != NULL) {
 					esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));

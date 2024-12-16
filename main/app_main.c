@@ -150,7 +150,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_EVENT_CLAIM_STARTED:
                 ESP_LOGI(TAG, "RainMaker Claim Started.");
                 event_lcd.event_type = QR_CONFIRMED;
-                //lv_qrcode_confirmed();
                 send_event(event_lcd);
                 break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
@@ -187,9 +186,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_MQTT_EVENT_CONNECTED:
                 ESP_LOGI(TAG, "MQTT Connected.");
-                event_lcd.event_type = UPDATE_BROKER_STATUS;
-                event_lcd.status = true;
-                send_event(event_lcd);
                 char *id_node = esp_rmaker_get_node_id();
                 char topic[80] = {0};
                 sprintf(topic, "node/%s/params/remote", id_node);
@@ -201,18 +197,17 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 } else {
                     ESP_LOGE(TAG, "Mal suscrito");
                 }
+                event_lcd.event_type = UPDATE_BROKER_STATUS;
+                event_lcd.status = true;
+                send_event(event_lcd);
+ 
 
-                //lv_update_broker_status(true);
                 break;
             case RMAKER_MQTT_EVENT_DISCONNECTED:
                 ESP_LOGI(TAG, "MQTT Disconnected.");
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = false;
                 send_event(event_lcd);
-
-
-
-                //lv_update_broker_status(false);
 
                 break;
             case RMAKER_MQTT_EVENT_PUBLISHED:
@@ -484,7 +479,6 @@ void init_app()
         event.event_type = UPDATE_WIFI_STATUS;
         event.status = true;
         send_event(event);
-        //lv_update_wifi_status(true);
         
     }
     
@@ -536,7 +530,6 @@ void time_refresh(void *arg) {
     uint32_t min;
     uint32_t sec;
     uint32_t interval;
-    uint32_t index;
 
 
     event_lcd_t event;
@@ -550,7 +543,6 @@ void time_refresh(void *arg) {
         event.par1 = -1;
         event.par2 = -1;
         send_event(event);
-        //lv_update_time(-1, -1);
         ESP_LOGI(TAG, "Hora invalida");
         interval = 60;
     } else {
@@ -581,7 +573,6 @@ void update_time_valid(bool timevalid) {
     uint32_t min;
     uint32_t sec;
     uint32_t resto = 0;
-    uint32_t index;
     static bool sync = false;
     event_lcd_t event;
     event.event_type = UPDATE_TIME;
@@ -610,7 +601,6 @@ void update_time_valid(bool timevalid) {
         event.par1 = -1;
         event.par2 = -1;
         send_event(event);
-        //lv_update_time(-1, -1);
     }
 
 

@@ -30,6 +30,8 @@
 #include <esp_rmaker_utils.h>
 
 
+#include "cJSON.h"
+
 
 
 
@@ -74,20 +76,52 @@ char *text_qrcode;
 app_params params;
 
 
+static void timer_delay_next_schedule(void *arg) {
+
+    update_lcd_schedule();
+    ESP_LOGI(TAG, "UPDATE LCD SCHEDULE EJECUTADO DESPUES DE UNA OPERACION CON LOS SCHEDULES");
+
+}
+
+
 
 void topic_cb (const char *topic, void *payload, size_t payload_len, void *priv_data) {
 
-    char *text;
+    cJSON *json;
+    cJSON *schedules;
+    esp_timer_handle_t timer_update_lcd;
 
-    text = (char*) calloc(payload_len+1, sizeof(char));
-    memcpy(text, payload, payload_len);
+    const esp_timer_create_args_t update_lcd_schedules_shot_timer_args = {
+    .callback = &timer_delay_next_schedule,
+    /* name is optional, but may help identify the timer when debugging */
+    .name = "time refresh date text"
+};
+
+    
+    json = cJSON_Parse((char*) payload);
+
+    if (json == NULL) {
+        ESP_LOGW(TAG, "El payload recibido no es json");
+        return;
+    }
+
+    schedules = cJSON_GetObjectItem(json, "Schedule");
+    if (schedules != NULL) {
+
+        ESP_LOGW(TAG, "Se ha encontrado una operacion de schedules");
+        esp_timer_create(&update_lcd_schedules_shot_timer_args, &timer_update_lcd);
+        esp_timer_start_once(timer_update_lcd, 1000000);
+    } else {
+        ESP_LOGE(TAG, "NO Se ha encontrado una operacion de schedules");
+    }
+
 
     /**
      * Es necesario extraer la info para refrescar el schedule de la pantalla.
      * {"Schedule":{"Schedules":[{"id":"GO41","operation":"enable"}]}}
      */
 
-    ESP_LOGE(TAG, "Se ha recibido informacion: %s", text);
+    ESP_LOGE(TAG, "Se ha recibido informacion: %.*s", payload_len, (char*) payload);
     
     
 
@@ -527,12 +561,15 @@ void time_refresh(void *arg) {
         send_event(event);
         interval = 60 - sec;
 
+        update_lcd_schedule();
+/*
         event.event_type = UPDATE_SCHEDULE;
         event.status = true;
         index = get_next_schedule(&hour);
         event.par1 = hour;
         event.par2 = index;
         send_event(event);
+        */
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
     }
 
@@ -573,12 +610,15 @@ void update_time_valid(bool timevalid) {
             event.par2 = min;
             send_event(event);
 
+            update_lcd_schedule();
+            /*
             event.event_type = UPDATE_SCHEDULE;
             event.status = true;
             index = get_next_schedule(&hour);
             event.par1 = hour;
             event.par2 = index;
             send_event(event);
+            */
         } 
 
     } else {

@@ -72,7 +72,18 @@
         "stdint.h": "c",
         "strings.h": "c",
         "esp_schedule.h": "c",
-        "esp_rmaker_ota.h": "c"
+        "esp_rmaker_ota.h": "c",
+        "esp_rmaker_utils.h": "c",
+        "jsmn.h": "c",
+        "deque": "c",
+        "list": "c",
+        "string": "c",
+        "unordered_map": "c",
+        "vector": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "span": "c",
+        "regex": "c"
     },
     "idf.flashType": "UART"
 }

@@ -6,6 +6,7 @@
 #include "esp_err.h"
 #include "nvs.h"
 #include "schedule_app.h"
+#include "events_app.h"
 #include <strings.h>
 #include <string.h>
 
@@ -27,6 +28,26 @@
 
 
 static const char *TAG = "schedule_app";
+
+
+void update_lcd_schedule() {
+
+    event_lcd_t event;
+    int index;
+    uint32_t hour;
+
+
+
+    event.event_type = UPDATE_SCHEDULE;
+    event.status = true;
+    index = get_next_schedule(&hour);
+    event.par1 = hour;
+    event.par2 = index;
+    send_event(event);
+
+}
+
+
 
 
 

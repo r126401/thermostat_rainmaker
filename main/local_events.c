@@ -60,12 +60,14 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
             ESP_LOGI(TAG, "Received start schedule ");
             esp_rmaker_param_update_and_report(param, val);
+            /*
             index = get_next_schedule(&time_end);
             event.event_type = UPDATE_SCHEDULE;
             event.par1 = time_end;
             event.par2 = index;
             send_event(event);
-            
+            */
+           update_lcd_schedule();
 
 
 

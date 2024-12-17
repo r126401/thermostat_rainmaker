@@ -19,5 +19,5 @@ void lv_update_icon_errors(bool errors);
 void lv_update_text_schedule(int min, int max);
 void lv_update_percent(int cursor);
 void create_instalation_button();
-void lv_update_lcd_schedule();
+int lv_update_lcd_schedule();
 

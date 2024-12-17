@@ -92,7 +92,7 @@ extern lv_display_t * display;
 
 
 
-void lv_update_lcd_schedule() {
+int lv_update_lcd_schedule() {
 
     event_lcd_t event;
     int index;
@@ -106,6 +106,8 @@ void lv_update_lcd_schedule() {
     event.par1 = hour;
     event.par2 = index;
     send_event(event);
+
+    return index;
 
 }
 
@@ -250,7 +252,6 @@ static void lv_event_handler_button_up(lv_event_t *event) {
     data = (char*) lv_label_get_text(text_threshold);
     sscanf(data, "%f", &threshold);
     threshold += 0.5;
-    lv_update_threshold_temperature(threshold);
 
     
     if (!pulse) {
@@ -265,6 +266,12 @@ static void lv_event_handler_button_up(lv_event_t *event) {
     
     mytimer = lv_timer_create(timer_cb, 3000, &threshold);
     lv_timer_set_repeat_count(mytimer, 1);
+
+
+
+
+    lv_update_threshold_temperature(threshold);
+
     
 
 
@@ -302,7 +309,7 @@ static void lv_event_handler_button_down(lv_event_t *event) {
     data = (char*) lv_label_get_text(text_threshold);
     sscanf(data, "%f", &threshold);
     threshold -= 0.5;
-    lv_update_threshold_temperature(threshold);
+    
 
     if (!pulse) {
     pulse = true;
@@ -316,6 +323,8 @@ static void lv_event_handler_button_down(lv_event_t *event) {
     
     mytimer = lv_timer_create(timer_cb, 3000, &threshold);
     lv_timer_set_repeat_count(mytimer, 1);
+    
+    lv_update_threshold_temperature(threshold);
 
 
 
@@ -581,7 +590,7 @@ void create_layout_schedule() {
 static void create_label_text_mode() {
 
     label_text_mode = lv_label_create(screen_main_thermostat);
-    lv_label_set_text(label_text_mode, "AUTO");
+    lv_label_set_text(label_text_mode,STATUS_APP_STARTING);
     lv_obj_align_to(label_text_mode, layout_temperature, LV_ALIGN_OUT_TOP_MID, 15, -30);
     set_style_mode();
     lv_obj_add_style(label_text_mode, &style_text_mode, LV_PART_MAIN);

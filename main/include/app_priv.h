@@ -33,6 +33,17 @@
 #define ALARM  "alarm"
 #define AUTO   "AUTO"
 
+
+#define STATUS_APP_ERROR "ERROR"
+#define STATUS_APP_AUTO "AUTO"
+#define STATUS_APP_MANUAL "MANUAL"
+#define STATUS_APP_STARTING "STARTING"
+#define STATUS_APP_SYNCING "SYNCING"
+#define STATUS_APP_UPGRADING "UPGRADING"
+#define STATUS_APP_UNDEFINED "UNDEFINED"
+
+
+
 typedef enum ESTADO_RELE {
     INDETERMINADO = -1,
     OFF = 0,
@@ -77,6 +88,22 @@ typedef struct app_params
 
 
 } app_params;
+
+
+typedef enum status_app_t {
+
+   STATUS_ERROR,
+   STATUS_AUTO,
+   STATUS_MANUAL,
+   STATUS_STARTING,
+   STATUS_SYNC,
+   STATUS_UPGRADING
+
+} status_app_t;
+
+
+
+
 
 void update_time_valid(bool timevalid);
 void time_refresh(void *arg);

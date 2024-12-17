@@ -730,7 +730,7 @@ void lv_update_alarm_device() {
 static void event_handler_screen(lv_event_t *event) {
 
 
-	backlight_on();
+	//backlight_on();
 
 }
 

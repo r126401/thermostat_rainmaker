@@ -30,7 +30,7 @@ static const char *TAG = "app_driver";
 #define OUTPUT_GPIO    CONFIG_EXAMPLE_OUTPUT_GPIO
 static bool g_power_state = DEFAULT_POWER;
 #define GPIO_OUTPUT_PIN_SEL  (1ULL<<CONFIG_SENSOR_THERMOSTAT_GPIO) || (1ULL<< CONFIG_RELAY_GPIO)
-#define GPIO_INPUT_PIN_SEL  (1ULL<<CONFIG_RELAY_GPIO) || (1ULL<<CONFIG_PIN_NUM_BK_LIGHT)
+#define GPIO_INPUT_PIN_SEL  1ULL<<CONFIG_RELAY_GPIO
 /* These values correspoind to H,S,V = 120,100,10 */
 #define DEFAULT_RED     0
 #define DEFAULT_GREEN   25
@@ -154,3 +154,37 @@ bool app_driver_get_state(void)
 {
     return g_power_state;
 }
+
+
+
+
+ 
+void change_app_status(EVENT_APP event_status) {
+
+    esp_rmaker_param_t *param;
+    char *status;
+
+    param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+    status = esp_rmaker_param_get_val(param)->val.s;
+
+    if (strcmp(status, STATUS_APP_STARTING) == 0) {
+
+        switch(event_status) {
+
+            case EVENT_APP_TIME_VALID:
+            
+            break;
+
+            default:
+            break;
+        }
+    }
+
+
+
+
+}
+
+
+
+

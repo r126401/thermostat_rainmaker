@@ -175,9 +175,10 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 	ESP_LOGI(TAG, "Estamos en thermostat_action");
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+	ESP_LOGI(TAG, "Estamos en thermostat_action en modo %s", esp_rmaker_param_get_val(param)->val.s);
 	if (param != NULL) {
 
-		if (strcmp(esp_rmaker_param_get_val(param)->val.s, AUTO) == 0) {
+		if (strcmp(esp_rmaker_param_get_val(param)->val.s, STATUS_APP_MANUAL) == 0) {
 
 			ESP_LOGW(TAG, "No se hace nada ya que tenemos el termostato en modo manual");
 			return NINGUNA_ACCION;

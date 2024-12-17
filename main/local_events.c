@@ -32,6 +32,37 @@ static const char *TAG = "local_events";
 
 
 
+            
+
+void update_threshold(float threshold, bool reporting) {
+
+    
+   ESP_LOGI(TAG, " Se va a modificar el threshold a valor %.1f", threshold);
+
+
+    esp_rmaker_param_t *parameter;
+    event_lcd_t event;
+    event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
+    event.value = threshold;
+    send_event(event);
+    parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
+    thermostat_action(threshold);
+    if (reporting) {
+        esp_rmaker_param_update_and_report(parameter, esp_rmaker_float(threshold));
+    } else {
+        esp_rmaker_param_update(parameter, esp_rmaker_float(threshold));
+    }
+    
+
+    
+
+
+
+
+    ESP_LOGI(TAG, "Enviado nuevo threshold: %.1f", threshold);
+
+}
+
 
 
 
@@ -41,7 +72,6 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 {
 
 
-    esp_rmaker_param_t *parameter;
  
     if (ctx) {
         ESP_LOGE(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
@@ -55,14 +85,10 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             ESP_LOGI(TAG, "Received start schedule ");
             if (param == esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE)){
                 esp_rmaker_param_update_and_report(param, val);
-                lv_update_lcd_schedule();
+                
                 ESP_LOGI(TAG, "Enviado threshold al cliente despues de inicio del trigger");
-                event_lcd_t event;
-                event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
-                event.value = esp_rmaker_param_get_val(param)->val.f;
-                send_event(event);
-                parameter = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
-                thermostat_action(esp_rmaker_param_get_val(parameter)->val.f);
+                update_threshold(val.val.f, true);
+                lv_update_lcd_schedule();
 
  
             }
@@ -78,13 +104,11 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
              * Receive setpoint temperature. Change threshold in order activate/deactivate thermostat
              */
             ESP_LOGI(TAG, "Received SETPOINT_TEMPERATURE from cloud ");
-            if (strcmp(esp_rmaker_param_get_name(param), SETPOINT_TEMPERATURE) == 0) {
-                ESP_LOGI(TAG, "Received value threshold = %s for %s - %s",
-                        val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
-                        esp_rmaker_param_get_name(param));
-                parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
-                thermostat_action(esp_rmaker_param_get_val(parameter)->val.f);
-                esp_rmaker_param_update(param, val);
+
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE) == param) {
+
+                update_threshold(val.val.f, false);
+                lv_update_lcd_schedule();
                 
             }
 
@@ -95,43 +119,44 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
         break;
 
         case ESP_RMAKER_REQ_SRC_LOCAL:
-
-            if (strcmp(esp_rmaker_param_get_name(param), ESP_RMAKER_DEF_POWER_NAME) == 0) {
-
             /**
              * Receive Power event. Activate/deactivate relay in remote
              */
-            ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
-            relay_operation(val.val.b);
-            esp_rmaker_param_update(param, val);
+
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME) == param) {
+                
+                ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
+                relay_operation(val.val.b);
+                esp_rmaker_param_update_and_report(param, val);
+                
             }
 
             /**
              * Receive setpoint temperature. Change threshold in order activate/deactivate thermostat
              */
 
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE) == param) {
 
-            if (strcmp(esp_rmaker_param_get_name(param), SETPOINT_TEMPERATURE) == 0) {
                 ESP_LOGI(TAG, "Received value threshold = %s for %s - %s",
                         val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
-                        esp_rmaker_param_get_name(param));
-                parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
-                thermostat_action(esp_rmaker_param_get_val(parameter)->val.f);
-                esp_rmaker_param_update(param, val);
+                    esp_rmaker_param_get_name(param));
+                update_threshold(val.val.f, false);
+                lv_update_lcd_schedule();
                 
             }
 
             /**
              * Receive new calibrate to sensor from cloud.
              */
+            
 
-        if (strcmp(esp_rmaker_param_get_name(param), CALIBRATE) == 0) {
+        if (esp_rmaker_device_get_param_by_name(thermostat_device, CALIBRATE) == param) {
                 ESP_LOGI(TAG, "Received value CALIBRATE = %s for %s - %s",
                         val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
                         esp_rmaker_param_get_name(param));
-                parameter = esp_rmaker_device_get_param_by_name(thermostat_device, CALIBRATE);
-                thermostat_action(esp_rmaker_param_get_val(parameter)->val.f);
-                esp_rmaker_param_update(param, val);
+                 esp_rmaker_param_update(param, val);
+                 thermostat_action(val.val.f);
+               
                 
             }
 
@@ -139,13 +164,12 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
              * Receive read interval parameter
              */
 
-        if (strcmp(esp_rmaker_param_get_name(param), READ_INTERVAL) == 0) {
-                ESP_LOGI(TAG, "Received value CALIBRATE = %s for %s - %s",
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL) == param) {
+                ESP_LOGI(TAG, "Received value READ_INTERVAL = %s for %s - %s",
                         val.val.i? "true" : "false", esp_rmaker_device_get_name(device),
                         esp_rmaker_param_get_name(param));
-                parameter = esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL);
-                thermostat_action(esp_rmaker_param_get_val(parameter)->val.i);
                 esp_rmaker_param_update(param, val);
+                
                 
             }
         break;

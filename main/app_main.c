@@ -334,9 +334,9 @@ void register_parameters(app_params *params)
     /**
      * Create mode thermostat
      */
-    static const char *list[] = {"AUTO", "MANUAL"};
-    params->mode = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(""), PROP_FLAG_READ | PROP_FLAG_WRITE);
-    esp_rmaker_param_add_valid_str_list(params->mode, list, 2);
+    static const char *list[] = {STATUS_APP_ERROR, STATUS_APP_AUTO, STATUS_APP_MANUAL, STATUS_APP_STARTING, STATUS_APP_SYNCING, STATUS_APP_UPGRADING, STATUS_APP_UNDEFINED};
+    params->mode = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(STATUS_APP_STARTING), PROP_FLAG_READ);
+    esp_rmaker_param_add_valid_str_list(params->mode, list, 7);
     esp_rmaker_device_add_param(thermostat_device, params->mode);
 
     /**
@@ -628,9 +628,9 @@ void event_handler_sync (struct timeval *tv) {
     case SNTP_SYNC_STATUS_COMPLETED:
         ESP_LOGI(TAG, "La sincronizacion esta completada");
         update_time_valid(true);
-
-
-        
+        event_app_t event;
+        event.event_app = EVENT_APP_TIME_VALID;
+        send_event_app(event);
 
         break;
 
@@ -648,9 +648,17 @@ void event_handler_sync (struct timeval *tv) {
 
 void app_main() {
 
+    event_lcd_t event_lcd;
+    char mode[50] = {0};
 
     create_event_app_task();
     init_lcdrgb();
+
+    event_lcd.event_type = UPDATE_TEXT_MODE;
+    strcpy(mode, STATUS_APP_STARTING);
+    event_lcd.text = mode;
+    send_event(event_lcd);
+
     xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
     init_app();
     sntp_set_time_sync_notification_cb(event_handler_sync);

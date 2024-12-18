@@ -73,6 +73,7 @@ enum ESTADO_RELE relay_operation(ESTADO_RELE op);
 
 
 
+
 typedef struct app_params 
 {
    esp_rmaker_param_t *mode;

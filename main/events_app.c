@@ -4,6 +4,7 @@
 #include "app_priv.h"
 #include "local_events.h"
 #include "schedule_app.h"
+#include "thermostat_task.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
@@ -134,6 +135,15 @@ char* event_app_2mnemonic(EVENT_APP type) {
         case EVENT_APP_TIME_VALID:
         strncpy(mnemonic, "EVENT_APP_TIME_VALID", 30);
         break;
+        case EVENT_APP_AUTO:
+        strncpy(mnemonic, "EVENT_APP_AUTO", 30);
+        break;
+
+        case EVENT_APP_MANUAL:
+        strncpy(mnemonic, "EVENT_APP_MANUAL", 30);
+        break;
+
+
     }
 
 
@@ -176,7 +186,8 @@ void delay_get_schedules(void *arg) {
 
 void receive_event_app(event_app_t event) {
 
-
+    esp_rmaker_param_t *param;
+    char *status;
 
 
     switch (event.event_app) 
@@ -200,7 +211,7 @@ void receive_event_app(event_app_t event) {
             update_threshold(event.value, true);
             break;
         case EVENT_APP_TIME_VALID:
-            esp_rmaker_param_t *param;
+            
             param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
             if (strcmp (esp_rmaker_param_get_val(param)->val.s, STATUS_APP_STARTING) == 0) {
                 ESP_LOGW(TAG, "Vamos a cambiar de mode starting");
@@ -215,12 +226,32 @@ void receive_event_app(event_app_t event) {
             esp_timer_start_once(timer_delay_get_schedule, 10 * 1000000);
 
             }
+            break;
 
+        case EVENT_APP_MANUAL:
+            param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+            status = esp_rmaker_param_get_val(param)->val.s;
+
+
+            if (strcmp(status, STATUS_APP_AUTO) == 0) {
+
+                esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_MANUAL));
+                relay_operation(ON);
+                }
 
             break;
 
-        break;
+        case EVENT_APP_AUTO:
+            param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+            status = esp_rmaker_param_get_val(param)->val.s;
 
+            if (strcmp(status, STATUS_APP_MANUAL) == 0) {
+
+            esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_AUTO));
+            reading_temperature();
+            }
+
+        break;
 
     }
 

@@ -17,6 +17,7 @@
 #include "app_priv.h"
 #include "esp_log.h"
 #include "lv_main_thermostat.h"
+#include "thermostat_task.h"
 #include "events_app.h"
 #include "lvgl.h"
 
@@ -154,37 +155,3 @@ bool app_driver_get_state(void)
 {
     return g_power_state;
 }
-
-
-
-
- 
-void change_app_status(EVENT_APP event_status) {
-
-    esp_rmaker_param_t *param;
-    char *status;
-
-    param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-    status = esp_rmaker_param_get_val(param)->val.s;
-
-    if (strcmp(status, STATUS_APP_STARTING) == 0) {
-
-        switch(event_status) {
-
-            case EVENT_APP_TIME_VALID:
-            
-            break;
-
-            default:
-            break;
-        }
-    }
-
-
-
-
-}
-
-
-
-

@@ -285,15 +285,26 @@ static void lv_event_handler_button_mode(lv_event_t *event) {
      * Rutina de pulsado del boton mode
      */
 
+    event_app_t event_app;
+    
+
+
     if (strcmp(lv_label_get_text(label_mode), "M") == 0) {
 
+        event_app.event_app = EVENT_APP_MANUAL;
         lv_update_label_mode("A");
         lv_update_text_mode("MANUAL");
+
+
+        
     } else {
+        event_app.event_app = EVENT_APP_AUTO;
         lv_update_label_mode("M");
         lv_update_text_mode("AUTO");
 
     }
+
+    send_event_app(event_app);
 
 
 }

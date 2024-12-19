@@ -28,6 +28,7 @@
 #include <esp_rmaker_console.h>
 #include <esp_rmaker_ota.h>
 #include <esp_rmaker_utils.h>
+#include "alarms_app.h"
 
 
 #include "cJSON.h"
@@ -58,12 +59,13 @@
 
 #define NAME_DEVICE "Thermostat"
 
-
+float current_threshold = 21.5;
 
 
 static const char *TAG = "app_main";
 esp_rmaker_device_t *thermostat_device;
 static esp_timer_handle_t timer_date_text;
+
 
 
 const esp_timer_create_args_t text_date_shot_timer_args = {
@@ -78,7 +80,7 @@ app_params params;
 
 static void timer_delay_next_schedule(void *arg) {
 
-    lv_update_lcd_schedule();
+    lv_update_lcd_schedule(true);
     ESP_LOGI(TAG, "UPDATE LCD SCHEDULE EJECUTADO DESPUES DE UNA OPERACION CON LOS SCHEDULES");
 
 }
@@ -200,6 +202,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = true;
                 send_event(event_lcd);
+                set_alarm(MQTT_ALARM, ALARM_APP_OFF);
  
 
                 break;
@@ -208,6 +211,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = false;
                 send_event(event_lcd);
+                set_alarm(MQTT_ALARM, ALARM_APP_ON);
 
                 break;
             case RMAKER_MQTT_EVENT_PUBLISHED:
@@ -290,7 +294,8 @@ void register_parameters(app_params *params)
      * Create threshold param
      */
     //params->threshold = esp_rmaker_schedules_param_create(SETPOINT_TEMPERATURE, 10);
-    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(35.0), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
+    ESP_LOGE(TAG, "CURRENT_THRESHOLD VALE %.1f", current_threshold);
+    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
     esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(0), esp_rmaker_float(40), esp_rmaker_float(0.5));
     esp_rmaker_device_add_param(thermostat_device, params->threshold);
@@ -479,6 +484,7 @@ void init_app()
         event.event_type = UPDATE_WIFI_STATUS;
         event.status = true;
         send_event(event);
+        set_alarm(WIFI_ALARM, ALARM_APP_OFF);
         
     }
     
@@ -553,7 +559,7 @@ void time_refresh(void *arg) {
         send_event(event);
         interval = 60 - sec;
 
-        lv_update_lcd_schedule();
+        lv_update_lcd_schedule(true);
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
     }
 
@@ -593,7 +599,7 @@ void update_time_valid(bool timevalid) {
             event.par2 = min;
             send_event(event);
 
-            lv_update_lcd_schedule();
+            lv_update_lcd_schedule(true);
 
         } 
 
@@ -631,13 +637,14 @@ void event_handler_sync (struct timeval *tv) {
         event_app_t event;
         event.event_app = EVENT_APP_TIME_VALID;
         send_event_app(event);
+        set_alarm(NTP_ALARM, ALARM_APP_OFF);
 
         break;
 
 
     case SNTP_SYNC_STATUS_IN_PROGRESS:  
         ESP_LOGE(TAG, "La sincronizacion esta en progreso");
-
+        set_alarm(NTP_ALARM, ALARM_APP_ON);
 
     break; // Smooth time sync in progress.
     
@@ -650,7 +657,7 @@ void app_main() {
 
     event_lcd_t event_lcd;
     char mode[50] = {0};
-
+    init_alarms();
     create_event_app_task();
     init_lcdrgb();
 

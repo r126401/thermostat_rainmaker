@@ -29,6 +29,7 @@
 
 static const char *TAG = "local_events";
 
+extern float current_threshold;
 
 
 
@@ -84,11 +85,12 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
             ESP_LOGI(TAG, "Received start schedule ");
             if (param == esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE)){
+                current_threshold = val.val.f;
                 esp_rmaker_param_update_and_report(param, val);
                 
                 ESP_LOGI(TAG, "Enviado threshold al cliente despues de inicio del trigger");
                 update_threshold(val.val.f, true);
-                lv_update_lcd_schedule();
+                lv_update_lcd_schedule(true);
 
  
             }
@@ -107,8 +109,9 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
             if (esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE) == param) {
 
+                current_threshold = val.val.f;
                 update_threshold(val.val.f, false);
-                lv_update_lcd_schedule();
+                lv_update_lcd_schedule(true);
                 
             }
 
@@ -140,8 +143,9 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
                 ESP_LOGI(TAG, "Received value threshold = %s for %s - %s",
                         val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
                     esp_rmaker_param_get_name(param));
+                    current_threshold = val.val.f;
                 update_threshold(val.val.f, false);
-                lv_update_lcd_schedule();
+                lv_update_lcd_schedule(true);
                 
             }
 

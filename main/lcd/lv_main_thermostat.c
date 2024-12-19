@@ -67,6 +67,7 @@ bool pulse = false;
 lv_timer_t *mytimer;
 
 extern char *text_qrcode;
+extern float current_threshold;
 static const char *TAG = "lv_main_thermostat";
 
 
@@ -92,7 +93,7 @@ extern lv_display_t * display;
 
 
 
-int lv_update_lcd_schedule() {
+int lv_update_lcd_schedule(bool status) {
 
     event_lcd_t event;
     int index;
@@ -101,7 +102,7 @@ int lv_update_lcd_schedule() {
 
 
     event.event_type = UPDATE_SCHEDULE;
-    event.status = true;
+    event.status = status;
     index = get_next_schedule(&hour);
     event.par1 = hour;
     event.par2 = index;
@@ -199,8 +200,9 @@ void create_layout_threshold() {
 	lv_image_set_src(icon_threshold, &ic_threshold);
 	text_threshold = lv_label_create(layout_threshold);
 	lv_obj_align_to(text_threshold, icon_threshold, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+    lv_update_threshold_temperature(current_threshold);
 	//lv_obj_set_pos(text_threshold, 20, 10);
-    lv_label_set_text(text_threshold, "25.1 ºC");
+    //lv_label_set_text(text_threshold, "25.1 ºC");
 	lv_obj_set_size(layout_threshold, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
 
 
@@ -279,6 +281,21 @@ static void lv_event_handler_button_up(lv_event_t *event) {
     
 }
 
+static void set_button_threshold_clickable(bool enable) {
+
+    if (enable) {
+        lv_obj_add_flag(button_up, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(button_down, LV_OBJ_FLAG_CLICKABLE);
+        
+    } else {
+
+        lv_obj_remove_flag(button_up, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_remove_flag(button_down, LV_OBJ_FLAG_CLICKABLE);
+
+
+    }
+}
+
 static void lv_event_handler_button_mode(lv_event_t *event) {
 
     /**
@@ -294,6 +311,7 @@ static void lv_event_handler_button_mode(lv_event_t *event) {
         event_app.event_app = EVENT_APP_MANUAL;
         lv_update_label_mode("A");
         lv_update_text_mode("MANUAL");
+        set_button_threshold_clickable(false);
 
 
         
@@ -301,6 +319,7 @@ static void lv_event_handler_button_mode(lv_event_t *event) {
         event_app.event_app = EVENT_APP_AUTO;
         lv_update_label_mode("M");
         lv_update_text_mode("AUTO");
+        set_button_threshold_clickable(true);
 
     }
 

@@ -86,7 +86,9 @@
         "regex": "c",
         "rgblcd.h": "c",
         "stdbool.h": "c",
-        "esp_rmaker_common_events.h": "c"
+        "esp_rmaker_common_events.h": "c",
+        "alarms.h": "c",
+        "nvs_flash.h": "c"
     },
     "idf.flashType": "UART"
 }

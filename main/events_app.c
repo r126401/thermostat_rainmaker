@@ -11,6 +11,7 @@
 #include "esp_log.h"
 #include "esp_err.h"
 
+
 #include "lv_main_thermostat.h"
 #include "lv_factory_thermostat.h"
 #include <esp_rmaker_core.h>
@@ -25,6 +26,8 @@
 xQueueHandle event_queue_app;
 static const char *TAG = "events_app";
 extern esp_rmaker_device_t *thermostat_device;
+extern float current_threshold;
+
 
 
 #include <string.h>
@@ -142,6 +145,12 @@ char* event_app_2mnemonic(EVENT_APP type) {
         case EVENT_APP_MANUAL:
         strncpy(mnemonic, "EVENT_APP_MANUAL", 30);
         break;
+        case EVENT_APP_ALARM_OFF:
+        strncpy(mnemonic, "EVENT_APP_ALARM_OFF", 30);
+        break;
+        case EVENT_APP_ALARM_ON:
+        strncpy(mnemonic, "EVENT_APP_ALARM_ON", 30);
+        break;
 
 
     }
@@ -177,6 +186,8 @@ void delay_get_schedules(void *arg) {
 
     event.text = text;
     send_event(event);
+
+
     
 
 
@@ -234,26 +245,55 @@ void receive_event_app(event_app_t event) {
 
 
             if (strcmp(status, STATUS_APP_AUTO) == 0) {
+                ESP_LOGW(TAG, "Vamos a cambiar al estado manual. Estamos en modo %s", status);
 
                 esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_MANUAL));
-                relay_operation(ON);
+                if (get_status_relay() == OFF) {
+                    ESP_LOGW(TAG, "Vamos a encender porque estaba apagado");
+                    relay_operation(ON);
+                } else {
+                    ESP_LOGW(TAG, "Vamos a encender porque estaba encendido");
+                    relay_operation(OFF);
+                    }
                 }
+
+                lv_update_lcd_schedule(false);
 
             break;
 
         case EVENT_APP_AUTO:
             param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
             status = esp_rmaker_param_get_val(param)->val.s;
+            ESP_LOGW(TAG, "Vamos a cambiar al estado AUTO. Estamos en modo %s", status);
 
             if (strcmp(status, STATUS_APP_MANUAL) == 0) {
-
-            esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_AUTO));
-            reading_temperature();
+                //reportamos el paso a modo auto
+                esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_AUTO));
+                // recogemos el valor que teniamos de umbral de temperatura del modo auto y lo ponemos
+                //param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
+                //esp_rmaker_param_update(param, esp_rmaker_float(current_threshold));
+                event_lcd_t event;
+                event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
+                event.par1 = current_threshold;
+                send_event(event);
+                lv_update_lcd_schedule(true);
+                param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+                thermostat_action(esp_rmaker_param_get_val(param)->val.f);
             }
 
         break;
 
+        case EVENT_APP_ALARM_OFF:
+
+        break;
+        case EVENT_APP_ALARM_ON:
+
+        break;
+
+
     }
+
+    ESP_LOGW(TAG, "Retornamos despues de procesar la peticion");
 
 }
 
@@ -266,7 +306,7 @@ void event_app_task(void *arg) {
 	event_queue_app = xQueueCreate(5, sizeof(event_app_t));
 
 	for(;;) {
-		ESP_LOGI(TAG, "ESPERANDO EVENTO DE APLICACION...Memoria libre: %d", (int) esp_get_free_heap_size());
+		ESP_LOGE(TAG, "ESPERANDO EVENTO DE APLICACION...Memoria libre: %d", (int) esp_get_free_heap_size());
 		if (xQueueReceive(event_queue_app, &event,  portMAX_DELAY) == pdTRUE) {
 
 			receive_event_app(event);
@@ -286,7 +326,7 @@ void create_event_app_task() {
 
 
 
-	xTaskCreatePinnedToCore(event_app_task, "event_app_task", 1024*4, NULL, 2, NULL,0);
+	xTaskCreatePinnedToCore(event_app_task, "event_app_task", 1024*4, NULL, 0, NULL,0);
 	ESP_LOGW(TAG, "TAREA DE EVENTOS DE APLICACION CREADA CREADA");
 
 
@@ -297,7 +337,7 @@ void send_event_app(event_app_t event) {
 
 
 	ESP_LOGW(TAG, " envio de evento app %s", event_app_2mnemonic(event.event_app));
-	if ( xQueueSend(event_queue_app, &event, portMAX_DELAY) != pdPASS) {
+	if ( xQueueSend(event_queue_app, &event, 0) != pdPASS) {
 		ESP_LOGE(TAG, "no se ha podido enviar el evento");
 
 	}

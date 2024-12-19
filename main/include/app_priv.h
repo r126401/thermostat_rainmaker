@@ -68,6 +68,9 @@ void app_driver_init(void);
 
 bool app_driver_get_state(void);
 enum ESTADO_RELE relay_operation(ESTADO_RELE op);
+ESTADO_RELE get_status_relay();
+
+
 
 
 

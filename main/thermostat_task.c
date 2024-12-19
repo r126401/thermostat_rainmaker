@@ -4,6 +4,7 @@
 
 #include "esp_err.h"
 #include "esp_log.h"
+#include "alarms_app.h"
 #include <string.h>
 #include <math.h>
 #include "time.h"
@@ -82,9 +83,14 @@ esp_err_t read_temperature(float *temperature_metered)
 
 		//ESP_LOGI(TAG, "temperature read from DS18B20: %.2f C", temperature_metered);	
 		ESP_LOGI(TAG, "%s: TEMPERATURA ORIGINAL: %.02f C", esp_log_system_timestamp(), *temperature_metered);
+		set_alarm(SENSOR_ALARM, ALARM_APP_OFF);
 
+	} else {
+
+		set_alarm(SENSOR_ALARM, ALARM_APP_ON);
 	}
 
+	
 
     return error;
     
@@ -125,6 +131,7 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 	if (param!= NULL) {
 		
 		threshold_temperature = esp_rmaker_param_get_val(param)->val.f;
+		ESP_LOGE(TAG, "EL VALOR DE THRESHOLD ES : %.1f", threshold_temperature);
 	} else {
 		ESP_LOGW(TAG, "rmaker no activo. Se introduce el valor por defecto para el threshold");
 		threshold_temperature = DEFAULT_THRESHOLD;
@@ -306,7 +313,7 @@ esp_err_t reading_remote_temperature() {
 
 	return ESP_OK;
 }
-
+/*
 esp_err_t reading_temperature() {
 
 	esp_err_t error = ESP_OK ;
@@ -386,12 +393,12 @@ esp_err_t reading_temperature() {
 
 
 }
-
+*/
 
 
 void task_iotThermostat() 
 {
-/*
+
 	esp_err_t error = ESP_OK ;
 	int value;
 	esp_rmaker_param_t *param;
@@ -400,7 +407,7 @@ void task_iotThermostat()
 	float current_temperature;
 	event_lcd_t event;
 	event.event_type = UPDATE_TEMPERATURE;
-*/
+
 
 	/**
 	 * init driver ds18b20
@@ -412,9 +419,9 @@ void task_iotThermostat()
 
     while(1) {
 
-		reading_temperature();
+		//reading_temperature();
 
-/*
+
 		param = esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL);
 		if (param != NULL) {
 			value = esp_rmaker_param_get_val(param)->val.i;
@@ -478,7 +485,7 @@ void task_iotThermostat()
 			ESP_LOGE(TAG, "Error al leer la temperatura del dispositivo. Reintentamos en %d segundos", value);
 			vTaskDelay(value * 500 / portTICK_PERIOD_MS);
 		}
-*/
+
 
 	}
 	

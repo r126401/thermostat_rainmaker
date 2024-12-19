@@ -74,6 +74,11 @@ static void push_btn_cb(void *arg)
 #endif
 }
 
+ESTADO_RELE get_status_relay() {
+
+    return (gpio_get_level(CONFIG_RELAY_GPIO));
+}
+
 
 
 void gpio_rele_in_out() {

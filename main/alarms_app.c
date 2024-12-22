@@ -7,7 +7,7 @@
 static char* TAG = "alarmas.c";
 
 
-bool alarms[N_ALARMS];
+static bool alarms[N_ALARMS];
 
 static char* alarm2mnemonic(ALARM_APP alarm) {
 
@@ -43,33 +43,38 @@ void init_alarms() {
     int i;
     for (i=0;i<N_ALARMS;i++) {
         alarms[i] = true;
+        ESP_LOGI(TAG, "Alarma %s en estado %d", alarm2mnemonic(alarms[i]), alarms[i]);
     }
 
 }
 
 
-void set_alarm(ALARM_APP alarm, STATUS_ALARM_APP status) {
+void set_alarm(ALARM_APP alarm, bool status) {
 
-
-    alarms[alarm] = status;
     event_app_t event_alarm;
 
+
+    ESP_LOGW(TAG, "La alarma %s estaba a %d y se quiere poner a %d", alarm2mnemonic(alarm), alarms[alarm], status);
     if (alarms[alarm] == status) {
 
         ESP_LOGW(TAG, "la alarma %s ya estaba en %d y no ha cambiado", alarm2mnemonic(alarm), status );
         return;
     }
 
+    ESP_LOGW(TAG, "Se va a enviar alarma %s en estado %d", alarm2mnemonic(alarm), status);
+
+    alarms[alarm] = status;
 
 
     if (status == ALARM_APP_ON) {
-        event_alarm.event_app = EVENT_APP_ALARM_ON;
+
+        event_alarm.event_app  = EVENT_APP_ALARM_ON;
     }
 
     if (get_active_alarms() == 0) {
         event_alarm.event_app = EVENT_APP_ALARM_OFF;
     }
-    event_alarm.value = alarm;
+    event_alarm.value = status;
     send_event_app(event_alarm);
 
 
@@ -86,9 +91,9 @@ bool get_status_alarm(ALARM_APP alarm) {
     return alarms[alarm];
 }
 
-uint8_t get_active_alarms() {
+int get_active_alarms() {
 
-    uint8_t nalarms = 0;
+    int nalarms = 0;
     int i;
     for (i=0;i<N_ALARMS;i++) {
 
@@ -96,7 +101,7 @@ uint8_t get_active_alarms() {
 
     }
 
-    ESP_LOGI(TAG, "Encontradas %ud alarmas activas", nalarms);
+    ESP_LOGI(TAG, "Encontradas %u alarmas activas", nalarms);
 
     return nalarms;
 

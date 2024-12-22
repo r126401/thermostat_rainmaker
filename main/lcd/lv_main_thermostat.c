@@ -760,6 +760,8 @@ void lv_update_time(int hour, int minute) {
 
 
 
+
+
 void lv_update_text_mode(char *mode) {
 
     if (label_text_mode != NULL) {

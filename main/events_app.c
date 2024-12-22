@@ -10,6 +10,7 @@
 #include <freertos/queue.h>
 #include "esp_log.h"
 #include "esp_err.h"
+#include "alarms_app.h"
 
 
 #include "lv_main_thermostat.h"
@@ -33,6 +34,29 @@ extern float current_threshold;
 #include <string.h>
 #include "strings.h"
 #include <stdio.h>
+
+
+static void send_alarm(bool status) {
+
+    event_lcd_t event;
+    event.event_type = UPDATE_ICON_ERRORS;
+    event.status = status;
+    send_event(event);
+
+}
+
+
+static void send_alarm_off() {
+
+    send_alarm(false);
+
+}
+
+static void send_alarm_on() {
+
+    send_alarm(true);
+
+}
 
 
 char* event2mnemonic(EVENT_TYPE_LCD type_lcd) {
@@ -285,8 +309,20 @@ void receive_event_app(event_app_t event) {
 
         case EVENT_APP_ALARM_OFF:
 
+        if (get_active_alarms() == 0) {
+
+            send_alarm_off();
+
+
+        }
+
         break;
         case EVENT_APP_ALARM_ON:
+        
+        if (get_active_alarms() == 0) {
+
+            send_alarm_on();
+        }
 
         break;
 

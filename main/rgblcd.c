@@ -1,6 +1,7 @@
 
 
 #include "rgblcd.h"
+#include "app_priv.h"
 
 
 #include <stdio.h>
@@ -290,7 +291,8 @@ static void example_bsp_set_lcd_backlight(uint32_t level)
 void init_lcdrgb(void)
 {
     ESP_LOGI(TAG, "Turn off LCD backlight");
-    example_bsp_init_lcd_backlight();
+    //example_bsp_init_lcd_backlight();
+    gpio_rele_in_out();
     example_bsp_set_lcd_backlight(LCD_BK_LIGHT_OFF_LEVEL);
 
     ESP_LOGI(TAG, "Install RGB LCD panel driver");

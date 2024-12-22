@@ -30,49 +30,13 @@ static const char *TAG = "app_driver";
 /* This is the GPIO on which the power will be set */
 #define OUTPUT_GPIO    CONFIG_EXAMPLE_OUTPUT_GPIO
 static bool g_power_state = DEFAULT_POWER;
-#define GPIO_OUTPUT_PIN_SEL  1ULL<< CONFIG_RELAY_GPIO
-#define GPIO_INPUT_PIN_SEL  1ULL<<CONFIG_RELAY_GPIO
-/* These values correspoind to H,S,V = 120,100,10 */
-#define DEFAULT_RED     0
-#define DEFAULT_GREEN   25
-#define DEFAULT_BLUE    0
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<< CONFIG_RELAY_GPIO) | (1ULL << CONFIG_PIN_NUM_BK_LIGHT))
+
 
 #define WIFI_RESET_BUTTON_TIMEOUT       3
 #define FACTORY_RESET_BUTTON_TIMEOUT    10
 
 
-static void push_btn_cb(void *arg)
-{
-    bool new_state = !g_power_state;
-    relay_operation(new_state);
-#ifdef CONFIG_EXAMPLE_ENABLE_TEST_NOTIFICATIONS
-    /* This snippet has been added just to demonstrate how the APIs esp_rmaker_param_update_and_notify()
-     * and esp_rmaker_raise_alert() can be used to trigger push notifications on the phone apps.
-     * Normally, there should not be a need to use these APIs for such simple operations. Please check
-     * API documentation for details.
-     */
-    if (new_state) {
-        esp_rmaker_param_update_and_notify(
-                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
-                esp_rmaker_bool(new_state));
-    } else {
-        esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
-                esp_rmaker_bool(new_state));
-        esp_rmaker_raise_alert("Switch was turned off");
-    }
-#else
-    esp_rmaker_param_update_and_report(
-            esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
-            esp_rmaker_bool(new_state));
-    
-    esp_rmaker_param_update_and_report(
-            esp_rmaker_device_get_param_by_name(thermostat_device, "temperatura"),
-            esp_rmaker_float(22.5));
-
-
-#endif
-}
 
 ESTADO_RELE get_status_relay() {
 
@@ -84,7 +48,7 @@ ESTADO_RELE get_status_relay() {
 void gpio_rele_in_out() {
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_DISABLE;
-	io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+	io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
 	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
     io_conf.pull_down_en = 0;
     //disable pull-up mode
@@ -142,13 +106,7 @@ enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 void app_driver_init()
 {
 
-    button_handle_t btn_handle = iot_button_create(BUTTON_GPIO, BUTTON_ACTIVE_LEVEL);
-    if (btn_handle) {
-        /* Register a callback for a button tap (short press) event */
-        iot_button_set_evt_cb(btn_handle, BUTTON_CB_TAP, push_btn_cb, NULL);
-        /* Register Wi-Fi reset and factory reset functionality on same button */
-        app_reset_button_register(btn_handle, WIFI_RESET_BUTTON_TIMEOUT, FACTORY_RESET_BUTTON_TIMEOUT);
-    }
+
 
     gpio_rele_in_out();
     relay_operation(false);

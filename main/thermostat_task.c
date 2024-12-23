@@ -23,7 +23,7 @@ static const char *TAG = "thermostat_task";
 #define ONEWIRE_MAX_DS18B20 1
 ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DS18B20];
 
-
+extern esp_rmaker_device_t *thermostat_device;
 
 
 void init_ds18b20()
@@ -313,87 +313,6 @@ esp_err_t reading_remote_temperature() {
 
 	return ESP_OK;
 }
-/*
-esp_err_t reading_temperature() {
-
-	esp_err_t error = ESP_OK ;
-	int value;
-	esp_rmaker_param_t *param;
-	char* id_sensor;
-	static uint8_t n_errors = 0;
-	float current_temperature;
-	event_lcd_t event;
-	event.event_type = UPDATE_TEMPERATURE;
-
-			param = esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL);
-		if (param != NULL) {
-			value = esp_rmaker_param_get_val(param)->val.i;
-
-		} else {
-			ESP_LOGW(TAG, "Rmaker no activo, read_interval se pone por defecto a 60sg");
-			value = 60;
-		}
-		param = esp_rmaker_device_get_param_by_name(thermostat_device, ID_SENSOR);
-		if (param != NULL) {
-			id_sensor = esp_rmaker_param_get_val(param)->val.s;
-		} else {
-			id_sensor = NULSENSOR;
-			ESP_LOGW(TAG, "Rmaker no activo, id sensor se pone a Null para la lectura en local");
-		}
-		
-
-		ESP_LOGI(TAG, "Intervalo lectura: %d, id_sensor: %s", value, id_sensor);
-
-
-
-		if (strcmp(id_sensor, NULSENSOR) == 0) {
-
-			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en local", INFOTRAZA);
-			error = reading_local_temperature(&current_temperature);
-			if (error == ESP_OK) {
-				event.value = current_temperature;
-				send_event(event);
-				ESP_LOGI(TAG, "Enviada la temperatura al display");
-				param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
-				if (param != NULL) {
-					esp_rmaker_param_update_and_report(param, esp_rmaker_float(current_temperature));
-				} else {
-					ESP_LOGW(TAG, "Rmaker no activo, No se reporta el valor de la temperatura");
-				}
-				
-
-			}
-
-			
-
-		} else {
-			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en remoto", INFOTRAZA);
-			error = reading_remote_temperature();
-
-		}
-
-		ESP_LOGE(TAG, "LOS HEMOS LEIDO");
-		if (error == ESP_OK) {
-			n_errors = 0;
-			vTaskDelay(value * 1000 / portTICK_PERIOD_MS);
-		} else {
-			n_errors++;
-			if (n_errors > CONFIG_ERROR_READING_TEMPERATURE) {
-
-				ESP_LOGI(TAG, "Llevamos %d errores de lectura consecutivos", n_errors);
-				esp_rmaker_param_update_and_notify(esp_rmaker_device_get_param_by_name(thermostat_device, ALARM), esp_rmaker_int(SENSOR_FAIL));
-
-			}
-
-			ESP_LOGE(TAG, "Error al leer la temperatura del dispositivo. Reintentamos en %d segundos", value);
-			vTaskDelay(value * 500 / portTICK_PERIOD_MS);
-		}
-
-		return error;
-
-
-}
-*/
 
 
 void task_iotThermostat() 

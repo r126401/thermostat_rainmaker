@@ -44,32 +44,10 @@
 
 
 
-typedef enum ESTADO_RELE {
-    INDETERMINADO = -1,
-    OFF = 0,
-    ON = 1
-}ESTADO_RELE;
-
-typedef enum TIPO_ACCION_TERMOSTATO {
-	NO_ACCIONAR_TERMOSTATO,
-	ACCIONAR_TERMOSTATO,
-   NINGUNA_ACCION
-}TIPO_ACCION_TERMOSTATO;
-
-typedef enum DEVICE_STATUS {
-
-   DEVICE_OK,
-   SENSOR_FAIL
-} DEVICE_STATUS;
 
 
-extern esp_rmaker_device_t *thermostat_device;
-void app_driver_init(void);
 
-bool app_driver_get_state(void);
-enum ESTADO_RELE relay_operation(ESTADO_RELE op);
-ESTADO_RELE get_status_relay();
-void gpio_rele_in_out();
+//extern esp_rmaker_device_t *thermostat_device;
 
 
 
@@ -78,7 +56,11 @@ void gpio_rele_in_out();
 
 
 
-typedef struct app_params 
+
+
+
+
+typedef struct app_params_t 
 {
    esp_rmaker_param_t *mode;
    esp_rmaker_param_t *temperature;
@@ -92,7 +74,7 @@ typedef struct app_params
    esp_rmaker_param_t *programacion;
 
 
-} app_params;
+} app_params_t;
 
 
 typedef enum status_app_t {

@@ -30,6 +30,7 @@
 static const char *TAG = "local_events";
 
 extern float current_threshold;
+extern esp_rmaker_device_t *thermostat_device;
 
 
 

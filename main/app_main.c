@@ -75,7 +75,7 @@ const esp_timer_create_args_t text_date_shot_timer_args = {
 };
 
 char *text_qrcode;
-app_params params;
+app_params_t params;
 
 
 static void timer_delay_next_schedule(void *arg) {
@@ -276,7 +276,7 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 
 
 
-void register_parameters(app_params *params) 
+void register_parameters(app_params_t *params) 
 
 {
 

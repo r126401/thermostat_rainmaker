@@ -22,19 +22,11 @@
 #include "lvgl.h"
 
 static const char *TAG = "app_driver";
+extern esp_rmaker_device_t *thermostat_device;
 
-/* This is the button that is used for toggling the power */
-#define BUTTON_GPIO          CONFIG_EXAMPLE_BOARD_BUTTON_GPIO
-#define BUTTON_ACTIVE_LEVEL  0
-
-/* This is the GPIO on which the power will be set */
-#define OUTPUT_GPIO    CONFIG_EXAMPLE_OUTPUT_GPIO
-static bool g_power_state = DEFAULT_POWER;
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<< CONFIG_RELAY_GPIO) | (1ULL << CONFIG_PIN_NUM_BK_LIGHT))
 
 
-#define WIFI_RESET_BUTTON_TIMEOUT       3
-#define FACTORY_RESET_BUTTON_TIMEOUT    10
 
 
 
@@ -103,18 +95,3 @@ enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 }
 
 
-void app_driver_init()
-{
-
-
-
-    gpio_rele_in_out();
-    relay_operation(false);
-}
-
-
-
-bool app_driver_get_state(void)
-{
-    return g_power_state;
-}

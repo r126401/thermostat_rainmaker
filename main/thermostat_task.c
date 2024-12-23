@@ -17,6 +17,7 @@
 #include "lv_main_thermostat.h"
 #include "events_app.h"
 #include "schedule_app.h"
+#include "events_lcd.h"
 
 
 static const char *TAG = "thermostat_task";

@@ -30,6 +30,7 @@
 #include <esp_rmaker_utils.h>
 #include "alarms_app.h"
 #include "app_main.h"
+#include "events_lcd.h"
 
 
 

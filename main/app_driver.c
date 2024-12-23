@@ -28,6 +28,7 @@
 #include "esp_rmaker_mqtt_glue.h"
 #include "esp_rmaker_mqtt.h"
 #include "esp_err.h"
+#include "events_lcd.h"
 
 
 #include <esp_rmaker_core.h>

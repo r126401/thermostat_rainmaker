@@ -11,6 +11,7 @@
 #include "esp_log.h"
 #include "esp_err.h"
 #include "alarms_app.h"
+#include "events_lcd.h"
 
 
 #include "lv_main_thermostat.h"
@@ -59,87 +60,6 @@ static void send_alarm_on() {
 }
 
 
-char* event2mnemonic(EVENT_TYPE_LCD type_lcd) {
-
-    static char mnemonic[31];
-    switch (type_lcd) 
-    {
-
-        case UPDATE_TIME:
-        strncpy(mnemonic, "UPDATE_TIME", 30);
-
-        break;
-
-        case UPDATE_TEXT_MODE:
-
-        strncpy(mnemonic, "UPDATE_TEXT_MODE", 30);
-
-        break;
-
-        case UPDATE_LABEL_MODE:
-
-        strncpy(mnemonic, "UPDATE_LABEL_MODE", 30);
-
-        break;
-
-        case UPDATE_TEMPERATURE:
-
-        strncpy(mnemonic, "UPDATE_TEMPERTAURE", 30);
-
-        break;
-
-        case UPDATE_WIFI_STATUS:
-
-        strncpy(mnemonic, "UPDATE_WIFI_STATUS", 30);
-
-        break;
-
-        case UPDATE_BROKER_STATUS:
-        strncpy(mnemonic, "UPDATE_BROKER_STATUS", 30);
-
-        break;
-
-        case UPDATE_HEATING:
-
-        strncpy(mnemonic, "UPDATE_HEATING", 30);
-
-        break;
-
-        case UPDATE_THRESHOLD_TEMPERATURE:
-
-        strncpy(mnemonic, "UPDATE_THRESHOLD_TEMPERATURE", 30);
-
-        break;
-
-        case UPDATE_SCHEDULE:
-
-       strncpy(mnemonic, "UPDATE_SCHEDULE", 30);
-        break;
-
-        case UPDATE_ICON_ERRORS:
-
-        strncpy(mnemonic, "UPDATE_ICON_ERRORS", 30);
-
-        break;
-
-        case UPDATE_TEXT_SCHEDULE:
-        strncpy(mnemonic, "UPDATE_TEXT_SCHEDULE", 30);
-
-        break;
-
-        case UPDATE_PERCENT:
-
-        strncpy(mnemonic, "UPDATE_PERCENT", 30);
-        
-        break;
-
-        case QR_CONFIRMED:
-
-        strncpy(mnemonic, "QR_CONFIRMED", 30);
-    }
-
-        return mnemonic;
-}
 
 char* event_app_2mnemonic(EVENT_APP type) {
 

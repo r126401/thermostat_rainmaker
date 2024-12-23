@@ -26,6 +26,7 @@
 
 #include "schedule_app.h"
 #include "events_app.h"
+#include "events_lcd.h"
 
 static const char *TAG = "local_events";
 

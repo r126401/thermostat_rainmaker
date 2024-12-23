@@ -7,6 +7,7 @@
 #include "nvs.h"
 #include "schedule_app.h"
 #include "events_app.h"
+#include "events_lcd.h"
 #include <strings.h>
 #include <string.h>
 

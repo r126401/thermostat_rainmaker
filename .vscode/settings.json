@@ -90,7 +90,8 @@
         "alarms.h": "c",
         "nvs_flash.h": "c",
         "app_reset.h": "c",
-        "alarms_app.h": "c"
+        "alarms_app.h": "c",
+        "events_lcd.h": "c"
     },
     "idf.flashType": "UART"
 }

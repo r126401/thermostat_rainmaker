@@ -10,6 +10,7 @@
 #include "app_main.h"
 #include "events_app.h"
 #include "schedule_app.h"
+#include "events_lcd.h"
 
 
 //#define CONFIG_LCD_H_RES 480

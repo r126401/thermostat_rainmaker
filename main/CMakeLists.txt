@@ -10,6 +10,7 @@ idf_component_register(SRCS
 lcd/lv_factory_thermostat.c 
 lcd/lv_main_thermostat.c 
 lcd/lv_styles_thermostat.c
+lcd/events_lcd.c
 lcd/fonts/russo36.c 
 lcd/fonts/russo48.c
 lcd/images/ic_heating.c 

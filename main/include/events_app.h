@@ -13,7 +13,18 @@
 #include <esp_err.h>
 
 
+#include "esp_err.h"
+#include "esp_rmaker_core.h"
+#include <esp_rmaker_standard_types.h>
+#include <esp_rmaker_standard_params.h>
+#include <esp_rmaker_standard_devices.h>
+#include <esp_rmaker_schedule.h>
+#include <esp_rmaker_scenes.h>
+#include <esp_rmaker_console.h>
+#include <esp_rmaker_ota.h>
+#include <esp_rmaker_utils.h>
 
+#include "esp_rmaker_schedule.h"
 
 
 
@@ -45,3 +56,6 @@ void send_event_app(event_app_t event);
 void send_event_app_alarm(EVENT_APP type);
 
 
+esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,
+            const esp_rmaker_param_val_t val, void *priv_data, esp_rmaker_write_ctx_t *ctx);
+void update_threshold(float threshold, bool reporting);

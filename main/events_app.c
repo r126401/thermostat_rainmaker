@@ -2,7 +2,6 @@
 
 #include "events_app.h"
 #include "app_main.h"
-#include "local_events.h"
 #include "schedule_app.h"
 #include "thermostat_task.h"
 #include <freertos/FreeRTOS.h>

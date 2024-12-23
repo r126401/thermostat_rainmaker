@@ -19,40 +19,18 @@
 #include <esp_err.h>
 
 
-#include <esp_rmaker_core.h>
-#include <esp_rmaker_standard_types.h>
-#include <esp_rmaker_standard_params.h>
-#include <esp_rmaker_standard_devices.h>
-#include <esp_rmaker_schedule.h>
-#include <esp_rmaker_scenes.h>
-#include <esp_rmaker_console.h>
-#include <esp_rmaker_ota.h>
-#include <esp_rmaker_utils.h>
+
 #include "alarms_app.h"
 #include "app_main.h"
 #include "events_lcd.h"
-
-
-
-
-
-
-
-
-
-
 #include <esp_rmaker_common_events.h>
-
 #include <app_network.h>
 #include <app_insights.h>
-
 #include "app_main.h"
 #include "mqtt_client.h"
 #include "esp_rmaker_mqtt_glue.h"
 #include "esp_rmaker_mqtt.h"
-
 #include "thermostat_task.h"
-#include "local_events.h"
 #include "rgblcd.h"
 #include "lv_main_thermostat.h"
 #include "lv_factory_thermostat.h"

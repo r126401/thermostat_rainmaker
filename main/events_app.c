@@ -328,15 +328,14 @@ void update_threshold(float threshold, bool reporting) {
     event.value = threshold;
     send_event_lcd(event);
     parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
-    thermostat_action(threshold);
+    
     if (reporting) {
         esp_rmaker_param_update_and_report(parameter, esp_rmaker_float(threshold));
     } else {
         esp_rmaker_param_update(parameter, esp_rmaker_float(threshold));
     }
-    
 
-    
+    thermostat_action(get_current_temperature());
 
 
 

@@ -576,3 +576,10 @@ void factory_reset_device() {
 
     esp_rmaker_factory_reset(0,0);
 }
+
+float get_current_temperature() {
+
+    esp_rmaker_param_t *param;
+    param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
+    return esp_rmaker_param_get_val(param)->val.f;
+}

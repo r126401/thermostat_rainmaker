@@ -29,3 +29,4 @@ bool get_status_alarm(ALARM_APP alarm);
 
 int get_active_alarms();
 
+

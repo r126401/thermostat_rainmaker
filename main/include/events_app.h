@@ -69,3 +69,8 @@ void send_event(event_lcd_t event);
 void create_event_app_task();
 void send_event_app(event_app_t event);
 char* event2mnemonic(EVENT_TYPE_LCD type_lcd);
+
+
+void send_event_app_alarm(EVENT_APP type, bool status);
+
+

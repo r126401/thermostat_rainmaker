@@ -74,6 +74,8 @@ void set_alarm(ALARM_APP alarm, bool status) {
     if (get_active_alarms() == 0) {
         event_alarm.event_app = EVENT_APP_ALARM_OFF;
     }
+
+    
     event_alarm.value = status;
     send_event_app(event_alarm);
 

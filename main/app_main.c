@@ -110,11 +110,6 @@ void init_app()
     ESP_ERROR_CHECK(esp_event_handler_register(APP_NETWORK_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_OTA_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
 
-   
-    
-
-    
- 
 
     /* Initialize the ESP RainMaker Agent.
      * Note that this should be called after app_network_init() but before app_nenetworkk_start()
@@ -196,6 +191,8 @@ void init_app()
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     } else {
+
+        //send_event_app_alarm(WIFI_ALARM,ALARM_APP_OFF );
         event.event_type = UPDATE_WIFI_STATUS;
         event.status = true;
         send_event(event);
@@ -210,6 +207,10 @@ void init_app()
     
 
 }
+
+
+
+
 
 
 void app_main() {
@@ -243,16 +244,5 @@ void app_main() {
 }
 
 
-void reset_device() {
 
-    esp_restart();
-
-
-}
-
-
-void factory_reset_device() {
-
-    esp_rmaker_factory_reset(0,0);
-}
 

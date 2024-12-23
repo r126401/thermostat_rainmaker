@@ -89,7 +89,8 @@
         "esp_rmaker_common_events.h": "c",
         "alarms.h": "c",
         "nvs_flash.h": "c",
-        "app_reset.h": "c"
+        "app_reset.h": "c",
+        "alarms_app.h": "c"
     },
     "idf.flashType": "UART"
 }

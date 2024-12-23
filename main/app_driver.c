@@ -130,7 +130,7 @@ void register_parameters(app_params_t *params)
      */
     //params->threshold = esp_rmaker_schedules_param_create(SETPOINT_TEMPERATURE, 10);
     ESP_LOGE(TAG, "CURRENT_THRESHOLD VALE %.1f", current_threshold);
-    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
+    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_device_add_param(thermostat_device, params->threshold);
     esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(10), esp_rmaker_float(30), esp_rmaker_float(0.5));
@@ -560,4 +560,18 @@ void event_handler_sync (struct timeval *tv) {
     
    }
 
+}
+
+
+void reset_device() {
+
+    esp_restart();
+
+
+}
+
+
+void factory_reset_device() {
+
+    esp_rmaker_factory_reset(0,0);
 }

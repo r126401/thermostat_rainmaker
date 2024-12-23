@@ -381,3 +381,11 @@ void send_event_app(event_app_t event) {
 }
 
 
+void send_event_app_alarm(EVENT_APP type, bool status) {
+
+    event_app_t event;
+    event.event_app = type;
+    event.value = status;
+    send_event_app(event);
+    //ESP_LOGW(TAG, "Enviada alarma %s, en estado %d", alarm2mnemonic(type), status);
+}

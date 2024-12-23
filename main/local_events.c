@@ -1,7 +1,7 @@
 
 
 #include "local_events.h"
-#include "app_priv.h"
+#include "app_main.h"
 #include "thermostat_task.h"
 #include "lv_main_thermostat.h"
 

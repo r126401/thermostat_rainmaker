@@ -29,6 +29,8 @@
 #include <esp_rmaker_ota.h>
 #include <esp_rmaker_utils.h>
 #include "alarms_app.h"
+#include "app_main.h"
+
 
 
 #include "cJSON.h"
@@ -43,7 +45,7 @@
 #include <app_network.h>
 #include <app_insights.h>
 
-#include "app_priv.h"
+#include "app_main.h"
 #include "mqtt_client.h"
 #include "esp_rmaker_mqtt_glue.h"
 #include "esp_rmaker_mqtt.h"
@@ -59,7 +61,7 @@
 
 #define NAME_DEVICE "Thermostat"
 
-float current_threshold = 21.5;
+
 
 
 static const char *TAG = "app_main";
@@ -275,85 +277,6 @@ static void event_handler(void* arg, esp_event_base_t event_base,
 }
 
 
-
-void register_parameters(app_params_t *params) 
-
-{
-
-
-    /**
-     * Create temperature param
-     */
-    esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Thermostat"));
-
-    params->temperature = esp_rmaker_temperature_param_create(ESP_RMAKER_DEF_TEMPERATURE_NAME, DEFAULT_TEMPERATURE);
-    esp_rmaker_device_add_param(thermostat_device, params->temperature);
-    esp_rmaker_device_assign_primary_param(thermostat_device, params->temperature);
-
-    /**
-     * Create threshold param
-     */
-    //params->threshold = esp_rmaker_schedules_param_create(SETPOINT_TEMPERATURE, 10);
-    ESP_LOGE(TAG, "CURRENT_THRESHOLD VALE %.1f", current_threshold);
-    params->threshold = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
-    esp_rmaker_param_add_ui_type(params->threshold, ESP_RMAKER_UI_SLIDER);
-    esp_rmaker_param_add_bounds(params->threshold, esp_rmaker_float(0), esp_rmaker_float(40), esp_rmaker_float(0.5));
-    esp_rmaker_device_add_param(thermostat_device, params->threshold);
-
-
-
-    
-    /**
-     * Create calibrate param
-     */
-
-    params->calibrate = esp_rmaker_param_create(CALIBRATE, NULL, esp_rmaker_float(-2.0),PROP_FLAG_WRITE |  PROP_FLAG_READ);
-    esp_rmaker_device_add_param(thermostat_device, params->calibrate);
-
-    /**
-     * Create read interval param
-     */
-    params->read_interval = esp_rmaker_param_create(READ_INTERVAL, NULL, esp_rmaker_int(20), PROP_FLAG_READ | PROP_FLAG_WRITE);
-    esp_rmaker_device_add_param(thermostat_device, params->read_interval);
-
-    /**
-     * Create power param
-     */
-    params->power = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
-    esp_rmaker_device_add_param(thermostat_device, params->power);
-
-    /**
-     * Create margin temperature. Its used to switch on/off thermostat in order direcction of temperature
-     */
-    params->margin_temperature = esp_rmaker_param_create(MARGIN_TEMPERATURE, NULL, esp_rmaker_float(0.5), PROP_FLAG_READ | PROP_FLAG_WRITE);
-    esp_rmaker_device_add_param(thermostat_device, params->margin_temperature);
-
-    /**
-     * Create temperature sensor. If sensor is empty, sensor is into device. If sensor is a mac, sensor is remote.
-     */
-
-    params->sensor = esp_rmaker_param_create(ID_SENSOR, NULL, esp_rmaker_str(NULSENSOR), PROP_FLAG_READ | PROP_FLAG_WRITE);
-    esp_rmaker_param_add_ui_type(params->sensor, ESP_RMAKER_UI_QR_SCAN);
-    esp_rmaker_device_add_param(thermostat_device, params->sensor);
-
-    /**
-     * Create mode thermostat
-     */
-    static const char *list[] = {STATUS_APP_ERROR, STATUS_APP_AUTO, STATUS_APP_MANUAL, STATUS_APP_STARTING, STATUS_APP_SYNCING, STATUS_APP_UPGRADING, STATUS_APP_UNDEFINED};
-    params->mode = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(STATUS_APP_STARTING), PROP_FLAG_READ);
-    esp_rmaker_param_add_valid_str_list(params->mode, list, 7);
-    esp_rmaker_device_add_param(thermostat_device, params->mode);
-
-    /**
-     * Create alarm sensor
-     */
-    params->alarm = esp_rmaker_param_create(ALARM, NULL, esp_rmaker_int(0), PROP_FLAG_READ);
-    esp_rmaker_device_add_param(thermostat_device, params->alarm);
-
-
-
-
-}
 
 
 void init_app()

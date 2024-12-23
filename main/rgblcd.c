@@ -1,7 +1,7 @@
 
 
 #include "rgblcd.h"
-#include "app_priv.h"
+#include "app_main.h"
 
 
 #include <stdio.h>
@@ -82,7 +82,20 @@ static _lock_t lvgl_api_lock;
 lv_display_t *display;
 
 /********************************************************************************* */
+#define GPIO_OUTPUT_PIN_SEL  ((1ULL<< CONFIG_RELAY_GPIO) | (1ULL << CONFIG_PIN_NUM_BK_LIGHT))
 
+void gpio_rele_in_out() {
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_DISABLE;
+	io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
+    io_conf.pull_down_en = 0;
+    //disable pull-up mode
+    io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+    ESP_LOGW(TAG, "gpio rele en E/S");
+
+}
 
 
 

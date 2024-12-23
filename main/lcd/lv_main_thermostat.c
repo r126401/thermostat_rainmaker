@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <esp_sntp.h>
 #include "esp_log.h"
-#include "app_priv.h"
+#include "app_main.h"
 #include "events_app.h"
 #include "schedule_app.h"
 

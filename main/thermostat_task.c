@@ -1,5 +1,6 @@
 
 #include "thermostat_task.h"
+#include "app_main.h"
 
 
 #include "esp_err.h"

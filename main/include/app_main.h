@@ -123,3 +123,7 @@ void factory_reset_device();
  */
 void register_parameters(app_params_t *params);
 
+void event_handler(void* arg, esp_event_base_t event_base,
+                          int32_t event_id, void* event_data);
+
+void event_handler_sync (struct timeval *tv) ;

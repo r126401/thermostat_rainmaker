@@ -41,7 +41,7 @@ static void send_alarm(bool status) {
     event_lcd_t event;
     event.event_type = UPDATE_ICON_ERRORS;
     event.status = status;
-    send_event(event);
+    send_event_lcd(event);
 
 }
 
@@ -128,7 +128,7 @@ void delay_get_schedules(void *arg) {
     }
 
     event.text = text;
-    send_event(event);
+    send_event_lcd(event);
 
 
     
@@ -218,7 +218,7 @@ void receive_event_app(event_app_t event) {
                 event_lcd_t event;
                 event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
                 event.par1 = current_threshold;
-                send_event(event);
+                send_event_lcd(event);
                 lv_update_lcd_schedule(true);
                 param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
                 thermostat_action(esp_rmaker_param_get_val(param)->val.f);
@@ -326,7 +326,7 @@ void update_threshold(float threshold, bool reporting) {
     event_lcd_t event;
     event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
     event.value = threshold;
-    send_event(event);
+    send_event_lcd(event);
     parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
     thermostat_action(threshold);
     if (reporting) {

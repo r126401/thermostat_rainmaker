@@ -107,7 +107,7 @@ int lv_update_lcd_schedule(bool status) {
     index = get_next_schedule(&hour);
     event.par1 = hour;
     event.par2 = index;
-    send_event(event);
+    send_event_lcd(event);
 
     return index;
 
@@ -786,6 +786,7 @@ void lv_update_temperature(float temperature) {
 
     char data[10];
     sprintf(data, "%.1f", temperature);
+    ESP_LOGI(TAG, "A pintar en display: %.1f como caracter %s", temperature, data);
     lv_label_set_text_fmt(text_temperature, "%s ºC", data);
 
 }

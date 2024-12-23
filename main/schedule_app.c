@@ -44,7 +44,7 @@ void update_lcd_schedule() {
     index = get_next_schedule(&hour);
     event.par1 = hour;
     event.par2 = index;
-    send_event(event);
+    send_event_lcd(event);
 
 }
 

@@ -116,8 +116,8 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 	float margin_temperature;
 	float threshold_temperature;
 	esp_rmaker_param_t *param;
-	event_lcd_t event;
-	event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
+	//event_lcd_t event;
+	//event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
 
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, MARGIN_TEMPERATURE);
@@ -140,8 +140,9 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 
 	}
 
-	event.value = threshold_temperature;
-	send_event(event);
+	//event.value = threshold_temperature;
+	//send_event_lcd(event);
+	set_lcd_update_threshold_temperature(threshold_temperature);
 	ESP_LOGI(TAG, "THRESHOLD : %.1f", threshold_temperature);
 	
 
@@ -326,8 +327,8 @@ void task_iotThermostat()
 	char* id_sensor;
 	static uint8_t n_errors = 0;
 	float current_temperature;
-	event_lcd_t event;
-	event.event_type = UPDATE_TEMPERATURE;
+	//event_lcd_t event;
+	//event.event_type = UPDATE_TEMPERATURE;
 
 
 	/**
@@ -371,8 +372,9 @@ void task_iotThermostat()
 			ESP_LOGW(TAG, ""TRAZAR" Leemos temperatura en local", INFOTRAZA);
 			error = reading_local_temperature(&current_temperature);
 			if (error == ESP_OK) {
-				event.value = current_temperature;
-				send_event(event);
+				//event.value = current_temperature;
+				//send_event_lcd(event);
+				set_lcd_update_temperature(current_temperature);
 				ESP_LOGI(TAG, "Enviada la temperatura al display");
 				param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
 				if (param != NULL) {

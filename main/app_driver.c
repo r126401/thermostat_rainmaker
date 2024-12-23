@@ -102,7 +102,7 @@ enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
         event.status = false;
     }
 
-   send_event(event);
+   send_event_lcd(event);
 
     //lv_update_heating(event.status);
     //lv_timer_handler();
@@ -282,7 +282,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_EVENT_CLAIM_STARTED:
                 ESP_LOGI(TAG, "RainMaker Claim Started.");
                 event_lcd.event_type = QR_CONFIRMED;
-                send_event(event_lcd);
+                send_event_lcd(event_lcd);
                 break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
                 ESP_LOGI(TAG, "RainMaker Claim Successful.");
@@ -293,7 +293,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
                 event_lcd.event_type = QR_CONFIRMED;
-                send_event(event_lcd);
+                send_event_lcd(event_lcd);
 
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STOPPED:
@@ -331,7 +331,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 }
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = true;
-                send_event(event_lcd);
+                send_event_lcd(event_lcd);
                 set_alarm(MQTT_ALARM, ALARM_APP_OFF);
  
 
@@ -340,7 +340,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 ESP_LOGI(TAG, "MQTT Disconnected.");
                 event_lcd.event_type = UPDATE_BROKER_STATUS;
                 event_lcd.status = false;
-                send_event(event_lcd);
+                send_event_lcd(event_lcd);
                 set_alarm(MQTT_ALARM, ALARM_APP_ON);
 
                 break;
@@ -448,7 +448,7 @@ void update_time_valid(bool timevalid) {
             sync = true;
             event.par1 = hour;
             event.par2 = min;
-            send_event(event);
+            send_event_lcd(event);
 
             lv_update_lcd_schedule(true);
 
@@ -457,7 +457,7 @@ void update_time_valid(bool timevalid) {
     } else {
         event.par1 = -1;
         event.par2 = -1;
-        send_event(event);
+        send_event_lcd(event);
     }
 
 
@@ -503,7 +503,7 @@ void time_refresh(void *arg) {
         event.event_type = UPDATE_TIME;
         event.par1 = -1;
         event.par2 = -1;
-        send_event(event);
+        send_event_lcd(event);
         ESP_LOGI(TAG, "Hora invalida");
         interval = 60;
     } else {
@@ -511,7 +511,7 @@ void time_refresh(void *arg) {
         get_current_date(&hour, &min, &sec);
         event.par1 = hour;
         event.par2 = min;
-        send_event(event);
+        send_event_lcd(event);
         interval = 60 - sec;
 
         lv_update_lcd_schedule(true);

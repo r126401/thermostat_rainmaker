@@ -61,7 +61,7 @@ void init_app()
 {
 
     //app_params params;
-    event_lcd_t event;
+    //event_lcd_t event;
 
 
     esp_rmaker_console_init();
@@ -172,9 +172,10 @@ void init_app()
     } else {
 
         //send_event_app_alarm(WIFI_ALARM,ALARM_APP_OFF );
-        event.event_type = UPDATE_WIFI_STATUS;
-        event.status = true;
-        send_event(event);
+        //event.event_type = UPDATE_WIFI_STATUS;
+        //event.status = true;
+        //send_event_lcd(event);
+        set_lcd_update_wifi_status(true);
         set_alarm(WIFI_ALARM, ALARM_APP_OFF);
         
     }
@@ -190,16 +191,12 @@ void init_app()
 
 void app_main() {
 
-    event_lcd_t event_lcd;
-    char mode[50] = {0};
+
+
     init_alarms();
     create_event_app_task();
     init_lcdrgb();
-
-    event_lcd.event_type = UPDATE_TEXT_MODE;
-    strcpy(mode, STATUS_APP_STARTING);
-    event_lcd.text = mode;
-    send_event(event_lcd);
+    set_lcd_update_text_mode(STATUS_APP_STARTING);
 
     xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
     init_app();

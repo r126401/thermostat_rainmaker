@@ -51,7 +51,8 @@ void init_alarms() {
 
 void set_alarm(ALARM_APP alarm, bool status) {
 
-    event_app_t event_alarm;
+    //event_app_t event_alarm;
+    
 
 
     ESP_LOGW(TAG, "La alarma %s estaba a %d y se quiere poner a %d", alarm2mnemonic(alarm), alarms[alarm], status);
@@ -68,16 +69,17 @@ void set_alarm(ALARM_APP alarm, bool status) {
 
     if (status == ALARM_APP_ON) {
 
-        event_alarm.event_app  = EVENT_APP_ALARM_ON;
+        //event_alarm.event_app  = EVENT_APP_ALARM_ON;
+        send_event_app_alarm(EVENT_APP_ALARM_ON);
     }
 
     if (get_active_alarms() == 0) {
-        event_alarm.event_app = EVENT_APP_ALARM_OFF;
+        //event_alarm.event_app = EVENT_APP_ALARM_OFF;
+        send_event_app_alarm(EVENT_APP_ALARM_OFF);
     }
 
-    
-    event_alarm.value = status;
-    send_event_app(event_alarm);
+
+    //send_event_app(event_alarm);
 
 
 

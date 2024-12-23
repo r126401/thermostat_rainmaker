@@ -413,6 +413,8 @@ void task_iotThermostat()
 	 * init driver ds18b20
 	 */
 
+	relay_operation(false);
+
 	
 	init_ds18b20();
     ESP_LOGI(TAG, "COMIENZA LA TAREA DE LECTURA DE TEMPERATURA");

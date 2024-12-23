@@ -371,7 +371,7 @@ void init_app()
 
 
     esp_rmaker_console_init();
-    app_driver_init();
+    //app_driver_init();
 
     ESP_LOGE(TAG, "PASO 1");
 

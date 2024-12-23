@@ -85,18 +85,10 @@ lv_display_t *display;
 /********************************************************************************* */
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<< CONFIG_RELAY_GPIO) | (1ULL << CONFIG_PIN_NUM_BK_LIGHT))
 
-void gpio_rele_in_out() {
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_DISABLE;
-	io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
-	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
-    io_conf.pull_down_en = 0;
-    //disable pull-up mode
-    io_conf.pull_up_en = 0;
-    gpio_config(&io_conf);
-    ESP_LOGW(TAG, "gpio rele en E/S");
 
-}
+
+
+static void backlight_off(void *arg);
 
 
 
@@ -108,28 +100,25 @@ void gpio_rele_in_out() {
 
 
 
-void backlight_off(void *arg);
-
-
-    const esp_timer_create_args_t backlight_shot_timer_args = {
-            .callback = &backlight_off,
-            /* name is optional, but may help identify the timer when debugging */
-            .name = "end schedule"
-    };
+const esp_timer_create_args_t backlight_shot_timer_args = {
+        .callback = &backlight_off,
+        /* name is optional, but may help identify the timer when debugging */
+        .name = "end schedule"
+};
 
 
 
 
 
 
-static bool example_notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx)
+static bool notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx)
 {
     lv_display_t *disp = (lv_display_t *)user_ctx;
     lv_display_flush_ready(disp);
     return false;
 }
 
-static void example_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
+static void lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 {
     esp_lcd_panel_handle_t panel_handle = lv_display_get_user_data(disp);
     int offsetx1 = area->x1;
@@ -141,17 +130,17 @@ static void example_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uin
 
 }
 
-static void example_increase_lvgl_tick(void *arg)
+static void increase_lvgl_tick(void *arg)
 {
     /* Tell LVGL how many milliseconds has elapsed */
     lv_tick_inc(EXAMPLE_LVGL_TICK_PERIOD_MS);
 }
 
-static void example_lvgl_port_task(void *arg)
+static void lvgl_port_task(void *arg)
 {
     ESP_LOGI(TAG, "Starting LVGL task");
     uint32_t time_till_next_ms = 0;
-    event_lcd_t event;
+
 
 
 	event_queue = xQueueCreate(1, sizeof(event_lcd_t));
@@ -159,14 +148,7 @@ static void example_lvgl_port_task(void *arg)
     while (1) {
         _lock_acquire(&lvgl_api_lock);
         time_till_next_ms = lv_timer_handler();
-        if (xQueueReceive(event_queue, &event,  0) == pdTRUE) {
-
-			receive_event(event);
-
-
-		}
-
-        
+        wait_event_lcd();
         _lock_release(&lvgl_api_lock);
 
         // in case of task watch dog timeout, set the minimal delay to 10ms
@@ -178,18 +160,8 @@ static void example_lvgl_port_task(void *arg)
     }
 }
 
-static void example_bsp_init_lcd_backlight(void)
-{
-#if CONFIG_PIN_NUM_BK_LIGHT >= 0
-    gpio_config_t bk_gpio_config = {
-        .mode = GPIO_MODE_OUTPUT,
-        .pin_bit_mask = 1ULL << CONFIG_PIN_NUM_BK_LIGHT
-    };
-    ESP_ERROR_CHECK(gpio_config(&bk_gpio_config));
-#endif
-}
 
-static void example_bsp_set_lcd_backlight(uint32_t level)
+static void set_lcd_backlight(uint32_t level)
 {
 #if CONFIG_PIN_NUM_BK_LIGHT >= 0
     gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, level);
@@ -200,8 +172,8 @@ void init_lcdrgb(void)
 {
     ESP_LOGI(TAG, "Turn off LCD backlight");
     //example_bsp_init_lcd_backlight();
-    gpio_rele_in_out();
-    example_bsp_set_lcd_backlight(LCD_BK_LIGHT_OFF_LEVEL);
+    init_gpios_app();
+    set_lcd_backlight(LCD_BK_LIGHT_OFF_LEVEL);
 
     ESP_LOGI(TAG, "Install RGB LCD panel driver");
     esp_lcd_panel_handle_t panel_handle = NULL;
@@ -270,7 +242,7 @@ void init_lcdrgb(void)
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
 
     ESP_LOGI(TAG, "Turn on LCD backlight");
-    example_bsp_set_lcd_backlight(LCD_BK_LIGHT_ON_LEVEL);
+    set_lcd_backlight(LCD_BK_LIGHT_ON_LEVEL);
 
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();
@@ -299,18 +271,18 @@ void init_lcdrgb(void)
 #endif // CONFIG_EXAMPLE_USE_DOUBLE_FB
 
     // set the callback which can copy the rendered image to an area of the display
-    lv_display_set_flush_cb(display, example_lvgl_flush_cb);
+    lv_display_set_flush_cb(display, lvgl_flush_cb);
 
     ESP_LOGI(TAG, "Register event callbacks");
     esp_lcd_rgb_panel_event_callbacks_t cbs = {
-        .on_color_trans_done = example_notify_lvgl_flush_ready,
+        .on_color_trans_done = notify_lvgl_flush_ready,
     };
     ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, display));
 
     ESP_LOGI(TAG, "Install LVGL tick timer");
     // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
     const esp_timer_create_args_t lvgl_tick_timer_args = {
-        .callback = &example_increase_lvgl_tick,
+        .callback = &increase_lvgl_tick,
         .name = "lvgl_tick"
     };
     esp_timer_handle_t lvgl_tick_timer = NULL;
@@ -318,7 +290,7 @@ void init_lcdrgb(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
     ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL,1);
+    xTaskCreatePinnedToCore(lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL,1);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
@@ -401,7 +373,7 @@ void timing_backlight() {
 
 
 
-static void lvgl_touch_cb2(lv_indev_t * drv, lv_indev_data_t * data) {
+static void lvgl_touch_cb(lv_indev_t * drv, lv_indev_data_t * data) {
 
     uint16_t x[1];
     uint16_t y[1];
@@ -475,7 +447,21 @@ void init_app_touch_xpt2046(lv_disp_t *display) {
 
         lv_indev_t * indev = lv_indev_create();
         lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
-        lv_indev_set_read_cb(indev, lvgl_touch_cb2);
+        lv_indev_set_read_cb(indev, lvgl_touch_cb);
 
+
+}
+
+
+void init_gpios_app() {
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_DISABLE;
+	io_conf.pin_bit_mask = GPIO_OUTPUT_PIN_SEL;
+	io_conf.mode = GPIO_MODE_INPUT_OUTPUT;
+    io_conf.pull_down_en = 0;
+    //disable pull-up mode
+    io_conf.pull_up_en = 0;
+    gpio_config(&io_conf);
+    ESP_LOGW(TAG, "gpio rele en E/S");
 
 }

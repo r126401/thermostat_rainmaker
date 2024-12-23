@@ -205,3 +205,13 @@ void send_event(event_lcd_t event) {
 
 }
 
+void wait_event_lcd() {
+
+    event_lcd_t event;
+
+    if (xQueueReceive(event_queue, &event,  0) == pdTRUE) {
+        
+        receive_event(event);
+    }
+
+}

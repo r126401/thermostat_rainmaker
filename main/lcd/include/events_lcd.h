@@ -39,3 +39,4 @@ typedef struct event_lcd_t {
 void send_event(event_lcd_t event);
 char* event2mnemonic(EVENT_TYPE_LCD type_lcd);
 void receive_event(event_lcd_t event);
+void wait_event_lcd();

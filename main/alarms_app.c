@@ -9,7 +9,7 @@ static char* TAG = "alarmas.c";
 
 static bool alarms[N_ALARMS];
 
-static char* alarm2mnemonic(ALARM_APP alarm) {
+char* alarm2mnemonic(ALARM_APP alarm) {
 
     static char mnemonic[13] = {0};
 
@@ -111,5 +111,4 @@ int get_active_alarms() {
 
 
 }
-
 

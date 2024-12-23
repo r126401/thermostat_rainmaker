@@ -199,10 +199,6 @@ void init_app()
         set_alarm(WIFI_ALARM, ALARM_APP_OFF);
         
     }
-    
-    ESP_LOGE(TAG, "PASO 7");
-    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
-    
 
     
 

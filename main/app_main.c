@@ -48,7 +48,7 @@ esp_rmaker_device_t *thermostat_device;
 
 
 
-app_params_t params;
+//app_params_t params;
 
 
 
@@ -60,14 +60,10 @@ app_params_t params;
 void init_app()
 {
 
-    //app_params params;
-    //event_lcd_t event;
 
 
     esp_rmaker_console_init();
-    //app_driver_init();
 
-    ESP_LOGE(TAG, "PASO 1");
 
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
@@ -115,7 +111,7 @@ void init_app()
      *     
      */
 
-   register_parameters(&params);
+   register_parameters();
 
    
 
@@ -198,7 +194,7 @@ void app_main() {
     init_lcdrgb();
     set_lcd_update_text_mode(STATUS_APP_STARTING);
 
-    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) &params, 4, NULL,0);
+    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) NULL, 4, NULL,0);
     init_app();
     sntp_set_time_sync_notification_cb(event_handler_sync);
 

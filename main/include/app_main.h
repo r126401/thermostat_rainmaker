@@ -121,7 +121,7 @@ void factory_reset_device();
  * 
  * @param params 
  */
-void register_parameters(app_params_t *params);
+void register_parameters();
 
 void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data);

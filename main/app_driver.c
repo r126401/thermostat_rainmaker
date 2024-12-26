@@ -372,6 +372,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
         switch(event_id) {
             case RMAKER_OTA_EVENT_STARTING:
                 ESP_LOGI(TAG, "Starting OTA.");
+                remove_task_thermostat();
                 break;
             case RMAKER_OTA_EVENT_IN_PROGRESS:
                 ESP_LOGI(TAG, "OTA is in progress.");

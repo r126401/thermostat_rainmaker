@@ -437,18 +437,13 @@ void update_time_valid(bool timevalid) {
             sync = true;
             event.par1 = hour;
             event.par2 = min;
-            //send_event_lcd(event);
             set_lcd_update_time(hour, min);
-
             lv_update_lcd_schedule(true);
 
         } 
 
     } else {
-        event.par1 = -1;
-        event.par2 = -1;
         set_lcd_update_time(-1, -1);
-        //send_event_lcd(event);
     }
 
 

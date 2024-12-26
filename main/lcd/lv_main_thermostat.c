@@ -96,19 +96,11 @@ extern lv_display_t * display;
 
 int lv_update_lcd_schedule(bool status) {
 
-    event_lcd_t event;
+
     int index;
     uint32_t hour;
-
-
-
-    event.event_type = UPDATE_SCHEDULE;
-    event.status = status;
     index = get_next_schedule(&hour);
-    event.par1 = hour;
-    event.par2 = index;
-    send_event_lcd(event);
-
+    set_lcd_update_schedule(status, hour, index);
     return index;
 
 }

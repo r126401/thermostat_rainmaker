@@ -45,7 +45,7 @@ static const char *TAG = "app_driver";
 extern esp_rmaker_device_t *thermostat_device;
 float current_threshold = 21.5;
 
-TaskHandle_t thermostat_handle;
+TaskHandle_t thermostat_handle = NULL;
 
 const esp_timer_create_args_t text_date_shot_timer_args = {
     .callback = &time_refresh,
@@ -289,6 +289,11 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 ESP_LOGI(TAG, "Local Control Started.");
 
                 set_lcd_update_qr_confirmed();
+                if (!is_task_thermostat_active()) {
+                    ESP_LOGW(TAG, "Se crea la tarea porque no estaba creada");
+                    create_task_thermostat();
+                }
+
 
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STOPPED:
@@ -578,11 +583,31 @@ float get_current_threshold() {
 void create_task_thermostat() {
 
      xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, &thermostat_handle,0);
+     ESP_LOGW(TAG, "Tarea thermostat task creada");
 }
 
 
 void remove_task_thermostat() {
 
     vTaskDelete(thermostat_handle);
+    thermostat_handle = NULL;
     ESP_LOGW(TAG, "thermostat_task eliminada");
+}
+
+bool is_task_thermostat_active() {
+
+    eTaskState status;
+
+    if (thermostat_handle == NULL) {
+        return false;
+    }
+
+    status = eTaskGetState(thermostat_handle);
+
+    if ((status == eDeleted) || (status == eInvalid)) {
+
+        ESP_LOGW(TAG, "La tarea no existe");
+        return false;
+    }
+    return true;
 }

@@ -131,3 +131,4 @@ float get_current_temperature();
 float get_current_threshold();
 void create_task_thermostat();
 void remove_task_thermostat();
+bool is_task_thermostat_active();

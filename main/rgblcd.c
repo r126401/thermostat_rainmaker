@@ -73,13 +73,12 @@ static const char *TAG = "rgblcd";
 
 #define EXAMPLE_LVGL_DRAW_BUF_LINES    50 // number of display lines in each draw buffer
 #define EXAMPLE_LVGL_TICK_PERIOD_MS    2
-#define EXAMPLE_LVGL_TASK_STACK_SIZE   (5 * 1024)
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
-
+xQueueHandle event_queue;
 lv_display_t *display;
 
 /********************************************************************************* */
@@ -140,9 +139,7 @@ static void lvgl_port_task(void *arg)
 {
     ESP_LOGI(TAG, "Starting LVGL task");
     uint32_t time_till_next_ms = 0;
-
-
-
+    
 	event_queue = xQueueCreate(1, sizeof(event_lcd_t));
 
     while (1) {

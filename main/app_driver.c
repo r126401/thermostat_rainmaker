@@ -420,8 +420,7 @@ void update_time_valid(bool timevalid) {
     uint32_t sec;
     uint32_t resto = 0;
     static bool sync = false;
-    event_lcd_t event;
-    event.event_type = UPDATE_TIME;
+
 
     if (timevalid) {
 
@@ -435,8 +434,7 @@ void update_time_valid(bool timevalid) {
             ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. Proximo intervalo :%d segundos", (int) hour, (int) min, (int) resto);
 
             sync = true;
-            event.par1 = hour;
-            event.par2 = min;
+
             set_lcd_update_time(hour, min);
             lv_update_lcd_schedule(true);
 
@@ -479,25 +477,21 @@ void time_refresh(void *arg) {
     uint32_t interval;
 
 
-    event_lcd_t event;
+
 
 
     
     
     
     if (esp_sntp_get_sync_status() == SNTP_SYNC_STATUS_IN_PROGRESS) {
-        event.event_type = UPDATE_TIME;
-        event.par1 = -1;
-        event.par2 = -1;
-        send_event_lcd(event);
+
+        set_lcd_update_time(-1, -1);
         ESP_LOGI(TAG, "Hora invalida");
         interval = 60;
     } else {
-        event.event_type = UPDATE_TIME;
         get_current_date(&hour, &min, &sec);
-        event.par1 = hour;
-        event.par2 = min;
-        send_event_lcd(event);
+
+        set_lcd_update_time(hour, min);
         interval = 60 - sec;
 
         lv_update_lcd_schedule(true);

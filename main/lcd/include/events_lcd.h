@@ -38,8 +38,8 @@ typedef struct event_lcd_t {
 
 void send_event_lcd(event_lcd_t event);
 char* event_lcd_2_mnemonic(EVENT_TYPE_LCD type_lcd);
+void init_queue_lcd();
 void wait_event_lcd();
-
 void set_lcd_update_time(int par1, int par2);
 void set_lcd_update_text_mode(char *text_mode);
 void set_lcd_update_label_mode(char *mode);

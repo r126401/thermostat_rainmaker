@@ -176,9 +176,10 @@ void app_main() {
     init_alarms();
     create_event_app_task();
     init_lcdrgb();
-    set_lcd_update_text_mode(STATUS_APP_STARTING);
 
     xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
+    set_lcd_update_text_mode(STATUS_APP_STARTING);
+
     init_app();
     sntp_set_time_sync_notification_cb(event_handler_sync);
  

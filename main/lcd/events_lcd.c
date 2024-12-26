@@ -194,6 +194,11 @@ static void receive_lcd_event(event_lcd_t event) {
 
 }
 
+void init_queue_lcd() {
+
+
+}
+
 void send_event_lcd(event_lcd_t event) {
 
 

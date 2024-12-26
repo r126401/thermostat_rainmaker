@@ -269,13 +269,7 @@ void send_event_app(event_app_t event) {
 }
 
 
-void send_event_app_alarm(EVENT_APP type) {
 
-    event_app_t event;
-    event.event_app = type;
-    send_event_app(event);
-    ESP_LOGW(TAG, "Enviada alarma %s", alarm2mnemonic(type));
-}
 
 void update_threshold(float threshold, bool reporting) {
 

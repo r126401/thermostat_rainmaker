@@ -84,7 +84,7 @@ static esp_err_t read_temperature(float *temperature_metered)
 	if ((error = ds18b20_get_temperature(*ds18b20s, temperature_metered)) == ESP_OK) {
 
 		//ESP_LOGI(TAG, "temperature read from DS18B20: %.2f C", temperature_metered);	
-		ESP_LOGI(TAG, "%s: TEMPERATURA ORIGINAL: %.02f C", esp_log_system_timestamp(), *temperature_metered);
+		//ESP_LOGI(TAG, "%s: TEMPERATURA ORIGINAL: %.02f C", esp_log_system_timestamp(), *temperature_metered);
 		set_alarm(SENSOR_ALARM, ALARM_APP_OFF);
 
 	} else {
@@ -185,7 +185,7 @@ THERMOSTAT_ACTION thermostat_action(float current_temperature) {
 	ESP_LOGI(TAG, "Estamos en thermostat_action");
 
 	param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-	ESP_LOGI(TAG, "Estamos en thermostat_action en modo %s", esp_rmaker_param_get_val(param)->val.s);
+	//ESP_LOGI(TAG, "Estamos en thermostat_action en modo %s", esp_rmaker_param_get_val(param)->val.s);
 	if (param != NULL) {
 
 		if (strcmp(esp_rmaker_param_get_val(param)->val.s, STATUS_APP_MANUAL) == 0) {

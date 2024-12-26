@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string.h>
 #include "strings.h"
 #include <stdio.h>
@@ -51,7 +53,7 @@ void send_event_app(event_app_t event);
 
 
 
-void send_event_app_alarm(EVENT_APP type);
+
 
 
 esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *param,

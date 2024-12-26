@@ -426,6 +426,7 @@ void init_app_touch_xpt2046(lv_disp_t *display) {
 	    ESP_LOGE(TAG, "tp es nulo y no puede ser");
 
         lv_indev_t * indev = lv_indev_create();
+        
         lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
         lv_indev_set_read_cb(indev, lvgl_touch_cb);
 

@@ -1,5 +1,5 @@
 
-
+#pragma once
 
 #include <esp_schedule.h>
 #include "esp_idf_version.h"

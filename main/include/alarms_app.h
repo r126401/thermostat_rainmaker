@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include "events_app.h"
 
 #define N_ALARMS 4
 
@@ -30,3 +31,6 @@ bool get_status_alarm(ALARM_APP alarm);
 int get_active_alarms();
 
 char* alarm2mnemonic(ALARM_APP alarm);
+
+
+void send_event_app_alarm(EVENT_APP type);

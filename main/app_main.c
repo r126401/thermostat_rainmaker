@@ -143,7 +143,6 @@ void init_app()
 
     ESP_LOGE(TAG, "PASO 6");
 
-
     err = app_network_start(POP_TYPE_RANDOM);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Could not start Wifi. Aborting!!!");
@@ -177,10 +176,12 @@ void app_main() {
     create_event_app_task();
     init_lcdrgb();
 
-    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
+    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
     set_lcd_update_text_mode(STATUS_APP_STARTING);
 
     init_app();
+    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
+
     sntp_set_time_sync_notification_cb(event_handler_sync);
  
    ESP_LOGI(TAG, "FIN DE LA APLICACION");

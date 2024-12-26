@@ -571,3 +571,4 @@ float get_current_threshold() {
     return esp_rmaker_param_get_val(param)->val.f;
 
 }
+

@@ -92,7 +92,9 @@
         "app_reset.h": "c",
         "alarms_app.h": "c",
         "events_lcd.h": "c",
-        "app_main.h": "c"
+        "app_main.h": "c",
+        "iot_button.h": "c",
+        "sdkconfig.h": "c"
     },
     "idf.flashType": "UART"
 }

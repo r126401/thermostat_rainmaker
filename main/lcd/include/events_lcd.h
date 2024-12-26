@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
+#pragma once
 
 typedef enum EVENT_TYPE_LCD {
 

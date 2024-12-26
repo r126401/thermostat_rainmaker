@@ -47,16 +47,6 @@ static const char *TAG = "app_main";
 esp_rmaker_device_t *thermostat_device;
 
 
-
-//app_params_t params;
-
-
-
-
-
-
-
-
 void init_app()
 {
 
@@ -98,9 +88,6 @@ void init_app()
         vTaskDelay(5000/portTICK_PERIOD_MS);
         abort();
     }
-
-    ESP_LOGE(TAG, "PASO 3");
-
     /* Create a Thermotat device.
      * You can optionally use the helper API esp_rmaker_thermostat_device_create() to
      * avoid writing code for adding the name and power parameters.
@@ -120,10 +107,7 @@ void init_app()
      * it is for future use.
      */
     esp_rmaker_device_add_cb(thermostat_device, write_cb, NULL);  
-
-    ESP_LOGE(TAG, "PASO 4");
-
-    
+   
     /* Add this switch device to the node */
     esp_rmaker_node_add_device(node, thermostat_device);
 
@@ -194,19 +178,11 @@ void app_main() {
     init_lcdrgb();
     set_lcd_update_text_mode(STATUS_APP_STARTING);
 
-    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", 4096, (void*) NULL, 4, NULL,0);
+    xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
     init_app();
     sntp_set_time_sync_notification_cb(event_handler_sync);
-
-
-
-
-
-
-
-
  
-   ESP_LOGE(TAG, "FIN DE LA APLICACION");
+   ESP_LOGI(TAG, "FIN DE LA APLICACION");
 
    
 }

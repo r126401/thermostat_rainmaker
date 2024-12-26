@@ -51,6 +51,7 @@ void set_lcd_update_threshold_temperature(float threshold);
 void set_lcd_update_schedule(bool status, int par1, int par2);
 void set_lcd_update_text_schedule(int par1, int par2);
 void set_lcd_update_percent(float percent);
+void set_lcd_update_icon_errors(bool status);
 void set_lcd_update_qr_confirmed();
 
 

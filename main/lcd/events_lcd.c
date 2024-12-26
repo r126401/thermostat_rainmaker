@@ -260,6 +260,7 @@ static void update_lcd_bool(EVENT_TYPE_LCD type, bool status) {
 }
 
 
+
 void set_lcd_update_time(int par1, int par2) {
 
     update_lcd_int(UPDATE_TIME, par1, par2, -1);
@@ -321,3 +322,12 @@ void set_lcd_update_qr_confirmed() {
     update_lcd_bool(QR_CONFIRMED, true);
 
 }
+
+
+void set_lcd_update_icon_errors(bool status) {
+
+    update_lcd_bool(UPDATE_ICON_ERRORS, status);
+
+
+}
+

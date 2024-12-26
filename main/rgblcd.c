@@ -170,12 +170,11 @@ static void set_lcd_backlight(uint32_t level)
 
 void init_lcdrgb(void)
 {
-    ESP_LOGI(TAG, "Turn off LCD backlight");
-    //example_bsp_init_lcd_backlight();
+
     init_gpios_app();
     set_lcd_backlight(LCD_BK_LIGHT_OFF_LEVEL);
 
-    ESP_LOGI(TAG, "Install RGB LCD panel driver");
+
     esp_lcd_panel_handle_t panel_handle = NULL;
     esp_lcd_rgb_panel_config_t panel_config = {
         .data_width = EXAMPLE_DATA_BUS_WIDTH,
@@ -220,7 +219,6 @@ void init_lcdrgb(void)
         },
         .timings = {
             .pclk_hz = CONFIG_RGB_LCD_PIXEL_CLOCK_HZ,
-            //.pclk_hz = 8000000,
             .h_res = CONFIG_LCD_H_RES,
             .v_res = CONFIG_LCD_V_RES,
             .hsync_back_porch = LCD_HBP,
@@ -273,13 +271,13 @@ void init_lcdrgb(void)
     // set the callback which can copy the rendered image to an area of the display
     lv_display_set_flush_cb(display, lvgl_flush_cb);
 
-    ESP_LOGI(TAG, "Register event callbacks");
+
     esp_lcd_rgb_panel_event_callbacks_t cbs = {
         .on_color_trans_done = notify_lvgl_flush_ready,
     };
     ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, display));
 
-    ESP_LOGI(TAG, "Install LVGL tick timer");
+
     // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
     const esp_timer_create_args_t lvgl_tick_timer_args = {
         .callback = &increase_lvgl_tick,
@@ -289,13 +287,11 @@ void init_lcdrgb(void)
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
-    ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreatePinnedToCore(lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL,1);
 
-    ESP_LOGI(TAG, "Display LVGL UI");
+    xTaskCreatePinnedToCore(lvgl_port_task, "LVGL", CONFIG_RESOURCE_LCD_TASK, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL,1);
+
     // Lock the mutex due to the LVGL APIs are not thread-safe
     _lock_acquire(&lvgl_api_lock);
-    //example_lvgl_demo_ui(display);
     create_main_thermostat(display);
     _lock_release(&lvgl_api_lock);
     init_app_touch_xpt2046(display);
@@ -324,11 +320,9 @@ esp_err_t backlight_on() {
     
     if (gpio_get_level(CONFIG_PIN_NUM_BK_LIGHT) == 0) {
 		gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 1);
-		ESP_LOGE(TAG, "SE ENCIENDE LA PANTALLA");
 	} else {
         lv_cancel_timing_backlight();
 	}
-    ESP_LOGW(TAG,"REINICIAMOS LA TEMPORIZACION PARA BACKLIGHT");
     if (!esp_timer_is_active(timer_backlight)) {
 
         ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
@@ -344,12 +338,7 @@ esp_err_t backlight_on() {
 void backlight_off(void *arg) {
 
 
-
-ESP_LOGI(TAG, " TEMPORIZACION VENCIDA EN LA PANTALLA SIN TOCAR...");
-
 gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 0);
-
-
 
 }
 
@@ -359,13 +348,8 @@ gpio_set_level(CONFIG_PIN_NUM_BK_LIGHT, 0);
 
 void timing_backlight() {
 
-
-
-    ESP_LOGI(TAG, "TEMPORIZADOR PARA LA PANTALLA");
-
     ESP_ERROR_CHECK(esp_timer_create(&backlight_shot_timer_args, &timer_backlight));
     ESP_ERROR_CHECK(esp_timer_start_once(timer_backlight, (CONFIG_TIME_OFF_BACKLIGHT * 1000000)));
-    ESP_LOGI(TAG, " TEMPORIZADOR PARA LA PANTALLA CREADO");
 
 }
 
@@ -393,7 +377,6 @@ static void lvgl_touch_cb(lv_indev_t * drv, lv_indev_data_t * data) {
         data->point.x = x[0];
         data->point.y = y[0];
         data->state = LV_INDEV_STATE_PR;
-        ESP_LOGI(TAG, "XPT2046: x=%d, y=%d", (int) data->point.x, (int) data->point.y);
         backlight_on();
 
     }
@@ -462,6 +445,5 @@ void init_gpios_app() {
     //disable pull-up mode
     io_conf.pull_up_en = 0;
     gpio_config(&io_conf);
-    ESP_LOGW(TAG, "gpio rele en E/S");
 
 }

@@ -28,7 +28,7 @@ ds18b20_device_handle_t ds18b20s[ONEWIRE_MAX_DS18B20];
 extern esp_rmaker_device_t *thermostat_device;
 
 
-void init_ds18b20()
+static void init_ds18b20()
 {
 
     
@@ -72,7 +72,7 @@ void init_ds18b20()
 
 }
 
-esp_err_t read_temperature(float *temperature_metered) 
+static esp_err_t read_temperature(float *temperature_metered) 
 
 {
 	esp_err_t error; 
@@ -111,7 +111,7 @@ esp_err_t read_temperature(float *temperature_metered)
 
 
 
-enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, float current_temperature) {
+static enum THERMOSTAT_ACTION calcular_accion_termostato(STATUS_RELAY *accion, float current_temperature) {
 
 	float margin_temperature;
 	float threshold_temperature;
@@ -150,22 +150,22 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
                if (current_temperature <= (threshold_temperature - margin_temperature)) {
             	   ESP_LOGI(TAG, ""TRAZAR"RELE OFF Y SE ENCIENDE. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
                    *accion = ON;
-                   return ACCIONAR_TERMOSTATO;
+                   return TOGGLE_THERMOSTAT;
                } else {
             	   ESP_LOGI(TAG, ""TRAZAR"RELE OFF Y DEBE SEGUIR SIGUE OFF. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
                    *accion = OFF;
-                   return NO_ACCIONAR_TERMOSTATO;
+                   return NO_TOGGLE_THERMOSTAT;
 
                }
            } else {
                if (current_temperature >= (threshold_temperature + margin_temperature) ) {
             	   ESP_LOGI(TAG, ""TRAZAR"RELE ON Y SE APAGA. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
                    *accion = OFF;
-                   return ACCIONAR_TERMOSTATO;
+                   return TOGGLE_THERMOSTAT;
                } else {
             	   ESP_LOGI(TAG, ""TRAZAR"RELE ON Y DEBE SEGUIR SIGUE ON. tempMedida: %.2f, tempUmbral: %.02f", INFOTRAZA, current_temperature, threshold_temperature);
                    *accion = ON;
-                   return NO_ACCIONAR_TERMOSTATO;
+                   return NO_TOGGLE_THERMOSTAT;
 
                }
            }
@@ -175,10 +175,10 @@ enum TIPO_ACCION_TERMOSTATO calcular_accion_termostato(ESTADO_RELE *accion, floa
 }
 
 
-TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
+THERMOSTAT_ACTION thermostat_action(float current_temperature) {
 
-	enum ESTADO_RELE accion_rele;
-	enum TIPO_ACCION_TERMOSTATO accion_termostato;
+	enum STATUS_RELAY accion_rele;
+	enum THERMOSTAT_ACTION accion_termostato;
 	esp_rmaker_param_t *param;
 	float temperature;
 
@@ -191,7 +191,7 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 		if (strcmp(esp_rmaker_param_get_val(param)->val.s, STATUS_APP_MANUAL) == 0) {
 
 			ESP_LOGW(TAG, "No se hace nada ya que tenemos el termostato en modo manual");
-			return NINGUNA_ACCION;
+			return NO_ACTION_THERMOSTAT;
 
 		}
 
@@ -209,12 +209,12 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 	ESP_LOGI(TAG, ""TRAZAR"accionar_termostato: LECTURA ANTERIOR: %.2f, LECTURA POSTERIOR: %.2f HA HABIDO CAMBIO DE TEMPERATURA", INFOTRAZA,
 			temperature, current_temperature);
 
-    if (((accion_termostato = calcular_accion_termostato(&accion_rele, current_temperature)) == ACCIONAR_TERMOSTATO)) {
+    if (((accion_termostato = calcular_accion_termostato(&accion_rele, current_temperature)) == TOGGLE_THERMOSTAT)) {
     	ESP_LOGI(TAG, ""TRAZAR"VAMOS A ACCIONAR EL RELE", INFOTRAZA);
     	//*******hacer relay_operation(datosApp, TEMPORIZADA, accion_rele);
 		relay_operation(accion_rele);
     } else {
-		accion_termostato = NO_ACCIONAR_TERMOSTATO;
+		accion_termostato = NO_TOGGLE_THERMOSTAT;
 		//ESP_LOGW(TAG, "Temperatura anterior: %.2f, Temperatura actual: %.2f. No se hace nada porque son iguales.", temperature, current_temperature);
 		}
 	//} else {
@@ -231,7 +231,7 @@ TIPO_ACCION_TERMOSTATO thermostat_action(float current_temperature) {
 
 
 
-float redondear_temperatura(float temperatura) {
+static float redondear_temperatura(float temperatura) {
 
 	float redondeado;
 	float diferencia;

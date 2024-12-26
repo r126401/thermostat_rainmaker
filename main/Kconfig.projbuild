@@ -10,14 +10,26 @@ menu "Thermostat configuration"
 
 menu "Task configuration"
 
-    config RESOURCE_APP_TASK
-        int "Memory dedicated to app"
+
+    config RESOURCE_THERMOSTAT_TASK
+        int "Memory dedicated to thermostat task"
         default 4096
         help
-            Memory dedicated to executed the task thermostat
+            Memory dedicated to executed the thermostat task
+        
+    config RESOURCE_EVENT_TASK
+        int "Memory dedicated to event task"
+        default 4096
+        help
+            Memory dedicated to executed the event task
 
+    config RESOURCE_LCD_TASK
+        int "Memory dedicated to lcd task"
+        default 5120
+        help
+            Memory dedicated to executed the lcd task thermostat
+                    
 
-    
 endmenu
 
 

@@ -38,21 +38,17 @@ extern float current_threshold;
 
 static void send_alarm(bool status) {
 
-    event_lcd_t event;
-    event.event_type = UPDATE_ICON_ERRORS;
-    event.status = status;
-    send_event_lcd(event);
-
+    set_lcd_update_icon_errors(status);
 }
 
 
-static void send_alarm_off() {
+static void send_event_app_alarm_off() {
 
     send_alarm(false);
 
 }
 
-static void send_alarm_on() {
+static void send_event_app_alarm_on() {
 
     send_alarm(true);
 
@@ -66,33 +62,25 @@ char* event_app_2mnemonic(EVENT_APP type) {
     switch (type) 
     {
 
-        case EVENT_APP_UP_THRESHOLD:
-        strncpy(mnemonic, "EVENT_APP_UP_THRESHOLD", 30);
-        break;
-
-        case EVENT_APP_DOWN_THRESHOLD:
-        strncpy(mnemonic, "EVENT_APP_DOWN_THRESHOLD", 30);
-        break;
-
         case EVENT_APP_SETPOINT_THRESHOLD:
-        strncpy(mnemonic, "EVENT_APP_SETPOINT_THRESHOLD", 30);
+            strncpy(mnemonic, "EVENT_APP_SETPOINT_THRESHOLD", 30);
         break;
 
         case EVENT_APP_TIME_VALID:
-        strncpy(mnemonic, "EVENT_APP_TIME_VALID", 30);
+            strncpy(mnemonic, "EVENT_APP_TIME_VALID", 30);
         break;
         case EVENT_APP_AUTO:
-        strncpy(mnemonic, "EVENT_APP_AUTO", 30);
+            strncpy(mnemonic, "EVENT_APP_AUTO", 30);
         break;
 
         case EVENT_APP_MANUAL:
-        strncpy(mnemonic, "EVENT_APP_MANUAL", 30);
+            strncpy(mnemonic, "EVENT_APP_MANUAL", 30);
         break;
         case EVENT_APP_ALARM_OFF:
-        strncpy(mnemonic, "EVENT_APP_ALARM_OFF", 30);
+            strncpy(mnemonic, "EVENT_APP_ALARM_OFF", 30);
         break;
         case EVENT_APP_ALARM_ON:
-        strncpy(mnemonic, "EVENT_APP_ALARM_ON", 30);
+            strncpy(mnemonic, "EVENT_APP_ALARM_ON", 30);
         break;
 
 
@@ -109,26 +97,22 @@ void delay_get_schedules(void *arg) {
     int index;
     uint32_t time_end;
     esp_rmaker_param_t *param;
-    event_lcd_t event;
-    static char text[50] = {0};
-    event.event_type = UPDATE_TEXT_MODE;
 
-    ESP_LOGW(TAG, "Vamos a cambiar el estado de la aplicacion"); 
     index = get_next_schedule(&time_end);
     lv_update_schedule(true, time_end, index);
     param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
 
     if (index >= 0) {
         esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_AUTO));
-        strcpy(text, STATUS_APP_AUTO);
+        set_lcd_update_text_mode(STATUS_APP_AUTO);
         
     } else {
         esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_MANUAL));
-        strcpy(text, STATUS_APP_MANUAL);
+        set_lcd_update_text_mode(STATUS_APP_MANUAL);
     }
 
-    event.text = text;
-    send_event_lcd(event);
+
+    
 
 
     
@@ -146,18 +130,6 @@ void receive_event_app(event_app_t event) {
 
     switch (event.event_app) 
     {
-
-        case EVENT_APP_UP_THRESHOLD:
-
-        ESP_LOGI(TAG, "Recibido evento threshold up");
-
-        break;
-
-        case EVENT_APP_DOWN_THRESHOLD:
-
-        ESP_LOGI(TAG, "Recibido evento threshold down");
-
-        break;
 
         case EVENT_APP_SETPOINT_THRESHOLD:
 
@@ -215,10 +187,7 @@ void receive_event_app(event_app_t event) {
                 // recogemos el valor que teniamos de umbral de temperatura del modo auto y lo ponemos
                 //param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
                 //esp_rmaker_param_update(param, esp_rmaker_float(current_threshold));
-                event_lcd_t event;
-                event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
-                event.par1 = current_threshold;
-                send_event_lcd(event);
+                set_lcd_update_threshold_temperature(current_threshold);
                 lv_update_lcd_schedule(true);
                 param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
                 thermostat_action(esp_rmaker_param_get_val(param)->val.f);
@@ -230,7 +199,7 @@ void receive_event_app(event_app_t event) {
 
         if (get_active_alarms() == 0) {
 
-            send_alarm_off();
+            send_event_app_alarm_off();
 
 
         }
@@ -240,7 +209,7 @@ void receive_event_app(event_app_t event) {
         
         if (get_active_alarms() == 0) {
 
-            send_alarm_on();
+            send_event_app_alarm_on();
         }
 
         break;
@@ -281,7 +250,7 @@ void create_event_app_task() {
 
 
 
-	xTaskCreatePinnedToCore(event_app_task, "event_app_task", 1024*4, NULL, 0, NULL,0);
+	xTaskCreatePinnedToCore(event_app_task, "event_app_task", CONFIG_RESOURCE_EVENT_TASK, NULL, 0, NULL,0);
 	ESP_LOGW(TAG, "TAREA DE EVENTOS DE APLICACION CREADA CREADA");
 
 
@@ -308,25 +277,12 @@ void send_event_app_alarm(EVENT_APP type) {
     ESP_LOGW(TAG, "Enviada alarma %s", alarm2mnemonic(type));
 }
 
-
-
-
-
-
-
-            
-
 void update_threshold(float threshold, bool reporting) {
 
-    
-   ESP_LOGI(TAG, " Se va a modificar el threshold a valor %.1f", threshold);
 
 
     esp_rmaker_param_t *parameter;
-    event_lcd_t event;
-    event.event_type = UPDATE_THRESHOLD_TEMPERATURE;
-    event.value = threshold;
-    send_event_lcd(event);
+    set_lcd_update_threshold_temperature(threshold);
     parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
     
     if (reporting) {
@@ -336,11 +292,6 @@ void update_threshold(float threshold, bool reporting) {
     }
 
     thermostat_action(get_current_temperature());
-
-
-
-
-    ESP_LOGI(TAG, "Enviado nuevo threshold: %.1f", threshold);
 
 }
 
@@ -367,17 +318,9 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             if (param == esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE)){
                 current_threshold = val.val.f;
                 esp_rmaker_param_update_and_report(param, val);
-                
-                ESP_LOGI(TAG, "Enviado threshold al cliente despues de inicio del trigger");
                 update_threshold(val.val.f, true);
                 lv_update_lcd_schedule(true);
-
- 
             }
- 
-
-
-
             break;
 
         case ESP_RMAKER_REQ_SRC_CLOUD:
@@ -391,13 +334,8 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
                 current_threshold = val.val.f;
                 update_threshold(val.val.f, false);
-                lv_update_lcd_schedule(true);
-                
+                lv_update_lcd_schedule(true);   
             }
-
-
-
-
 
         break;
 
@@ -419,11 +357,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
              */
 
             if (esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE) == param) {
-
-                ESP_LOGI(TAG, "Received value threshold = %s for %s - %s",
-                        val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
-                    esp_rmaker_param_get_name(param));
-                    current_threshold = val.val.f;
+                current_threshold = val.val.f;
                 update_threshold(val.val.f, false);
                 lv_update_lcd_schedule(true);
                 
@@ -435,13 +369,8 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             
 
         if (esp_rmaker_device_get_param_by_name(thermostat_device, CALIBRATE) == param) {
-                ESP_LOGI(TAG, "Received value CALIBRATE = %s for %s - %s",
-                        val.val.f? "true" : "false", esp_rmaker_device_get_name(device),
-                        esp_rmaker_param_get_name(param));
-                 esp_rmaker_param_update(param, val);
-                 thermostat_action(val.val.f);
-               
-                
+                esp_rmaker_param_update(param, val);
+                thermostat_action(val.val.f);
             }
 
             /**
@@ -449,28 +378,20 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
              */
 
             if (esp_rmaker_device_get_param_by_name(thermostat_device, READ_INTERVAL) == param) {
-                ESP_LOGI(TAG, "Received value READ_INTERVAL = %s for %s - %s",
-                        val.val.i? "true" : "false", esp_rmaker_device_get_name(device),
-                        esp_rmaker_param_get_name(param));
                 esp_rmaker_param_update(param, val);
-                
-                
             }
         break;
 
         default:
-        ESP_LOGW(TAG, "Event no classified yet");
+            ESP_LOGW(TAG, "Event no classified yet");
         break;
 
     }
 
-
-
-
-
-
     return ESP_OK;
 }
+
+
 
 
 

@@ -57,7 +57,7 @@ static esp_timer_handle_t timer_date_text;
 
 
 
-ESTADO_RELE get_status_relay() {
+STATUS_RELAY get_status_relay() {
 
     return (gpio_get_level(CONFIG_RELAY_GPIO));
 }
@@ -66,10 +66,8 @@ ESTADO_RELE get_status_relay() {
 
 
 
-enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
+enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
 
-    event_lcd_t event;
-    event.event_type = UPDATE_HEATING;
 	
 	if (gpio_get_level(CONFIG_RELAY_GPIO) == OFF){
 		if (op == ON) {
@@ -96,16 +94,10 @@ enum ESTADO_RELE IRAM_ATTR relay_operation(ESTADO_RELE op) {
 			}
 	}
 
-    if (op == ON) {
-        event.status = true;
-    } else {
-        event.status = false;
-    }
 
-   send_event_lcd(event);
 
-    //lv_update_heating(event.status);
-    //lv_timer_handler();
+    set_lcd_update_heating(op);
+
 
 	return gpio_get_level(CONFIG_RELAY_GPIO);
 }
@@ -269,7 +261,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
 {
 
-    event_lcd_t event_lcd;
+
 
 
 
@@ -282,8 +274,8 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_CLAIM_STARTED:
                 ESP_LOGI(TAG, "RainMaker Claim Started.");
-                event_lcd.event_type = QR_CONFIRMED;
-                send_event_lcd(event_lcd);
+
+                set_lcd_update_qr_confirmed();
                 break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
                 ESP_LOGI(TAG, "RainMaker Claim Successful.");
@@ -293,8 +285,8 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
-                event_lcd.event_type = QR_CONFIRMED;
-                send_event_lcd(event_lcd);
+
+                set_lcd_update_qr_confirmed();
 
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STOPPED:
@@ -330,18 +322,14 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 } else {
                     ESP_LOGE(TAG, "Mal suscrito");
                 }
-                event_lcd.event_type = UPDATE_BROKER_STATUS;
-                event_lcd.status = true;
-                send_event_lcd(event_lcd);
+                set_lcd_update_broker_status(true);
                 set_alarm(MQTT_ALARM, ALARM_APP_OFF);
  
 
                 break;
             case RMAKER_MQTT_EVENT_DISCONNECTED:
                 ESP_LOGI(TAG, "MQTT Disconnected.");
-                event_lcd.event_type = UPDATE_BROKER_STATUS;
-                event_lcd.status = false;
-                send_event_lcd(event_lcd);
+                set_lcd_update_broker_status(false);
                 set_alarm(MQTT_ALARM, ALARM_APP_ON);
 
                 break;
@@ -449,7 +437,8 @@ void update_time_valid(bool timevalid) {
             sync = true;
             event.par1 = hour;
             event.par2 = min;
-            send_event_lcd(event);
+            //send_event_lcd(event);
+            set_lcd_update_time(hour, min);
 
             lv_update_lcd_schedule(true);
 
@@ -458,7 +447,8 @@ void update_time_valid(bool timevalid) {
     } else {
         event.par1 = -1;
         event.par2 = -1;
-        send_event_lcd(event);
+        set_lcd_update_time(-1, -1);
+        //send_event_lcd(event);
     }
 
 
@@ -583,4 +573,12 @@ float get_current_temperature() {
     esp_rmaker_param_t *param;
     param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
     return esp_rmaker_param_get_val(param)->val.f;
+}
+
+float get_current_threshold() {
+
+    esp_rmaker_param_t *param;
+    param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
+    return esp_rmaker_param_get_val(param)->val.f;
+
 }

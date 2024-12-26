@@ -24,4 +24,4 @@ typedef struct esp_schedule_t {
 
 esp_err_t get_thermostat_schedules_app();
 uint32_t get_next_schedule(uint32_t *time_end);
-char* write_date(time_t now);
+char* get_current_date(time_t now);

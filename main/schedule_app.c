@@ -52,7 +52,7 @@ void update_lcd_schedule() {
 
 
 
-char* write_date(time_t now) {
+char* get_current_date(time_t now) {
 
 	static char fecha_actual[120] = {0};
 

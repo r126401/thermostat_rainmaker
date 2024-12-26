@@ -94,7 +94,8 @@
         "events_lcd.h": "c",
         "app_main.h": "c",
         "iot_button.h": "c",
-        "sdkconfig.h": "c"
+        "sdkconfig.h": "c",
+        "cjson.h": "c"
     },
     "idf.flashType": "UART"
 }

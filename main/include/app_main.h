@@ -129,3 +129,5 @@ void event_handler(void* arg, esp_event_base_t event_base,
 void event_handler_sync (struct timeval *tv) ;
 float get_current_temperature();
 float get_current_threshold();
+void create_task_thermostat();
+void remove_task_thermostat();

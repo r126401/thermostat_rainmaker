@@ -45,6 +45,8 @@ static const char *TAG = "app_driver";
 extern esp_rmaker_device_t *thermostat_device;
 float current_threshold = 21.5;
 
+TaskHandle_t thermostat_handle;
+
 const esp_timer_create_args_t text_date_shot_timer_args = {
     .callback = &time_refresh,
     /* name is optional, but may help identify the timer when debugging */
@@ -572,3 +574,15 @@ float get_current_threshold() {
 
 }
 
+
+void create_task_thermostat() {
+
+     xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, &thermostat_handle,0);
+}
+
+
+void remove_task_thermostat() {
+
+    vTaskDelete(thermostat_handle);
+    ESP_LOGW(TAG, "thermostat_task eliminada");
+}

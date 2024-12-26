@@ -177,6 +177,7 @@ void app_main() {
     init_lcdrgb();
 
     //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
+    create_task_thermostat();
     set_lcd_update_text_mode(STATUS_APP_STARTING);
 
     init_app();

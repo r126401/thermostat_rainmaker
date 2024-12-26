@@ -34,3 +34,4 @@ char* alarm2mnemonic(ALARM_APP alarm);
 
 
 void send_event_app_alarm(EVENT_APP type);
+

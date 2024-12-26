@@ -13,6 +13,7 @@
 #include "events_lcd.h"
 
 
+
 //#define CONFIG_LCD_H_RES 480
 //#define CONFIG_LCD_V_RES 272
 #define SIZE_BUTTONS_THRESHOLD 55
@@ -636,6 +637,8 @@ void create_warning_icon() {
 
 
 static void lv_event_handler_button_instalation(lv_event_t *e) {
+
+    remove_task_thermostat();
 
     create_factory_screen();
 }

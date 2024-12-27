@@ -373,12 +373,15 @@ void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_OTA_EVENT_STARTING:
                 ESP_LOGI(TAG, "Starting OTA.");
                 remove_task_thermostat();
+                set_lcd_update_upgrade_firmware("Actualizando", 0);
                 break;
             case RMAKER_OTA_EVENT_IN_PROGRESS:
                 ESP_LOGI(TAG, "OTA is in progress.");
+                set_lcd_update_upgrade_firmware("En progreso", 10);
                 break;
             case RMAKER_OTA_EVENT_SUCCESSFUL:
                 ESP_LOGI(TAG, "OTA successful.");
+                set_lcd_update_upgrade_firmware("Con exito", 100);
                 break;
             case RMAKER_OTA_EVENT_FAILED:
                 ESP_LOGI(TAG, "OTA Failed.");
@@ -533,9 +536,9 @@ void event_handler_sync (struct timeval *tv) {
     case SNTP_SYNC_STATUS_COMPLETED:
         ESP_LOGI(TAG, "La sincronizacion esta completada");
         update_time_valid(true);
-        event_app_t event;
-        event.event_app = EVENT_APP_TIME_VALID;
-        send_event_app(event);
+        //event_app_t event;
+        //event.event_app = EVENT_APP_TIME_VALID;
+        send_event_app_time_valid();
         set_alarm(NTP_ALARM, ALARM_APP_OFF);
 
         break;

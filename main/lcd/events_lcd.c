@@ -93,6 +93,11 @@ char* event_lcd_2_mnemonic(EVENT_TYPE_LCD type_lcd) {
         case QR_CONFIRMED:
 
         strncpy(mnemonic, "QR_CONFIRMED", 30);
+        break;
+
+        case UPGRADE_FIRMWARE:
+        strncpy(mnemonic, "UPGRADE_FIRMWARE", 30);
+        break;
     }
 
         return mnemonic;
@@ -155,6 +160,8 @@ static void receive_lcd_event(event_lcd_t event) {
 
         case UPDATE_SCHEDULE:
 
+
+        ESP_LOGE(TAG, "se envia al lcd info de schedule: status: %d, par1: %d, par2: %d", event.status, (int) event.par1, (int) event.par2);
         lv_update_schedule(event.status, event.par1, event.par2);
 
         break;
@@ -179,6 +186,11 @@ static void receive_lcd_event(event_lcd_t event) {
         case QR_CONFIRMED:
 
         lv_qrcode_confirmed();
+        break;
+
+        case UPGRADE_FIRMWARE:
+            lv_upgrade_firmware(event.text, event.par1);
+
         break;
 
 
@@ -231,13 +243,13 @@ static void update_lcd_float(EVENT_TYPE_LCD type, float value) {
 
 }
 
-static void update_lcd_int(EVENT_TYPE_LCD type, int par1, int par2, int par3) {
+static void update_lcd_int(EVENT_TYPE_LCD type, int par1, int par2, bool status) {
 
     event_lcd_t event_lcd;
     event_lcd.event_type = type;
+    event_lcd.status = status;
     event_lcd.par1 = par1;
     event_lcd.par2 = par2;
-    event_lcd.par3 = par3;
 
     send_event_lcd(event_lcd);
 
@@ -268,7 +280,7 @@ static void update_lcd_bool(EVENT_TYPE_LCD type, bool status) {
 
 void set_lcd_update_time(int par1, int par2) {
 
-    update_lcd_int(UPDATE_TIME, par1, par2, -1);
+    update_lcd_int(UPDATE_TIME, par1, par2, true);
 
 }
 void set_lcd_update_text_mode(char *text_mode) {
@@ -309,17 +321,19 @@ void set_lcd_update_threshold_temperature(float threshold) {
 }
 void set_lcd_update_schedule(bool status, int par1, int par2) {
 
-    update_lcd_int(UPDATE_SCHEDULE, par1, par2, -1);
+    ESP_LOGE(TAG, "Recibido info de schedule: status: %d, par1: %d, par2: %d", status, (int) par1, (int) par2);
+
+    update_lcd_int(UPDATE_SCHEDULE, par1, par2, status);
 
 }
 
 void set_lcd_update_text_schedule(int par1, int par2) {
 
-    update_lcd_int(UPDATE_TEXT_SCHEDULE, par1, par2, -1);
+    update_lcd_int(UPDATE_TEXT_SCHEDULE, par1, par2, true);
 }
 void set_lcd_update_percent(float percent) {
 
-    update_lcd_int(UPDATE_PERCENT, percent, -1, -1);
+    update_lcd_int(UPDATE_PERCENT, percent, -1, true);
 
 }
 void set_lcd_update_qr_confirmed() {
@@ -334,5 +348,14 @@ void set_lcd_update_icon_errors(bool status) {
     update_lcd_bool(UPDATE_ICON_ERRORS, status);
 
 
+}
+
+void set_lcd_update_upgrade_firmware(char* message, int cursor) {
+
+    event_lcd_t event;
+    event.event_type = UPGRADE_FIRMWARE;
+    event.text = message;
+    event.par1 = cursor;
+    send_event_lcd(event);
 }
 

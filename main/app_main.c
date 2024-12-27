@@ -20,6 +20,7 @@
 
 
 
+
 #include "alarms_app.h"
 #include "app_main.h"
 #include "events_lcd.h"
@@ -186,6 +187,8 @@ void app_main() {
     sntp_set_time_sync_notification_cb(event_handler_sync);
  
    ESP_LOGI(TAG, "FIN DE LA APLICACION");
+   
+
 
    
 }

@@ -257,7 +257,7 @@ void create_event_app_task() {
 }
 
 
-void send_event_app(event_app_t event) {
+static void send_event_app(event_app_t event) {
 
 
 	ESP_LOGW(TAG, " envio de evento app %s", event_app_2mnemonic(event.event_app));
@@ -266,6 +266,58 @@ void send_event_app(event_app_t event) {
 
 	}
 
+}
+
+void send_event_app_alarm(EVENT_APP alarm) {
+
+    event_app_t event;
+    event.event_app = alarm;
+
+
+
+    switch (alarm) {
+
+        case EVENT_APP_ALARM_ON:
+        case EVENT_APP_ALARM_OFF:
+            send_event_app(event);
+        break;
+        default:
+            ESP_LOGE(TAG, "Error, no se trata aqui este tipo de alarma");
+        break;
+    }
+
+}
+
+void send_event_app_threshold(float threshold) {
+
+    event_app_t event;
+    event.event_app = EVENT_APP_SETPOINT_THRESHOLD;
+    event.value = threshold;
+    send_event_app(event);
+}
+
+void send_event_app_time_valid() {
+
+    event_app_t event;
+    event.event_app = EVENT_APP_TIME_VALID;
+    send_event_app(event);
+
+}
+
+void send_event_app_status(EVENT_APP status)  {
+
+    event_app_t event;
+    event.event_app = status;
+    switch (status) {
+
+        case EVENT_APP_AUTO:
+        case EVENT_APP_MANUAL:
+        send_event_app(event);
+        break;
+        default:
+            ESP_LOGE(TAG, "No se puede llamar a esta duncion para este evento");
+        break;
+    }
 }
 
 

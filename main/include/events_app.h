@@ -49,7 +49,11 @@ typedef struct event_app_t {
 
 
 void create_event_app_task();
-void send_event_app(event_app_t event);
+//void send_event_app(event_app_t event);
+void send_event_app_threshold(float threshold);
+void send_event_app_alarm(EVENT_APP type);
+void send_event_app_time_valid();
+void send_event_app_status(EVENT_APP status);
 
 
 

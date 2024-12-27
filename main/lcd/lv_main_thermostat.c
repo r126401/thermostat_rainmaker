@@ -11,6 +11,7 @@
 #include "events_app.h"
 #include "schedule_app.h"
 #include "events_lcd.h"
+#include "esp_app_desc.h"
 
 
 
@@ -221,13 +222,11 @@ static void create_heating_icon() {
 void timer_cb(lv_timer_t *timer) {
 
     
-    event_app_t event;
     float *threshold = lv_timer_get_user_data(timer);
     ESP_LOGI(TAG, "THRESHOLD VALE, %.1f", *threshold);
-    event.event_app = EVENT_APP_SETPOINT_THRESHOLD;
-    event.value = *threshold;
 
-    send_event_app(event);
+    send_event_app_threshold(*threshold);
+
     
     lv_obj_set_style_text_color(text_threshold, lv_color_hex(LV_COLOR_TEXT_NOTIFICATION), LV_PART_MAIN);
     pulse = false;
@@ -296,28 +295,30 @@ static void lv_event_handler_button_mode(lv_event_t *event) {
      * Rutina de pulsado del boton mode
      */
 
-    event_app_t event_app;
+
     
 
 
     if (strcmp(lv_label_get_text(label_mode), "M") == 0) {
 
-        event_app.event_app = EVENT_APP_MANUAL;
+
         lv_update_label_mode("A");
         lv_update_text_mode("MANUAL");
         set_button_threshold_clickable(false);
+        send_event_app_status(EVENT_APP_MANUAL);
 
 
         
     } else {
-        event_app.event_app = EVENT_APP_AUTO;
+
         lv_update_label_mode("M");
         lv_update_text_mode("AUTO");
         set_button_threshold_clickable(true);
+        send_event_app_status(EVENT_APP_AUTO);
 
     }
 
-    send_event_app(event_app);
+    
 
 
 }
@@ -392,7 +393,7 @@ static void create_msgbox_errors() {
 
     lv_table_set_cell_value(table_status, 0,0, "Conexion Wifi");
 
-    lv_color_t color = lv_obj_get_style_text_color(icon_wifi, LV_PART_MAIN);
+    //lv_color_t color = lv_obj_get_style_text_color(icon_wifi, LV_PART_MAIN);
 
     if (lv_color_eq(lv_obj_get_style_text_color(icon_wifi, LV_PART_MAIN), lv_color_hex(LV_COLOR_TEXT_NOTIFICATION))) {
         lv_table_set_cell_value(table_status, 0, 1, LV_SYMBOL_OK);
@@ -591,7 +592,7 @@ void create_layout_schedule() {
 	lv_label_set_text(text_to_schedule, "18:50");
     lv_obj_set_style_text_font(text_from_schedule, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_font(text_to_schedule, &lv_font_montserrat_16, LV_PART_MAIN);
-    lv_obj_set_pos(layout_schedule, lv_pct(5), lv_pct(80));
+    lv_obj_set_pos(layout_schedule, lv_pct(5), lv_pct(81));
 	//lv_obj_align_to(layout_schedule, screen_main_thermostat, LV_ALIGN_BOTTOM_MID, 10, -20);
 
 
@@ -680,10 +681,23 @@ static void init_main_screen() {
 }
 
 
+static void create_text_version() {
+
+    lv_obj_t *label_version;
+    label_version = lv_label_create(screen_main_thermostat);
+    const esp_app_desc_t *app_desc = esp_app_get_description();
+
+    lv_label_set_text_fmt(label_version, "v%s", app_desc->version);
+    lv_obj_set_pos(label_version, lv_pct(90),lv_pct(90));
+
+
+}
+
 
 void create_main_thermostat() {
 
     init_main_screen();
+    create_text_version();
     //screen_main_thermostat = lv_obj_create(disp);
     lv_screen_load(screen_main_thermostat);
     set_style_layout_notification();
@@ -934,7 +948,7 @@ void lv_update_text_schedule(int min, int max) {
 
     lv_label_set_text_fmt(text_from_schedule, "%d", min);
     lv_label_set_text_fmt(text_to_schedule, "%d", max);
-    lv_obj_clear_flag(label_percent, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_remove_flag(label_percent, LV_OBJ_FLAG_HIDDEN);
 }
 
 void lv_update_percent(int cursor) {
@@ -953,4 +967,23 @@ void lv_update_valid_time(bool timevalid) {
 
 
 }
+
+void lv_upgrade_firmware(char* message, int cursor) {
+
+    if (lv_obj_has_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN)) {
+
+        lv_obj_remove_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    lv_update_text_schedule(0,100);
+    if (lv_obj_has_flag(label_percent, LV_OBJ_FLAG_HIDDEN)) {
+        lv_obj_remove_flag(label_percent, LV_OBJ_FLAG_HIDDEN);
+    } 
+    lv_bar_set_value(progress_schedule, cursor, LV_PART_MAIN);
+    lv_label_set_text_fmt(label_percent, "%s %d %%", message, cursor);
+
+}
+
+
+
 

@@ -20,4 +20,5 @@ void lv_update_text_schedule(int min, int max);
 void lv_update_percent(int cursor);
 void create_instalation_button();
 int lv_update_lcd_schedule(bool status);
+void lv_upgrade_firmware(char* message, int cursor);
 

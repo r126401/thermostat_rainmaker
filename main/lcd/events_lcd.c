@@ -109,7 +109,7 @@ static void receive_lcd_event(event_lcd_t event) {
 
 
     //ESP_LOGW(TAG, "Recibido evento de tipo %s, %ld %ld %ld %d %s %.1f", event2mnemonic(event.event_type), event.par1, event.par2, event.par3, event.status, event.text, event.value);
-    ESP_LOGE(TAG, "Recibido evento %s", event_lcd_2_mnemonic(event.event_type));
+    //ESP_LOGE(TAG, "Recibido evento %s", event_lcd_2_mnemonic(event.event_type));
     switch (event.event_type) {
 
         case UPDATE_TIME:

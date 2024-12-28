@@ -68,7 +68,6 @@ void init_app()
      */
     app_network_init();
 
-    ESP_LOGE(TAG, "PASO 2");
 
     /* Register an event handler to catch RainMaker events */
     ESP_ERROR_CHECK(esp_event_handler_register(RMAKER_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL));
@@ -118,7 +117,7 @@ void init_app()
     /* Enable timezone service which will be require for setting appropriate timezone
      * from the phone apps for scheduling to work correctly.
      * For more information on the various ways of setting timezone, please check
-     * https://rainmaker.espressif.com/docs/time-service.html.
+     * https://rainmaker.espressif.com/docs/time-service.html. 
      */
     esp_rmaker_timezone_service_enable();
 
@@ -131,7 +130,7 @@ void init_app()
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
 
-    ESP_LOGE(TAG, "PASO 5");
+
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
 
@@ -142,7 +141,7 @@ void init_app()
      * after a connection has been successfully established
      */
 
-    ESP_LOGE(TAG, "PASO 6");
+
 
     err = app_network_start(POP_TYPE_RANDOM);
     if (err != ESP_OK) {

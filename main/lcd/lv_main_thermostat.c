@@ -688,7 +688,7 @@ static void create_text_version() {
     const esp_app_desc_t *app_desc = esp_app_get_description();
 
     lv_label_set_text_fmt(label_version, "v%s", app_desc->version);
-    lv_obj_set_pos(label_version, lv_pct(90),lv_pct(90));
+    lv_obj_set_pos(label_version, lv_pct(90),lv_pct(91.5));
 
 
 }
@@ -982,6 +982,15 @@ void lv_upgrade_firmware(char* message, int cursor) {
     lv_bar_set_value(progress_schedule, cursor, LV_PART_MAIN);
     lv_label_set_text_fmt(label_percent, "%s %d %%", message, cursor);
 
+}
+
+void lv_enable_button_mode(bool enable) {
+
+    if (enable) {
+        lv_obj_add_flag(button_mode, LV_OBJ_FLAG_CLICKABLE);
+    } else {
+        lv_obj_remove_flag(button_mode, LV_OBJ_FLAG_CLICKABLE);
+    }
 }
 
 

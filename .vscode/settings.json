@@ -95,7 +95,9 @@
         "app_main.h": "c",
         "iot_button.h": "c",
         "sdkconfig.h": "c",
-        "cjson.h": "c"
+        "cjson.h": "c",
+        "compare": "c",
+        "cstdint": "c"
     },
     "idf.flashType": "UART"
 }

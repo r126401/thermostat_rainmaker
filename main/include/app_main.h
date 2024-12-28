@@ -79,6 +79,7 @@ typedef struct app_params_t
 
 typedef enum status_app_t {
 
+   STATUS_FACTORY,
    STATUS_ERROR,
    STATUS_AUTO,
    STATUS_MANUAL,
@@ -132,3 +133,4 @@ float get_current_threshold();
 void create_task_thermostat();
 void remove_task_thermostat();
 bool is_task_thermostat_active();
+void set_status_app(status_app_t status);

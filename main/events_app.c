@@ -82,6 +82,9 @@ char* event_app_2mnemonic(EVENT_APP type) {
         case EVENT_APP_ALARM_ON:
             strncpy(mnemonic, "EVENT_APP_ALARM_ON", 30);
         break;
+        case EVENT_APP_FACTORY:
+            strncpy(mnemonic, "EVENT_APP_FACTORY", 30);
+        break;
 
 
     }
@@ -214,6 +217,14 @@ void receive_event_app(event_app_t event) {
 
         break;
 
+        case EVENT_APP_FACTORY:
+            create_instalation_button();
+            set_status_app(STATUS_FACTORY);
+            //inhibimos el boton mode para que no se pueda cambiar de modo
+            lv_enable_button_mode(false);
+
+        break;
+
 
     }
 
@@ -318,6 +329,13 @@ void send_event_app_status(EVENT_APP status)  {
             ESP_LOGE(TAG, "No se puede llamar a esta duncion para este evento");
         break;
     }
+}
+
+void send_event_app_factory() {
+
+    event_app_t event;
+    event.event_app = EVENT_APP_FACTORY;
+    send_event_app(event);
 }
 
 

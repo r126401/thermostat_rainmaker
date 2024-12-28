@@ -44,6 +44,7 @@
 static const char *TAG = "app_driver";
 extern esp_rmaker_device_t *thermostat_device;
 float current_threshold = 21.5;
+char *text_qrcode = NULL;
 
 TaskHandle_t thermostat_handle = NULL;
 
@@ -53,8 +54,18 @@ const esp_timer_create_args_t text_date_shot_timer_args = {
     .name = "time refresh date text"
 };
 
-char *text_qrcode;
+void timer_upgrade_cb(void *arg);
+
+const esp_timer_create_args_t shot_upgrade_args = {
+
+    .callback = &timer_upgrade_cb,
+    .name = "Timer to upgrade"
+
+};
+
+
 static esp_timer_handle_t timer_date_text;
+static esp_timer_handle_t timer_upgrade;
 
 
 
@@ -255,7 +266,13 @@ static void topic_cb (const char *topic, void *payload, size_t payload_len, void
 }
 
 
+void timer_upgrade_cb(void *arg) {
 
+    static int cursor = 0;
+    cursor++;
+    set_lcd_update_upgrade_firmware("Actualizando...", cursor);
+
+}
 
 
 /* Event handler for catching RainMaker events */
@@ -277,7 +294,8 @@ void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_EVENT_CLAIM_STARTED:
                 ESP_LOGI(TAG, "RainMaker Claim Started.");
 
-                set_lcd_update_qr_confirmed();
+                //set_lcd_update_qr_confirmed();
+                set_status_app(STATUS_STARTING);
                 break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
                 ESP_LOGI(TAG, "RainMaker Claim Successful.");
@@ -287,12 +305,14 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
-
+                set_status_app(STATUS_STARTING);
                 set_lcd_update_qr_confirmed();
                 if (!is_task_thermostat_active()) {
                     ESP_LOGW(TAG, "Se crea la tarea porque no estaba creada");
                     create_task_thermostat();
                 }
+
+                free(text_qrcode);
 
 
                 break;
@@ -350,12 +370,13 @@ void event_handler(void* arg, esp_event_base_t event_base,
     
         switch (event_id) {
             case APP_NETWORK_EVENT_QR_DISPLAY:
-                ESP_LOGI(TAG, "Provisioning QR : %s", (char *)event_data);
                 if (text_qrcode == NULL) {
                     text_qrcode = (char*) calloc(strlen(event_data) + 1, sizeof(char));
                 }
-                create_instalation_button();
                 strncpy(text_qrcode, event_data, strlen(event_data));
+                ESP_LOGI(TAG, "Provisioning QR : %s", text_qrcode);
+
+                send_event_app_factory();
 
                 break;
             case APP_NETWORK_EVENT_PROV_TIMEOUT:
@@ -373,18 +394,28 @@ void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_OTA_EVENT_STARTING:
                 ESP_LOGI(TAG, "Starting OTA.");
                 remove_task_thermostat();
-                set_lcd_update_upgrade_firmware("Actualizando", 0);
+                esp_timer_create(&shot_upgrade_args, &timer_upgrade);
+                lv_upgrade_firmware("Preparando OTA", 0);
+                
+                
                 break;
             case RMAKER_OTA_EVENT_IN_PROGRESS:
                 ESP_LOGI(TAG, "OTA is in progress.");
-                set_lcd_update_upgrade_firmware("En progreso", 10);
+                esp_timer_start_periodic(timer_upgrade, 1000000);
                 break;
             case RMAKER_OTA_EVENT_SUCCESSFUL:
                 ESP_LOGI(TAG, "OTA successful.");
-                set_lcd_update_upgrade_firmware("Con exito", 100);
+                esp_timer_stop(timer_upgrade);
+                esp_timer_delete(timer_upgrade);
+                lv_upgrade_firmware("Actualizado con exito", 100);
+
                 break;
             case RMAKER_OTA_EVENT_FAILED:
                 ESP_LOGI(TAG, "OTA Failed.");
+                esp_timer_stop(timer_upgrade);
+                esp_timer_delete(timer_upgrade);
+                lv_upgrade_firmware("Fallo la actualizacion", 100);
+
                 break;
             case RMAKER_OTA_EVENT_REJECTED:
                 ESP_LOGI(TAG, "OTA Rejected.");
@@ -614,4 +645,88 @@ bool is_task_thermostat_active() {
         return false;
     }
     return true;
+}
+
+char* status2mnemonic(status_app_t status) {
+
+    static char mnemonic[30];
+
+    switch(status) {
+
+        case STATUS_FACTORY:
+            strncpy(mnemonic, "SIN INSTALAR", 30);
+        break;
+
+        case STATUS_ERROR:
+            strncpy(mnemonic, "ERROR", 30);
+        break;
+
+        case STATUS_AUTO:
+           strncpy(mnemonic, "AUTO", 30);
+        break;
+        case STATUS_MANUAL:
+           strncpy(mnemonic, "MANUAL", 30);
+
+        break;
+
+        case STATUS_STARTING:
+           strncpy(mnemonic, "INICIALIZANDO", 30);
+
+        break;
+        case STATUS_SYNC:
+           strncpy(mnemonic, "SINCRONIZANDO", 30);
+
+        break;
+
+        case STATUS_UPGRADING:
+           strncpy(mnemonic, "ACTUALIZANDO", 30);
+
+        break;
+
+        default:
+            strncpy(mnemonic, "ERROR STATUS", 30);
+
+        break;
+
+    }
+
+    return mnemonic;
+
+
+}
+
+void set_status_app(status_app_t status) {
+
+    ESP_LOGE(TAG," SE CAMBIA AL ESTADO %s", status2mnemonic(status));
+    set_lcd_update_text_mode(status2mnemonic(status));
+
+    switch(status) {
+
+        case STATUS_FACTORY:
+        
+        break;
+
+        case STATUS_ERROR:
+        break;
+
+        case STATUS_AUTO:
+        break;
+        case STATUS_MANUAL:
+        break;
+
+        case STATUS_STARTING:
+        break;
+        case STATUS_SYNC:
+        break;
+
+        case STATUS_UPGRADING:
+        break;
+
+        default:
+        break;
+
+
+
+
+    }
 }

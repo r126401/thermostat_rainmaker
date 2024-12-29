@@ -178,12 +178,13 @@ void app_main() {
 
     //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
     create_task_thermostat();
-    set_lcd_update_text_mode(STATUS_APP_STARTING);
+    set_lcd_update_text_mode(TEXT_STATUS_APP_STARTING);
 
     init_app();
     //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
 
     sntp_set_time_sync_notification_cb(event_handler_sync);
+    //set_status_app(STATUS_SYNC);
  
    ESP_LOGI(TAG, "FIN DE LA APLICACION");
    

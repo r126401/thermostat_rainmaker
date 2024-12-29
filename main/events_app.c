@@ -87,6 +87,7 @@ char* event_app_2mnemonic(EVENT_APP type) {
         break;
 
 
+
     }
 
 
@@ -101,20 +102,24 @@ void delay_get_schedules(void *arg) {
     uint32_t time_end;
     esp_rmaker_param_t *param;
 
+    ESP_LOGW(TAG, "Vamos a chequear los schedules en la ultima tarea del arranque");
+
     index = get_next_schedule(&time_end);
     lv_update_schedule(true, time_end, index);
+    set_status_app(STATUS_AUTO);
+    /*
     param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
 
     if (index >= 0) {
-        esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_AUTO));
-        set_lcd_update_text_mode(STATUS_APP_AUTO);
+        esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_AUTO));
+        set_lcd_update_text_mode(TEXT_STATUS_APP_AUTO);
         
     } else {
-        esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_MANUAL));
-        set_lcd_update_text_mode(STATUS_APP_MANUAL);
+        esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_MANUAL));
+        set_lcd_update_text_mode(TEXT_STATUS_APP_MANUAL);
     }
 
-
+*/
     
 
 
@@ -129,6 +134,7 @@ void receive_event_app(event_app_t event) {
 
     esp_rmaker_param_t *param;
     char *status;
+    status_app_t status_app = STATUS_ERROR;
 
 
     switch (event.event_app) 
@@ -139,10 +145,15 @@ void receive_event_app(event_app_t event) {
             ESP_LOGI(TAG, "Recibido evento EVENT_APP_SETPOINT_THRESHOLD. Threshold = %.1f", event.value); 
             update_threshold(event.value, true);
             break;
+
+
         case EVENT_APP_TIME_VALID:
+            status_app = get_status_app();
+
+            if ((status_app == STATUS_STARTING) || status_app == (STATUS_CONNECTING) || status_app == (STATUS_SYNC)) {
             
-            param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-            if (strcmp (esp_rmaker_param_get_val(param)->val.s, STATUS_APP_STARTING) == 0) {
+            //param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+            
                 ESP_LOGW(TAG, "Vamos a cambiar de mode starting");
                 esp_timer_handle_t timer_delay_get_schedule;
 
@@ -153,8 +164,10 @@ void receive_event_app(event_app_t event) {
             };
             esp_timer_create(&delay_get_schedule_shot_timer_args, &timer_delay_get_schedule);
             esp_timer_start_once(timer_delay_get_schedule, 10 * 1000000);
-
+            
             }
+
+            
             break;
 
         case EVENT_APP_MANUAL:
@@ -162,10 +175,10 @@ void receive_event_app(event_app_t event) {
             status = esp_rmaker_param_get_val(param)->val.s;
 
 
-            if (strcmp(status, STATUS_APP_AUTO) == 0) {
+            if (strcmp(status, TEXT_STATUS_APP_AUTO) == 0) {
                 ESP_LOGW(TAG, "Vamos a cambiar al estado manual. Estamos en modo %s", status);
 
-                esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_MANUAL));
+                esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_MANUAL));
                 if (get_status_relay() == OFF) {
                     ESP_LOGW(TAG, "Vamos a encender porque estaba apagado");
                     relay_operation(ON);
@@ -184,9 +197,9 @@ void receive_event_app(event_app_t event) {
             status = esp_rmaker_param_get_val(param)->val.s;
             ESP_LOGW(TAG, "Vamos a cambiar al estado AUTO. Estamos en modo %s", status);
 
-            if (strcmp(status, STATUS_APP_MANUAL) == 0) {
+            if (strcmp(status, TEXT_STATUS_APP_MANUAL) == 0) {
                 //reportamos el paso a modo auto
-                esp_rmaker_param_update_and_report(param, esp_rmaker_str(STATUS_APP_AUTO));
+                esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_AUTO));
                 // recogemos el valor que teniamos de umbral de temperatura del modo auto y lo ponemos
                 //param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
                 //esp_rmaker_param_update(param, esp_rmaker_float(current_threshold));
@@ -224,6 +237,8 @@ void receive_event_app(event_app_t event) {
             lv_enable_button_mode(false);
 
         break;
+
+
 
 
     }
@@ -337,6 +352,8 @@ void send_event_app_factory() {
     event.event_app = EVENT_APP_FACTORY;
     send_event_app(event);
 }
+
+
 
 
 

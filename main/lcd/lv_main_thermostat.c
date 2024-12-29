@@ -615,7 +615,7 @@ void create_layout_schedule() {
 static void create_label_text_mode() {
 
     label_text_mode = lv_label_create(screen_main_thermostat);
-    lv_label_set_text(label_text_mode,STATUS_APP_STARTING);
+    lv_label_set_text(label_text_mode," ");
     lv_obj_align_to(label_text_mode, layout_temperature, LV_ALIGN_OUT_TOP_MID, 15, -30);
     set_style_mode();
     lv_obj_add_style(label_text_mode, &style_text_mode, LV_PART_MAIN);

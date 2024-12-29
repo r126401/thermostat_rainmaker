@@ -39,7 +39,8 @@ typedef enum EVENT_APP {
     EVENT_APP_MANUAL,
     EVENT_APP_ALARM_ON,
     EVENT_APP_ALARM_OFF,
-    EVENT_APP_FACTORY
+    EVENT_APP_FACTORY,
+
 }EVENT_APP;
 
 typedef struct event_app_t {
@@ -56,6 +57,7 @@ void send_event_app_alarm(EVENT_APP type);
 void send_event_app_time_valid();
 void send_event_app_status(EVENT_APP status);
 void send_event_app_factory();
+
 
 
 

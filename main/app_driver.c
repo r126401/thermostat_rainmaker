@@ -46,6 +46,8 @@ extern esp_rmaker_device_t *thermostat_device;
 float current_threshold = 21.5;
 char *text_qrcode = NULL;
 
+static status_app_t status_app;
+
 TaskHandle_t thermostat_handle = NULL;
 
 const esp_timer_create_args_t text_date_shot_timer_args = {
@@ -182,8 +184,8 @@ void register_parameters()
     /**
      * Create mode thermostat
      */
-    static const char *list[] = {STATUS_APP_ERROR, STATUS_APP_AUTO, STATUS_APP_MANUAL, STATUS_APP_STARTING, STATUS_APP_SYNCING, STATUS_APP_UPGRADING, STATUS_APP_UNDEFINED};
-    param = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(STATUS_APP_STARTING), PROP_FLAG_READ);
+    static const char *list[] = {TEXT_STATUS_APP_ERROR, TEXT_STATUS_APP_AUTO, TEXT_STATUS_APP_MANUAL, TEXT_STATUS_APP_STARTING, TEXT_STATUS_APP_CONNECTING, TEXT_STATUS_APP_UPGRADING, TEXT_STATUS_APP_UNDEFINED};
+    param = esp_rmaker_param_create(MODE, NULL, esp_rmaker_str(TEXT_STATUS_APP_STARTING), PROP_FLAG_READ);
     esp_rmaker_param_add_valid_str_list(param, list, 7);
     esp_rmaker_device_add_param(thermostat_device, param);
 
@@ -275,6 +277,9 @@ void timer_upgrade_cb(void *arg) {
 }
 
 
+
+
+
 /* Event handler for catching RainMaker events */
 void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data)
@@ -290,14 +295,14 @@ void event_handler(void* arg, esp_event_base_t event_base,
         switch (event_id) {
             case RMAKER_EVENT_INIT_DONE:
                 ESP_LOGI(TAG, "RainMaker Initialised.");
-                break;
-            case RMAKER_EVENT_CLAIM_STARTED:
-                ESP_LOGI(TAG, "RainMaker Claim Started.");
-
-                //set_lcd_update_qr_confirmed();
                 set_status_app(STATUS_STARTING);
                 break;
+            case RMAKER_EVENT_CLAIM_STARTED:
+                //No lo he visto salir nunca
+                ESP_LOGI(TAG, "RainMaker Claim Started.");
+                break;
             case RMAKER_EVENT_CLAIM_SUCCESSFUL:
+                //No lo he visto salir nunca
                 ESP_LOGI(TAG, "RainMaker Claim Successful.");
                 break;
             case RMAKER_EVENT_CLAIM_FAILED:
@@ -305,13 +310,18 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
-                set_status_app(STATUS_STARTING);
-                set_lcd_update_qr_confirmed();
-                if (!is_task_thermostat_active()) {
-                    ESP_LOGW(TAG, "Se crea la tarea porque no estaba creada");
-                    create_task_thermostat();
-                }
+                //Esto debemos hacerlo si venimos del factory
+                if (get_status_app() == STATUS_FACTORY) {
 
+                    set_status_app(STATUS_CONNECTING);
+                    set_lcd_update_qr_confirmed();
+                    if (!is_task_thermostat_active()) {
+                        ESP_LOGW(TAG, "Se crea la tarea porque no estaba creada");
+                        create_task_thermostat();
+                    }
+                    
+                }
+ 
                 free(text_qrcode);
 
 
@@ -351,6 +361,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 }
                 set_lcd_update_broker_status(true);
                 set_alarm(MQTT_ALARM, ALARM_APP_OFF);
+                set_status_app(STATUS_SYNC);
  
 
                 break;
@@ -654,32 +665,38 @@ char* status2mnemonic(status_app_t status) {
     switch(status) {
 
         case STATUS_FACTORY:
-            strncpy(mnemonic, "SIN INSTALAR", 30);
+            strncpy(mnemonic, TEXT_STATUS_APP_FACTORY, 30);
         break;
 
         case STATUS_ERROR:
-            strncpy(mnemonic, "ERROR", 30);
+            strncpy(mnemonic, TEXT_STATUS_APP_ERROR, 30);
         break;
 
         case STATUS_AUTO:
-           strncpy(mnemonic, "AUTO", 30);
+           strncpy(mnemonic, TEXT_STATUS_APP_AUTO, 30);
         break;
         case STATUS_MANUAL:
-           strncpy(mnemonic, "MANUAL", 30);
+           strncpy(mnemonic, TEXT_STATUS_APP_MANUAL, 30);
 
         break;
 
         case STATUS_STARTING:
-           strncpy(mnemonic, "INICIALIZANDO", 30);
+           strncpy(mnemonic, TEXT_STATUS_APP_STARTING, 30);
 
         break;
+
+        case STATUS_CONNECTING:
+           strncpy(mnemonic, TEXT_STATUS_APP_CONNECTING, 30);
+
+        break;
+
         case STATUS_SYNC:
-           strncpy(mnemonic, "SINCRONIZANDO", 30);
+           strncpy(mnemonic, TEXT_STATUS_APP_SYNCING, 30);
 
         break;
 
         case STATUS_UPGRADING:
-           strncpy(mnemonic, "ACTUALIZANDO", 30);
+           strncpy(mnemonic, TEXT_STATUS_APP_UPGRADING, 30);
 
         break;
 
@@ -697,8 +714,18 @@ char* status2mnemonic(status_app_t status) {
 
 void set_status_app(status_app_t status) {
 
-    ESP_LOGE(TAG," SE CAMBIA AL ESTADO %s", status2mnemonic(status));
-    set_lcd_update_text_mode(status2mnemonic(status));
+    esp_rmaker_param_t *param;
+    char* text_status;
+
+    text_status = status2mnemonic(status);
+
+    ESP_LOGW(TAG," ESTADO DE LA APLICACION: %s", text_status);
+    set_lcd_update_text_mode(text_status);
+
+    param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+    esp_rmaker_param_update_and_report(param, esp_rmaker_str(text_status));
+
+    status_app = status;
 
     switch(status) {
 
@@ -716,11 +743,17 @@ void set_status_app(status_app_t status) {
 
         case STATUS_STARTING:
         break;
+
+        case STATUS_CONNECTING:
+        break;
+
         case STATUS_SYNC:
         break;
 
         case STATUS_UPGRADING:
         break;
+
+
 
         default:
         break;
@@ -729,4 +762,9 @@ void set_status_app(status_app_t status) {
 
 
     }
+}
+
+status_app_t get_status_app() {
+
+    return status_app;
 }

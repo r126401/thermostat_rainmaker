@@ -33,14 +33,15 @@
 #define ALARM  "alarm"
 #define AUTO   "AUTO"
 
-
-#define STATUS_APP_ERROR "ERROR"
-#define STATUS_APP_AUTO "AUTO"
-#define STATUS_APP_MANUAL "MANUAL"
-#define STATUS_APP_STARTING "STARTING"
-#define STATUS_APP_SYNCING "SYNCING"
-#define STATUS_APP_UPGRADING "UPGRADING"
-#define STATUS_APP_UNDEFINED "UNDEFINED"
+#define TEXT_STATUS_APP_FACTORY "NUEVO"
+#define TEXT_STATUS_APP_ERROR "ERROR"
+#define TEXT_STATUS_APP_AUTO "AUTO"
+#define TEXT_STATUS_APP_MANUAL "MANUAL"
+#define TEXT_STATUS_APP_STARTING "INICIALIZANDO"
+#define TEXT_STATUS_APP_CONNECTING  "CONECTANDO"
+#define TEXT_STATUS_APP_SYNCING "SINCRONIZANDO"
+#define TEXT_STATUS_APP_UPGRADING "ACTUALIZANDO"
+#define TEXT_STATUS_APP_UNDEFINED "UNDEFINED"
 
 
 
@@ -84,6 +85,7 @@ typedef enum status_app_t {
    STATUS_AUTO,
    STATUS_MANUAL,
    STATUS_STARTING,
+   STATUS_CONNECTING,
    STATUS_SYNC,
    STATUS_UPGRADING
 
@@ -134,3 +136,4 @@ void create_task_thermostat();
 void remove_task_thermostat();
 bool is_task_thermostat_active();
 void set_status_app(status_app_t status);
+status_app_t get_status_app();

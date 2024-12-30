@@ -170,6 +170,7 @@ void receive_event_app(event_app_t event) {
                 }
 
                 lv_update_lcd_schedule(false);
+                lv_enable_button_mode(true);
 
             break;
 
@@ -183,6 +184,7 @@ void receive_event_app(event_app_t event) {
                 set_lcd_update_threshold_temperature(current_threshold);
                 lv_update_lcd_schedule(true);
                 thermostat_action(get_app_current_temperature());
+                lv_enable_button_mode(true);
                 
             }
         break;

@@ -999,4 +999,12 @@ void lv_enable_button_mode(bool enable) {
 
 
 
+void lv_set_button_instalation(bool show) {
 
+    if (show) {
+
+        lv_obj_remove_flag(icon_instalation, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        lv_obj_add_flag(icon_instalation, LV_OBJ_FLAG_HIDDEN);
+    }
+}

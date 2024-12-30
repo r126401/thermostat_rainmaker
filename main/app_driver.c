@@ -29,6 +29,7 @@
 #include "esp_rmaker_mqtt.h"
 #include "esp_err.h"
 #include "events_lcd.h"
+#include "lv_factory_thermostat.h"
 
 
 #include <esp_rmaker_core.h>
@@ -307,7 +308,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_CLAIM_FAILED:
                 ESP_LOGI(TAG, "RainMaker Claim Failed.");
-                
+                set_lcd_update_error_factory();
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
@@ -316,6 +317,8 @@ void event_handler(void* arg, esp_event_base_t event_base,
 
                     set_app_status(STATUS_CONNECTING);
                     set_lcd_update_qr_confirmed();
+                    set_lcd_update_button_instalation(false);
+                    lv_cancel_timer_factory();
                     if (!is_task_thermostat_active()) {
                         ESP_LOGW(TAG, "Se crea la tarea porque no estaba creada");
                         create_task_thermostat();

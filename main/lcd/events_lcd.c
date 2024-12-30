@@ -102,6 +102,10 @@ char* event_lcd_2_mnemonic(EVENT_TYPE_LCD type_lcd) {
         case ERROR_FACTORY:
         strncpy(mnemonic, "ERROR_FACTORY", 30);
         break;
+
+        case UPDATE_BUTTON_INSTALATION:
+        strncpy(mnemonic, "UPDATE_BUTTON_INSTALATION", 30);
+        break;
     }
 
         return mnemonic;
@@ -200,6 +204,11 @@ static void receive_lcd_event(event_lcd_t event) {
         case ERROR_FACTORY:
 
         lv_set_error_factory();
+        break;
+
+        case UPDATE_BUTTON_INSTALATION:
+
+        lv_set_button_instalation(event.status);
         break;
 
 
@@ -373,3 +382,7 @@ void set_lcd_update_error_factory() {
     update_lcd_bool(ERROR_FACTORY, false);
 }
 
+void set_lcd_update_button_instalation(bool show) {
+
+    update_lcd_bool(UPDATE_BUTTON_INSTALATION, show);
+}

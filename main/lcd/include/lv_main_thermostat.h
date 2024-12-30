@@ -22,4 +22,5 @@ void create_instalation_button();
 int lv_update_lcd_schedule(bool status);
 void lv_upgrade_firmware(char* message, int cursor);
 void lv_enable_button_mode(bool enable);
+void lv_set_button_instalation(bool show);
 

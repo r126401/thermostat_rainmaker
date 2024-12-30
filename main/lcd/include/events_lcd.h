@@ -20,6 +20,7 @@ typedef enum EVENT_TYPE_LCD {
     QR_CONFIRMED,
     UPGRADE_FIRMWARE,
     ERROR_FACTORY,
+    UPDATE_BUTTON_INSTALATION,
 
 
 
@@ -56,5 +57,7 @@ void set_lcd_update_percent(float percent);
 void set_lcd_update_icon_errors(bool status);
 void set_lcd_update_qr_confirmed();
 void set_lcd_update_upgrade_firmware(char* message, int cursor);
+void set_lcd_update_error_factory();
+void set_lcd_update_button_instalation(bool show);
 
 

@@ -9,3 +9,4 @@ void create_factory_screen();
 void lv_delete_init_thermostat();
 void lv_qrcode_confirmed();
 void lv_set_error_factory();
+void lv_cancel_timer_factory();

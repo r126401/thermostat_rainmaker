@@ -9,6 +9,7 @@
 
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_utils.h>
+#include "esp_timer.h"
 
 extern lv_style_t style_buttons;
 extern lv_display_t * display;
@@ -16,7 +17,7 @@ extern lv_display_t * display;
 lv_style_t style_titles;
 extern lv_obj_t *screen_main_thermostat;
 
-
+ static esp_timer_handle_t timer_factory;
 
 
 
@@ -128,6 +129,13 @@ static void create_instalation_message() {
 }
 
 
+static void handler_factory(void * arg) {
+
+    lv_set_error_factory();
+
+
+} 
+
 void create_factory_screen() {
 
    
@@ -179,6 +187,18 @@ void create_factory_screen() {
         lv_obj_set_pos(button_home, lv_pct(80), lv_pct(40));
         lv_obj_add_flag(button_home, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_event_cb(button_home, lv_event_handler_button_home, LV_EVENT_CLICKED, NULL);
+
+    const esp_timer_create_args_t factory_shot_timer_args = {
+    .callback = &handler_factory,
+    /* name is optional, but may help identify the timer when debugging */
+    .name = "time refresh date text"
+};
+
+   
+
+    esp_timer_create(&factory_shot_timer_args, &timer_factory);
+    esp_timer_start_once(timer_factory, 120 * 1000000);
+
     
 
 
@@ -210,3 +230,18 @@ void lv_set_error_factory() {
 
 
 }
+
+void lv_cancel_timer_factory() {
+
+    if (esp_timer_is_active(timer_factory)) {
+        esp_timer_stop(timer_factory);
+        esp_timer_delete(timer_factory);
+        ESP_LOGW(TAG, "Temporizador de factory reset cancelado");
+        
+
+    }
+
+
+
+}
+

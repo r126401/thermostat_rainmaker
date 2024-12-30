@@ -107,23 +107,7 @@ void delay_get_schedules(void *arg) {
     index = get_next_schedule(&time_end);
     lv_update_schedule(true, time_end, index);
     set_status_app(STATUS_AUTO);
-    /*
-    param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-
-    if (index >= 0) {
-        esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_AUTO));
-        set_lcd_update_text_mode(TEXT_STATUS_APP_AUTO);
-        
-    } else {
-        esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_MANUAL));
-        set_lcd_update_text_mode(TEXT_STATUS_APP_MANUAL);
-    }
-
-*/
-    
-
-
-    
+   
 
 
 }
@@ -171,14 +155,13 @@ void receive_event_app(event_app_t event) {
             break;
 
         case EVENT_APP_MANUAL:
-            param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-            status = esp_rmaker_param_get_val(param)->val.s;
+            status_app = get_status_app();
+            //param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+            //status = esp_rmaker_param_get_val(param)->val.s;
 
-
-            if (strcmp(status, TEXT_STATUS_APP_AUTO) == 0) {
-                ESP_LOGW(TAG, "Vamos a cambiar al estado manual. Estamos en modo %s", status);
-
-                esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_MANUAL));
+            if (status_app == STATUS_AUTO) {
+                ESP_LOGW(TAG, "Vamos a cambiar al estado manual. Estamos en modo %s", status2mnemonic(status_app));
+                set_status_app(STATUS_MANUAL);
                 if (get_status_relay() == OFF) {
                     ESP_LOGW(TAG, "Vamos a encender porque estaba apagado");
                     relay_operation(ON);
@@ -193,10 +176,20 @@ void receive_event_app(event_app_t event) {
             break;
 
         case EVENT_APP_AUTO:
-            param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-            status = esp_rmaker_param_get_val(param)->val.s;
-            ESP_LOGW(TAG, "Vamos a cambiar al estado AUTO. Estamos en modo %s", status);
+            status_app = get_status_app();
+            //param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
+            //status = esp_rmaker_param_get_val(param)->val.s;
+            ESP_LOGW(TAG, "Vamos a cambiar al estado AUTO. Estamos en modo %s", status2mnemonic(status_app));
 
+            if (status_app == STATUS_MANUAL) {
+
+                set_status_app(STATUS_AUTO);
+                set_lcd_update_threshold_temperature(current_threshold);
+                lv_update_lcd_schedule(true);
+                thermostat_action(get_current_temperature());
+                
+            }
+/*
             if (strcmp(status, TEXT_STATUS_APP_MANUAL) == 0) {
                 //reportamos el paso a modo auto
                 esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_AUTO));
@@ -208,7 +201,7 @@ void receive_event_app(event_app_t event) {
                 param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
                 thermostat_action(esp_rmaker_param_get_val(param)->val.f);
             }
-
+*/
         break;
 
         case EVENT_APP_ALARM_OFF:

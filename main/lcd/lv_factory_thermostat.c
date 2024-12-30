@@ -5,6 +5,7 @@
 #include "lv_factory_thermostat.h"
 #include "lv_main_thermostat.h"
 #include "lv_styles_thermostat.h"
+#include "app_main.h"
 
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_utils.h>
@@ -26,6 +27,8 @@ lv_obj_t *label_button_reset;
 lv_obj_t *label_button_home;
 lv_obj_t *qr;
 lv_obj_t *title_aplication;
+lv_span_t *span;
+lv_obj_t * spans;
 
 extern char *text_qrcode;
 static const char *TAG = "lv_factory_thermostat";
@@ -103,25 +106,25 @@ lv_qrcode_update(qr, qrcode, strlen(qrcode));
 
 static void create_instalation_message() {
 
-        static lv_style_t style;
+    static lv_style_t style;
     lv_style_init(&style);
     lv_style_set_border_width(&style, 1);
     lv_style_set_border_color(&style, lv_palette_main(LV_PALETTE_ORANGE));
     lv_style_set_pad_all(&style, 2);
 
-        lv_obj_t * spans = lv_spangroup_create(lv_screen_active());
+    spans = lv_spangroup_create(lv_screen_active());
 
-        lv_obj_set_width(spans, 300);
-        lv_obj_set_height(spans, 180);
-        lv_obj_set_pos(spans, lv_pct(10), lv_pct(50));
-        lv_spangroup_set_align(spans, LV_TEXT_ALIGN_LEFT);
-        lv_spangroup_set_overflow(spans, LV_SPAN_OVERFLOW_CLIP);
-        //lv_spangroup_set_indent(spans, 5);
-        lv_spangroup_set_mode(spans, LV_SPAN_MODE_BREAK);
-        lv_span_t *span = lv_spangroup_new_span(spans);
-        lv_obj_align_to(spans, qr, LV_ALIGN_BOTTOM_LEFT, -82, 10);
-        lv_span_set_text(span, "Escanea el codigo QR para enlazar el dispositivo con la aplicacion.");
-        lv_obj_add_style(spans, &style, LV_PART_MAIN);
+    lv_obj_set_width(spans, 300);
+    lv_obj_set_height(spans, 180);
+    lv_obj_set_pos(spans, lv_pct(10), lv_pct(50));
+    lv_spangroup_set_align(spans, LV_TEXT_ALIGN_LEFT);
+    lv_spangroup_set_overflow(spans, LV_SPAN_OVERFLOW_CLIP);
+    //lv_spangroup_set_indent(spans, 5);
+    lv_spangroup_set_mode(spans, LV_SPAN_MODE_BREAK);
+    span = lv_spangroup_new_span(spans);
+    lv_obj_align_to(spans, qr, LV_ALIGN_BOTTOM_LEFT, -82, 10);
+    lv_span_set_text(span, "Escanea el codigo QR para enlazar el dispositivo con la aplicacion.");
+    lv_obj_add_style(spans, &style, LV_PART_MAIN);
 }
 
 
@@ -192,5 +195,18 @@ void lv_qrcode_confirmed() {
 
 
         lv_screen_load(screen_main_thermostat);
+
+}
+
+void lv_set_error_factory() {
+
+    set_app_status(STATUS_ERROR);
+    lv_label_set_text(title_aplication, "ERROR AL INSTALAR!!!");
+    lv_obj_set_style_text_color(title_aplication, lv_color_hex(LV_COLOR_TEXT_FAIL_NOTIFICATION), LV_PART_MAIN);
+    lv_span_set_text(span, "Pulsa reset para volver a instalar el dispositivo.");
+    lv_obj_set_style_text_color(button_reset, lv_color_hex(LV_COLOR_TEXT_FAIL_NOTIFICATION), LV_PART_MAIN);
+    lv_obj_set_style_text_color(spans, lv_color_hex(LV_COLOR_TEXT_FAIL_NOTIFICATION), LV_PART_MAIN);
+
+
 
 }

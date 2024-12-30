@@ -295,7 +295,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
         switch (event_id) {
             case RMAKER_EVENT_INIT_DONE:
                 ESP_LOGI(TAG, "RainMaker Initialised.");
-                set_status_app(STATUS_STARTING);
+                set_app_status(STATUS_STARTING);
                 break;
             case RMAKER_EVENT_CLAIM_STARTED:
                 //No lo he visto salir nunca
@@ -307,13 +307,14 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_EVENT_CLAIM_FAILED:
                 ESP_LOGI(TAG, "RainMaker Claim Failed.");
+                
                 break;
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
                 //Esto debemos hacerlo si venimos del factory
-                if (get_status_app() == STATUS_FACTORY) {
+                if (get_app_status() == STATUS_FACTORY) {
 
-                    set_status_app(STATUS_CONNECTING);
+                    set_app_status(STATUS_CONNECTING);
                     set_lcd_update_qr_confirmed();
                     if (!is_task_thermostat_active()) {
                         ESP_LOGW(TAG, "Se crea la tarea porque no estaba creada");
@@ -361,7 +362,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 }
                 set_lcd_update_broker_status(true);
                 set_alarm(MQTT_ALARM, ALARM_APP_OFF);
-                set_status_app(STATUS_SYNC);
+                set_app_status(STATUS_SYNC);
  
 
                 break;
@@ -610,14 +611,14 @@ void factory_reset_device() {
     esp_rmaker_factory_reset(0,0);
 }
 
-float get_current_temperature() {
+float get_app_current_temperature() {
 
     esp_rmaker_param_t *param;
     param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
     return esp_rmaker_param_get_val(param)->val.f;
 }
 
-float get_current_threshold() {
+float get_app_current_threshold() {
 
     esp_rmaker_param_t *param;
     param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
@@ -712,7 +713,7 @@ char* status2mnemonic(status_app_t status) {
 
 }
 
-void set_status_app(status_app_t status) {
+void set_app_status(status_app_t status) {
 
     esp_rmaker_param_t *param;
     char* text_status;
@@ -764,7 +765,26 @@ void set_status_app(status_app_t status) {
     }
 }
 
-status_app_t get_status_app() {
+status_app_t get_app_status() {
 
     return status_app;
+}
+
+
+void set_app_update_threshold(float threshold, bool reporting) {
+
+
+
+    esp_rmaker_param_t *parameter;
+    set_lcd_update_threshold_temperature(threshold);
+    parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
+    
+    if (reporting) {
+        esp_rmaker_param_update_and_report(parameter, esp_rmaker_float(threshold));
+    } else {
+        esp_rmaker_param_update(parameter, esp_rmaker_float(threshold));
+    }
+
+    thermostat_action(get_app_current_temperature());
+
 }

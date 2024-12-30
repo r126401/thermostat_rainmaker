@@ -130,11 +130,12 @@ void event_handler(void* arg, esp_event_base_t event_base,
                           int32_t event_id, void* event_data);
 
 void event_handler_sync (struct timeval *tv) ;
-float get_current_temperature();
-float get_current_threshold();
 void create_task_thermostat();
 void remove_task_thermostat();
 bool is_task_thermostat_active();
-void set_status_app(status_app_t status);
-status_app_t get_status_app();
 char* status2mnemonic(status_app_t status);
+void set_app_update_threshold(float threshold, bool reporting);
+float get_app_current_temperature();
+float get_app_current_threshold();
+void set_app_status(status_app_t status);
+status_app_t get_app_status();

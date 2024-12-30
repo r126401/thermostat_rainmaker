@@ -167,11 +167,11 @@ void set_style_mode() {
     lv_style_init(&style_text_mode);
     lv_style_set_bg_opa(&style_text_mode, LV_OPA_TRANSP);
     //lv_style_set_border_opa(&style_text_mode, LV_OPA_0);
-    lv_style_set_border_width(&style_text_mode, 2);
+    lv_style_set_border_width(&style_text_mode, 0);
     lv_style_set_border_color(&style_text_mode, lv_color_hex(LV_COLOR_TEXT_NOTIFICATION));
     lv_style_set_text_color(&style_text_mode, lv_color_hex(LV_COLOR_TEXT_NOTIFICATION));
     lv_style_set_text_font(&style_text_mode, &lv_font_montserrat_20);
-    lv_style_set_pad_all(&style_text_mode, 2);
+    lv_style_set_pad_all(&style_text_mode, 0);
 
 }
 

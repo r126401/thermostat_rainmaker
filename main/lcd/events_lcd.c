@@ -98,6 +98,10 @@ char* event_lcd_2_mnemonic(EVENT_TYPE_LCD type_lcd) {
         case UPGRADE_FIRMWARE:
         strncpy(mnemonic, "UPGRADE_FIRMWARE", 30);
         break;
+
+        case ERROR_FACTORY:
+        strncpy(mnemonic, "ERROR_FACTORY", 30);
+        break;
     }
 
         return mnemonic;
@@ -191,6 +195,11 @@ static void receive_lcd_event(event_lcd_t event) {
         case UPGRADE_FIRMWARE:
             lv_upgrade_firmware(event.text, event.par1);
 
+        break;
+
+        case ERROR_FACTORY:
+
+        lv_set_error_factory();
         break;
 
 
@@ -357,5 +366,10 @@ void set_lcd_update_upgrade_firmware(char* message, int cursor) {
     event.text = message;
     event.par1 = cursor;
     send_event_lcd(event);
+}
+
+void set_lcd_update_error_factory() {
+
+    update_lcd_bool(ERROR_FACTORY, false);
 }
 

@@ -106,7 +106,7 @@ void delay_get_schedules(void *arg) {
 
     index = get_next_schedule(&time_end);
     lv_update_schedule(true, time_end, index);
-    set_status_app(STATUS_AUTO);
+    set_app_status(STATUS_AUTO);
    
 
 
@@ -127,12 +127,12 @@ void receive_event_app(event_app_t event) {
         case EVENT_APP_SETPOINT_THRESHOLD:
 
             ESP_LOGI(TAG, "Recibido evento EVENT_APP_SETPOINT_THRESHOLD. Threshold = %.1f", event.value); 
-            update_threshold(event.value, true);
+            set_app_update_threshold(event.value, true);
             break;
 
 
         case EVENT_APP_TIME_VALID:
-            status_app = get_status_app();
+            status_app = get_app_status();
 
             if ((status_app == STATUS_STARTING) || status_app == (STATUS_CONNECTING) || status_app == (STATUS_SYNC)) {
             
@@ -155,13 +155,11 @@ void receive_event_app(event_app_t event) {
             break;
 
         case EVENT_APP_MANUAL:
-            status_app = get_status_app();
-            //param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-            //status = esp_rmaker_param_get_val(param)->val.s;
+            status_app = get_app_status();
 
             if (status_app == STATUS_AUTO) {
                 ESP_LOGW(TAG, "Vamos a cambiar al estado manual. Estamos en modo %s", status2mnemonic(status_app));
-                set_status_app(STATUS_MANUAL);
+                set_app_status(STATUS_MANUAL);
                 if (get_status_relay() == OFF) {
                     ESP_LOGW(TAG, "Vamos a encender porque estaba apagado");
                     relay_operation(ON);
@@ -176,56 +174,40 @@ void receive_event_app(event_app_t event) {
             break;
 
         case EVENT_APP_AUTO:
-            status_app = get_status_app();
-            //param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-            //status = esp_rmaker_param_get_val(param)->val.s;
+            status_app = get_app_status();
             ESP_LOGW(TAG, "Vamos a cambiar al estado AUTO. Estamos en modo %s", status2mnemonic(status_app));
 
             if (status_app == STATUS_MANUAL) {
 
-                set_status_app(STATUS_AUTO);
+                set_app_status(STATUS_AUTO);
                 set_lcd_update_threshold_temperature(current_threshold);
                 lv_update_lcd_schedule(true);
-                thermostat_action(get_current_temperature());
+                thermostat_action(get_app_current_temperature());
                 
             }
-/*
-            if (strcmp(status, TEXT_STATUS_APP_MANUAL) == 0) {
-                //reportamos el paso a modo auto
-                esp_rmaker_param_update_and_report(param, esp_rmaker_str(TEXT_STATUS_APP_AUTO));
-                // recogemos el valor que teniamos de umbral de temperatura del modo auto y lo ponemos
-                //param = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
-                //esp_rmaker_param_update(param, esp_rmaker_float(current_threshold));
-                set_lcd_update_threshold_temperature(current_threshold);
-                lv_update_lcd_schedule(true);
-                param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_TEMPERATURE_NAME);
-                thermostat_action(esp_rmaker_param_get_val(param)->val.f);
-            }
-*/
         break;
 
         case EVENT_APP_ALARM_OFF:
+            if (get_active_alarms() == 0) {
 
-        if (get_active_alarms() == 0) {
-
-            send_event_app_alarm_off();
+                send_event_app_alarm_off();
 
 
-        }
+            }
 
         break;
         case EVENT_APP_ALARM_ON:
         
-        if (get_active_alarms() == 0) {
+            if (get_active_alarms() == 0) {
 
-            send_event_app_alarm_on();
-        }
+                send_event_app_alarm_on();
+            }
 
         break;
 
         case EVENT_APP_FACTORY:
             create_instalation_button();
-            set_status_app(STATUS_FACTORY);
+            set_app_status(STATUS_FACTORY);
             //inhibimos el boton mode para que no se pueda cambiar de modo
             lv_enable_button_mode(false);
 
@@ -351,23 +333,9 @@ void send_event_app_factory() {
 
 
 
-void update_threshold(float threshold, bool reporting) {
 
 
 
-    esp_rmaker_param_t *parameter;
-    set_lcd_update_threshold_temperature(threshold);
-    parameter = esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE);
-    
-    if (reporting) {
-        esp_rmaker_param_update_and_report(parameter, esp_rmaker_float(threshold));
-    } else {
-        esp_rmaker_param_update(parameter, esp_rmaker_float(threshold));
-    }
-
-    thermostat_action(get_current_temperature());
-
-}
 
 
 
@@ -392,7 +360,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             if (param == esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE)){
                 current_threshold = val.val.f;
                 esp_rmaker_param_update_and_report(param, val);
-                update_threshold(val.val.f, true);
+                set_app_update_threshold(val.val.f, true);
                 lv_update_lcd_schedule(true);
             }
             break;
@@ -405,11 +373,29 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             ESP_LOGI(TAG, "Received SETPOINT_TEMPERATURE from cloud ");
 
             if (esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE) == param) {
-
                 current_threshold = val.val.f;
-                update_threshold(val.val.f, false);
+                set_app_update_threshold(val.val.f, false);
                 lv_update_lcd_schedule(true);   
             }
+            /*
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME) == param) {
+
+                if (get_app_status() == STATUS_MANUAL) {
+
+                    send_event_app_status(STATUS_AUTO);
+                }
+
+                if (get_app_status() == STATUS_AUTO) {
+
+                    send_event_app_status(STATUS_MANUAL);
+                }
+
+                
+            }
+
+            */
+
+            
 
         break;
 
@@ -432,7 +418,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
             if (esp_rmaker_device_get_param_by_name(thermostat_device, SETPOINT_TEMPERATURE) == param) {
                 current_threshold = val.val.f;
-                update_threshold(val.val.f, false);
+                set_app_update_threshold(val.val.f, false);
                 lv_update_lcd_schedule(true);
                 
             }

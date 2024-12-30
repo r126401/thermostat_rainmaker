@@ -63,6 +63,7 @@ lv_obj_t *icon_instalation;
 
 
 
+
 lv_obj_t *label_text_mode;
 lv_obj_t * label_mode;
 lv_obj_t *label_percent;
@@ -614,12 +615,15 @@ void create_layout_schedule() {
 
 static void create_label_text_mode() {
 
-    label_text_mode = lv_label_create(screen_main_thermostat);
-    lv_label_set_text(label_text_mode," ");
-    lv_obj_align_to(label_text_mode, layout_temperature, LV_ALIGN_OUT_TOP_MID, 15, -30);
-    set_style_mode();
-    lv_obj_add_style(label_text_mode, &style_text_mode, LV_PART_MAIN);
+    lv_obj_t *layout_text_mode = lv_obj_create(screen_main_thermostat);
 
+    lv_obj_set_pos(layout_text_mode, lv_pct(25), lv_pct(25));
+    lv_obj_set_size(layout_text_mode, 180, 20);
+    label_text_mode = lv_label_create(layout_text_mode);
+    lv_obj_center(label_text_mode);
+    set_style_mode();
+    lv_obj_add_style(layout_text_mode, &style_text_mode, LV_PART_MAIN);
+    lv_obj_remove_flag(layout_text_mode, LV_OBJ_FLAG_SCROLLABLE);
 
 
 }

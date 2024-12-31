@@ -140,7 +140,7 @@ static void lvgl_port_task(void *arg)
     ESP_LOGI(TAG, "Starting LVGL task");
     uint32_t time_till_next_ms = 0;
     
-	event_queue = xQueueCreate(1, sizeof(event_lcd_t));
+	event_queue = xQueueCreate(5, sizeof(event_lcd_t));
 
     while (1) {
         _lock_acquire(&lvgl_api_lock);
@@ -290,9 +290,10 @@ void init_lcdrgb(void)
     // Lock the mutex due to the LVGL APIs are not thread-safe
     _lock_acquire(&lvgl_api_lock);
     create_main_thermostat(display);
-    _lock_release(&lvgl_api_lock);
     init_app_touch_xpt2046(display);
     timing_backlight();
+
+    _lock_release(&lvgl_api_lock);
 
 
 

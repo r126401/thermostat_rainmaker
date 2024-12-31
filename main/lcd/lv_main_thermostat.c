@@ -490,8 +490,8 @@ void create_buttons_threshold()
     label_mode = lv_label_create(button_mode);
     lv_label_set_text(label_mode, "M");
     lv_obj_center(label_mode);
-
 	lv_obj_add_event_cb(button_mode, lv_event_handler_button_mode, LV_EVENT_CLICKED, NULL);
+    lv_obj_remove_flag(button_mode, LV_OBJ_FLAG_CLICKABLE);
 
 
 	button_down = lv_button_create(layout_buttons_threshold);
@@ -994,6 +994,7 @@ void lv_enable_button_mode(bool enable) {
         lv_obj_add_flag(button_mode, LV_OBJ_FLAG_CLICKABLE);
     } else {
         lv_obj_remove_flag(button_mode, LV_OBJ_FLAG_CLICKABLE);
+
     }
 }
 
@@ -1004,7 +1005,9 @@ void lv_set_button_instalation(bool show) {
     if (show) {
 
         lv_obj_remove_flag(icon_instalation, LV_OBJ_FLAG_HIDDEN);
+        
     } else {
         lv_obj_add_flag(icon_instalation, LV_OBJ_FLAG_HIDDEN);
+        
     }
 }

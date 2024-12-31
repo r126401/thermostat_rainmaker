@@ -107,6 +107,7 @@ void delay_get_schedules(void *arg) {
     index = get_next_schedule(&time_end);
     lv_update_schedule(true, time_end, index);
     set_app_status(STATUS_AUTO);
+    lv_enable_button_mode(true);
    
 
 
@@ -170,7 +171,7 @@ void receive_event_app(event_app_t event) {
                 }
 
                 lv_update_lcd_schedule(false);
-                lv_enable_button_mode(true);
+
 
             break;
 
@@ -184,7 +185,7 @@ void receive_event_app(event_app_t event) {
                 set_lcd_update_threshold_temperature(current_threshold);
                 lv_update_lcd_schedule(true);
                 thermostat_action(get_app_current_temperature());
-                lv_enable_button_mode(true);
+
                 
             }
         break;

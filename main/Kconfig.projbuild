@@ -19,7 +19,7 @@ menu "Task configuration"
         
     config RESOURCE_EVENT_TASK
         int "Memory dedicated to event task"
-        default 4096
+        default 3072
         help
             Memory dedicated to executed the event task
 

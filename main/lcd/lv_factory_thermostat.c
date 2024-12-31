@@ -17,7 +17,7 @@ extern lv_display_t * display;
 lv_style_t style_titles;
 extern lv_obj_t *screen_main_thermostat;
 
- static esp_timer_handle_t timer_factory;
+static esp_timer_handle_t timer_factory;
 
 
 
@@ -34,6 +34,9 @@ lv_obj_t * spans;
 extern char *text_qrcode;
 static const char *TAG = "lv_factory_thermostat";
 extern _lock_t lock_lv;
+
+#define TIMING_FACTORY 180000000
+#define TEXT_INSTRUCTION "Escanea el codigo QR para enlazar el dispositivo con la aplicacion. (3 min.)"
 
 
 void set_style_titles() {
@@ -120,11 +123,11 @@ static void create_instalation_message() {
     lv_obj_set_pos(spans, lv_pct(10), lv_pct(50));
     lv_spangroup_set_align(spans, LV_TEXT_ALIGN_LEFT);
     lv_spangroup_set_overflow(spans, LV_SPAN_OVERFLOW_CLIP);
-    //lv_spangroup_set_indent(spans, 5);
+    lv_spangroup_set_indent(spans, 2);
     lv_spangroup_set_mode(spans, LV_SPAN_MODE_BREAK);
     span = lv_spangroup_new_span(spans);
     lv_obj_align_to(spans, qr, LV_ALIGN_BOTTOM_LEFT, -82, 10);
-    lv_span_set_text(span, "Escanea el codigo QR para enlazar el dispositivo con la aplicacion.");
+    lv_span_set_text(span, TEXT_INSTRUCTION);
     lv_obj_add_style(spans, &style, LV_PART_MAIN);
 }
 
@@ -197,7 +200,7 @@ void create_factory_screen() {
    
 
     esp_timer_create(&factory_shot_timer_args, &timer_factory);
-    esp_timer_start_once(timer_factory, 120 * 1000000);
+    esp_timer_start_once(timer_factory, TIMING_FACTORY);
 
     
 

@@ -251,7 +251,7 @@ static void topic_cb (const char *topic, void *payload, size_t payload_len, void
         esp_timer_create(&update_lcd_schedules_shot_timer_args, &timer_update_lcd);
         esp_timer_start_once(timer_update_lcd, 1000000);
     } else {
-        ESP_LOGE(TAG, "NO Se ha encontrado una operacion de schedules");
+        ESP_LOGE(TAG, "No Se ha encontrado una operacion de schedules");
     }
 
 
@@ -296,7 +296,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
         switch (event_id) {
             case RMAKER_EVENT_INIT_DONE:
                 ESP_LOGI(TAG, "RainMaker Initialised.");
-                set_app_status(STATUS_STARTING);
+                set_app_status(STATUS_CONNECTING);
                 break;
             case RMAKER_EVENT_CLAIM_STARTED:
                 //No lo he visto salir nunca

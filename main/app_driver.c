@@ -140,7 +140,7 @@ void register_parameters()
      */
     //params->threshold = esp_rmaker_schedules_param_create(SETPOINT_TEMPERATURE, 10);
     ESP_LOGE(TAG, "CURRENT_THRESHOLD VALE %.1f", current_threshold);
-    param = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE);
+    param = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(param, esp_rmaker_float(10), esp_rmaker_float(30), esp_rmaker_float(0.5));

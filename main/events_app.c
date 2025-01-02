@@ -241,10 +241,10 @@ void event_app_task(void *arg) {
 	event_app_t event;
 
 
-	event_queue_app = xQueueCreate(5, sizeof(event_app_t));
+	event_queue_app = xQueueCreate(10, sizeof(event_app_t));
 
 	for(;;) {
-		ESP_LOGE(TAG, "ESPERANDO EVENTO DE APLICACION...Memoria libre: %d", (int) esp_get_free_heap_size());
+		ESP_LOGI(TAG, "ESPERANDO EVENTO DE APLICACION...Memoria libre: %d", (int) esp_get_free_heap_size());
 		if (xQueueReceive(event_queue_app, &event,  portMAX_DELAY) == pdTRUE) {
 
 			receive_event_app(event);
@@ -329,7 +329,7 @@ void send_event_app_status(EVENT_APP status)  {
         send_event_app(event);
         break;
         default:
-            ESP_LOGE(TAG, "No se puede llamar a esta duncion para este evento");
+            ESP_LOGE(TAG, "No se puede llamar a esta funcion para este evento");
         break;
     }
 }
@@ -361,7 +361,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
 
  
     if (ctx) {
-        ESP_LOGE(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
+        ESP_LOGI(TAG, "Received write request via : %s, param: %s", esp_rmaker_device_cb_src_to_str(ctx->src), esp_rmaker_param_get_name(param));
     }
 
 

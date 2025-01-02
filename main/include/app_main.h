@@ -23,16 +23,17 @@
 #define DEFAULT_POWER  false
 // Labels to params.
 #define DEFAULT_TEMPERATURE 21.0
-#define SETPOINT_TEMPERATURE "threshold"
-#define CALIBRATE "calibrate"
-#define READ_INTERVAL "read_interval"
-#define MARGIN_TEMPERATURE "margin_temperature"
+#define SETPOINT_TEMPERATURE "Umbral"
+#define CALIBRATE "Calibrado"
+#define READ_INTERVAL "intervalo de lectura"
+#define MARGIN_TEMPERATURE "margen de temperatura"
 #define ID_SENSOR "id_sensor"
-#define MODE "mode"
+#define MODE "Modo"
 #define NULSENSOR "Null"
 #define ALARM  "alarm"
 #define AUTO   "AUTO"
 #define SELECT_MODE "SELECTMODE"
+#define HEATING "Caldera"
 
 #define TEXT_STATUS_APP_FACTORY "SIN CONFIGURAR"
 #define TEXT_STATUS_APP_ERROR "ERROR"

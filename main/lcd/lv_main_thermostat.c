@@ -562,7 +562,7 @@ static void create_button_reset() {
     lv_obj_add_style(button_main_reset, &style_buttons_threshold_pressed, LV_STATE_PRESSED);
 	lv_label_set_text(label_main_reset, LV_SYMBOL_REFRESH);
     lv_obj_set_pos(button_main_reset, lv_pct(2), lv_pct(2));
-    lv_obj_set_size(button_main_reset, 40, 40);
+    lv_obj_set_size(button_main_reset, 55, 55);
     lv_obj_set_style_text_font(label_main_reset, &lv_font_montserrat_20, LV_PART_MAIN);
     lv_obj_center(label_main_reset);
     lv_obj_add_event_cb(button_main_reset, event_handler_button_main_reset, LV_EVENT_CLICKED, NULL);
@@ -869,7 +869,7 @@ void lv_update_schedule(bool show, int max, int index) {
         inicio = time(&now);
         cursor = inicio;
         index_schedule = index;
-        ESP_LOGE(TAG, "Primera vez. Fijamos el inicio a %d", inicio);
+        //ESP_LOGE(TAG, "Primera vez. Fijamos el inicio a %d", inicio);
         return;
     }
 
@@ -878,7 +878,7 @@ void lv_update_schedule(bool show, int max, int index) {
         index_schedule = index;
         max_schedule = max;
         //cursor = time(&now) - inicio;
-        ESP_LOGW(TAG, "Schedule activao en el display. El nuevo index es %d, con max %d", index_schedule, max);
+        ESP_LOGW(TAG, "Schedule activado en el display. El nuevo index es %d, con max %d", index_schedule, max);
     } else {
         // El tiempo ha cambiado pero el programa es el mismo
         if ((index_schedule == index) && (max_schedule != max)) {

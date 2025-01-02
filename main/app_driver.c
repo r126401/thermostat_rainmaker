@@ -90,7 +90,7 @@ enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
 			gpio_set_level(CONFIG_RELAY_GPIO, op);
 			ESP_LOGE(TAG, "Accion: OFF->ON");
             esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
+                esp_rmaker_device_get_param_by_name(thermostat_device, HEATING),
                 esp_rmaker_bool(op));
 
 		} else {
@@ -104,7 +104,7 @@ enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
 			gpio_set_level(CONFIG_RELAY_GPIO, op);
 			ESP_LOGE(TAG, "Accion: ON->OFF");
             esp_rmaker_param_update_and_report(
-                esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME),
+                esp_rmaker_device_get_param_by_name(thermostat_device, HEATING),
                 esp_rmaker_bool(op));
 
 			}
@@ -142,7 +142,7 @@ void register_parameters()
     /**
      * Create threshold param
      */
-    param = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
+    param = esp_rmaker_param_create(SETPOINT_TEMPERATURE, ESP_RMAKER_PARAM_RANGE, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(param, esp_rmaker_float(10), esp_rmaker_float(30), esp_rmaker_float(0.5));
@@ -157,8 +157,7 @@ void register_parameters()
      * Create calibrate param
      */
 
-    param = esp_rmaker_param_create(CALIBRATE, NULL, esp_rmaker_float(-2.0),PROP_FLAG_WRITE |  PROP_FLAG_READ);
-    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_HIDDEN);
+    param = esp_rmaker_param_create(CALIBRATE, ESP_RMAKER_PARAM_RANGE, esp_rmaker_float(-3.5),PROP_FLAG_WRITE |  PROP_FLAG_READ);
     esp_rmaker_device_add_param(thermostat_device, param);
 
     /**
@@ -171,7 +170,8 @@ void register_parameters()
     /**
      * Create power param
      */
-    param = esp_rmaker_param_create(ESP_RMAKER_DEF_POWER_NAME, NULL, esp_rmaker_bool(false), PROP_FLAG_READ);
+    param = esp_rmaker_param_create(HEATING, ESP_RMAKER_PARAM_POWER, esp_rmaker_bool(false), PROP_FLAG_READ);
+     //param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);
 
@@ -202,11 +202,10 @@ void register_parameters()
     /**
      * Create alarm sensor
      */
-    /*
     param = esp_rmaker_param_create(ALARM, NULL, esp_rmaker_int(0), PROP_FLAG_READ);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_HIDDEN);
-*/
+
 
     esp_rmaker_system_serv_config_t system_serv_config = {
      .flags = SYSTEM_SERV_FLAGS_ALL,

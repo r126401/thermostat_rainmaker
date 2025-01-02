@@ -156,7 +156,7 @@ uint32_t get_last_schdule(uint32_t *time_end, float *threshold) {
 
     }
 
-    ESP_LOGE(TAG, "El ultimo schedule es : %s, fecha fin: %ld, index %ld, action %s, threshold: %.1f", next_schedule->name, *time_end, index, (char*) action.data, *threshold);
+    ESP_LOGI(TAG, "El ultimo schedule es : %s, fecha fin: %ld, index %ld, action %s, threshold: %.1f", next_schedule->name, *time_end, index, (char*) action.data, *threshold);
 
 
     return index;
@@ -210,7 +210,7 @@ uint32_t get_next_schedule(uint32_t *time_end) {
 
     
     *time_end = next_schedule->trigger.next_scheduled_time_utc;
-    ESP_LOGE(TAG, "El proximo schedule es : %s, fecha fin: %ld, index %ld", next_schedule->name, *time_end, index);
+    ESP_LOGI(TAG, "El proximo schedule es : %s, fecha fin: %ld, index %ld", next_schedule->name, *time_end, index);
 
 
 
@@ -235,14 +235,14 @@ esp_err_t get_thermostat_schedules_app() {
             
             strncpy(action, (char*) list_schedules->action.data, list_schedules->action.data_len);
 
-            ESP_LOGE(TAG, "SCHEDULES: name = %s, action = %s, temporizador = %ld", list_schedules->name, action, schedule->next_scheduled_time_diff);
+            ESP_LOGI(TAG, "SCHEDULES: name = %s, action = %s, temporizador = %ld", list_schedules->name, action, schedule->next_scheduled_time_diff);
             
             list_schedules = list_schedules->next;
         }
 
         
     } else {
-        ESP_LOGE(TAG, "SCHEDULES SON NULOS");
+        ESP_LOGW(TAG, "SCHEDULES SON NULOS");
     }
 
     return ESP_OK;

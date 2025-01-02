@@ -133,7 +133,7 @@ static enum THERMOSTAT_ACTION calcular_accion_termostato(STATUS_RELAY *accion, f
 	if (param!= NULL) {
 		
 		threshold_temperature = esp_rmaker_param_get_val(param)->val.f;
-		ESP_LOGE(TAG, "EL VALOR DE THRESHOLD ES : %.1f", threshold_temperature);
+		//ESP_LOGE(TAG, "EL VALOR DE THRESHOLD ES : %.1f", threshold_temperature);
 	} else {
 		ESP_LOGW(TAG, "rmaker no activo. Se introduce el valor por defecto para el threshold");
 		threshold_temperature = DEFAULT_THRESHOLD;

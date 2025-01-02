@@ -116,8 +116,7 @@ char* event_lcd_2_mnemonic(EVENT_TYPE_LCD type_lcd) {
 static void receive_lcd_event(event_lcd_t event) {
 
 
-    //ESP_LOGW(TAG, "Recibido evento de tipo %s, %ld %ld %ld %d %s %.1f", event2mnemonic(event.event_type), event.par1, event.par2, event.par3, event.status, event.text, event.value);
-    //ESP_LOGE(TAG, "Recibido evento %s", event_lcd_2_mnemonic(event.event_type));
+     //ESP_LOGE(TAG, "Recibido evento %s", event_lcd_2_mnemonic(event.event_type));
     switch (event.event_type) {
 
         case UPDATE_TIME:
@@ -169,7 +168,7 @@ static void receive_lcd_event(event_lcd_t event) {
         case UPDATE_SCHEDULE:
 
 
-        ESP_LOGE(TAG, "se envia al lcd info de schedule: status: %d, par1: %d, par2: %d", event.status, (int) event.par1, (int) event.par2);
+        //ESP_LOGE(TAG, "se envia al lcd info de schedule: status: %d, par1: %d, par2: %d", event.status, (int) event.par1, (int) event.par2);
         lv_update_schedule(event.status, event.par1, event.par2);
 
         break;
@@ -339,7 +338,7 @@ void set_lcd_update_threshold_temperature(float threshold) {
 }
 void set_lcd_update_schedule(bool status, int par1, int par2) {
 
-    ESP_LOGE(TAG, "Recibido info de schedule: status: %d, par1: %d, par2: %d", status, (int) par1, (int) par2);
+    //ESP_LOGE(TAG, "Recibido info de schedule: status: %d, par1: %d, par2: %d", status, (int) par1, (int) par2);
 
     update_lcd_int(UPDATE_SCHEDULE, par1, par2, status);
 

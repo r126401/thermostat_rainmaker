@@ -7,6 +7,6 @@ set(RMAKER_PATH $ENV{IDF_PATH}/esp-rainmaker)
 # Add RainMaker components and other common application components
 set(EXTRA_COMPONENT_DIRS ${RMAKER_PATH}/components/esp-insights/components ${RMAKER_PATH}/components ${RMAKER_PATH}/examples/common)
 
-set(PROJECT_VER "0.2")
+set(PROJECT_VER "1.0")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(thermostat_rainmaker)

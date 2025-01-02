@@ -126,6 +126,7 @@ static void create_layout_notification() {
 	lv_obj_set_style_text_font(date_text, &lv_font_montserrat_24, LV_STATE_DEFAULT);
 
 
+
 	//position objects
 
 	lv_obj_set_pos(layout_notification,0, 0);
@@ -594,7 +595,6 @@ void create_layout_schedule() {
     lv_obj_set_style_text_font(text_from_schedule, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_font(text_to_schedule, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_pos(layout_schedule, lv_pct(5), lv_pct(81));
-	//lv_obj_align_to(layout_schedule, screen_main_thermostat, LV_ALIGN_BOTTOM_MID, 10, -20);
 
 
     label_percent = lv_label_create(screen_main_thermostat);
@@ -757,7 +757,7 @@ void lv_update_time(int hour, int minute) {
 
          } else {
             lv_label_set_text_fmt(date_text, "%.02d:%.02d", hour, minute);
-             lv_obj_set_style_text_color(date_text, lv_color_hex(LV_COLOR_TEXT_NOTIFICATION), LV_PART_MAIN);
+             lv_obj_set_style_text_color(date_text, lv_color_hex(LV_COLOR_DATE), LV_PART_MAIN);
 
 
 

@@ -100,14 +100,13 @@ void delay_get_schedules(void *arg) {
 
     int index;
     uint32_t time_end;
-    esp_rmaker_param_t *param;
     float threshold;
 
     ESP_LOGW(TAG, "Vamos a chequear los schedules en la ultima tarea del arranque");
 
     index = get_next_schedule(&time_end);
     lv_update_schedule(true, time_end, index);
-    set_app_status(STATUS_AUTO);
+    set_app_status(STATUS_APP_AUTO);
     lv_enable_button_mode(true);
     //sacamos el ultimo schedule para poner el threshold correspndiente en el arranque.
     index = get_last_schdule(&time_end, &threshold);
@@ -125,9 +124,7 @@ void delay_get_schedules(void *arg) {
 
 void receive_event_app(event_app_t event) {
 
-    esp_rmaker_param_t *param;
-    char *status;
-    status_app_t status_app = STATUS_ERROR;
+    status_app_t status_app = STATUS_APP_ERROR;
 
 
     switch (event.event_app) 
@@ -143,23 +140,16 @@ void receive_event_app(event_app_t event) {
         case EVENT_APP_TIME_VALID:
             status_app = get_app_status();
 
-            if ((status_app == STATUS_STARTING) || status_app == (STATUS_CONNECTING) || status_app == (STATUS_SYNC)) {
-            
-            //param = esp_rmaker_device_get_param_by_name(thermostat_device, MODE);
-            
-                ESP_LOGW(TAG, "Vamos a cambiar de mode starting");
+            if ((status_app == STATUS_APP_STARTING) || status_app == (STATUS_APP_CONNECTING) || status_app == (STATUS_APP_SYNCING)) {
                 esp_timer_handle_t timer_delay_get_schedule;
 
-            const esp_timer_create_args_t delay_get_schedule_shot_timer_args = {
-            .callback = &delay_get_schedules,
-            /* name is optional, but may help identify the timer when debugging */
-            .name = "get schedule"
-            };
-            esp_timer_create(&delay_get_schedule_shot_timer_args, &timer_delay_get_schedule);
-            esp_timer_start_once(timer_delay_get_schedule, 10 * 1000000);
-
-            
-            
+                const esp_timer_create_args_t delay_get_schedule_shot_timer_args = {
+                .callback = &delay_get_schedules,
+                /* name is optional, but may help identify the timer when debugging */
+                .name = "get schedule"
+                };
+                esp_timer_create(&delay_get_schedule_shot_timer_args, &timer_delay_get_schedule);
+                esp_timer_start_once(timer_delay_get_schedule, 10 * 1000000);
             }
 
             
@@ -168,9 +158,9 @@ void receive_event_app(event_app_t event) {
         case EVENT_APP_MANUAL:
             status_app = get_app_status();
 
-            if (status_app == STATUS_AUTO) {
+            if (status_app == STATUS_APP_AUTO) {
                 ESP_LOGW(TAG, "Vamos a cambiar al estado manual. Estamos en modo %s", status2mnemonic(status_app));
-                set_app_status(STATUS_MANUAL);
+                set_app_status(STATUS_APP_MANUAL);
                 if (get_status_relay() == OFF) {
                     ESP_LOGW(TAG, "Vamos a encender porque estaba apagado");
                     relay_operation(ON);
@@ -189,9 +179,9 @@ void receive_event_app(event_app_t event) {
             status_app = get_app_status();
             ESP_LOGW(TAG, "Vamos a cambiar al estado AUTO. Estamos en modo %s", status2mnemonic(status_app));
 
-            if (status_app == STATUS_MANUAL) {
+            if (status_app == STATUS_APP_MANUAL) {
 
-                set_app_status(STATUS_AUTO);
+                set_app_status(STATUS_APP_AUTO);
                 set_lcd_update_threshold_temperature(current_threshold);
                 lv_update_lcd_schedule(true);
                 thermostat_action(get_app_current_temperature());
@@ -220,7 +210,7 @@ void receive_event_app(event_app_t event) {
 
         case EVENT_APP_FACTORY:
             create_instalation_button();
-            set_app_status(STATUS_FACTORY);
+            set_app_status(STATUS_APP_FACTORY);
             //inhibimos el boton mode para que no se pueda cambiar de modo
             lv_enable_button_mode(false);
 
@@ -231,7 +221,7 @@ void receive_event_app(event_app_t event) {
 
     }
 
-    ESP_LOGW(TAG, "Retornamos despues de procesar la peticion");
+    //ESP_LOGW(TAG, "Retornamos despues de procesar la peticion");
 
 }
 
@@ -390,25 +380,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
                 set_app_update_threshold(val.val.f, false);
                 lv_update_lcd_schedule(true);   
             }
-            /*
-            if (esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME) == param) {
-
-                if (get_app_status() == STATUS_MANUAL) {
-
-                    send_event_app_status(STATUS_AUTO);
-                }
-
-                if (get_app_status() == STATUS_AUTO) {
-
-                    send_event_app_status(STATUS_MANUAL);
-                }
-
-                
-            }
-
-            */
-
-            
+           
 
         break;
 

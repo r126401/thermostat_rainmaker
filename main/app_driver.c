@@ -138,6 +138,7 @@ void register_parameters()
     esp_rmaker_device_assign_primary_param(thermostat_device, param);
     esp_rmaker_device_add_subtype(thermostat_device, ESP_RMAKER_DEVICE_THERMOSTAT);
     
+    
 
     /**
      * Create threshold param
@@ -306,7 +307,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
         switch (event_id) {
             case RMAKER_EVENT_INIT_DONE:
                 ESP_LOGI(TAG, "RainMaker Initialised.");
-                set_app_status(STATUS_CONNECTING);
+                set_app_status(STATUS_APP_CONNECTING);
                 break;
             case RMAKER_EVENT_CLAIM_STARTED:
                 //No lo he visto salir nunca
@@ -323,9 +324,9 @@ void event_handler(void* arg, esp_event_base_t event_base,
             case RMAKER_EVENT_LOCAL_CTRL_STARTED:
                 ESP_LOGI(TAG, "Local Control Started.");
                 //Esto debemos hacerlo si venimos del factory
-                if (get_app_status() == STATUS_FACTORY) {
+                if (get_app_status() == STATUS_APP_FACTORY) {
 
-                    set_app_status(STATUS_CONNECTING);
+                    set_app_status(STATUS_APP_CONNECTING);
                     set_lcd_update_qr_confirmed();
                     set_lcd_update_button_instalation(false);
                     lv_cancel_timer_factory();
@@ -365,17 +366,18 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 char *id_node = esp_rmaker_get_node_id();
                 char topic[80] = {0};
                 sprintf(topic, "node/%s/params/remote", id_node);
-                ESP_LOGW(TAG, "Suscrito al topic: %s", topic);
                 esp_err_t error = esp_rmaker_mqtt_subscribe(topic, topic_cb, 0, NULL);
 
                 if (error == ESP_OK) {
-                    ESP_LOGE(TAG, "Bien suscrito");
+                    ESP_LOGI(TAG, "subscrito a %s", topic);
+                    set_lcd_update_broker_status(true);
+                    set_alarm(MQTT_ALARM, ALARM_APP_OFF);
+
                 } else {
                     ESP_LOGE(TAG, "Mal suscrito");
+                    set_alarm(MQTT_ALARM, ALARM_APP_ON);
                 }
-                set_lcd_update_broker_status(true);
-                set_alarm(MQTT_ALARM, ALARM_APP_OFF);
-                set_app_status(STATUS_SYNC);
+                set_app_status(STATUS_APP_SYNCING);
  
 
                 break;
@@ -426,7 +428,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 break;
             case RMAKER_OTA_EVENT_IN_PROGRESS:
                 ESP_LOGI(TAG, "OTA is in progress.");
-                esp_timer_start_periodic(timer_upgrade, 1000000);
+                esp_timer_start_periodic(timer_upgrade, 2000000);
                 break;
             case RMAKER_OTA_EVENT_SUCCESSFUL:
                 ESP_LOGI(TAG, "OTA successful.");
@@ -678,38 +680,38 @@ char* status2mnemonic(status_app_t status) {
 
     switch(status) {
 
-        case STATUS_FACTORY:
+        case STATUS_APP_FACTORY:
             strncpy(mnemonic, TEXT_STATUS_APP_FACTORY, 30);
         break;
 
-        case STATUS_ERROR:
+        case STATUS_APP_ERROR:
             strncpy(mnemonic, TEXT_STATUS_APP_ERROR, 30);
         break;
 
-        case STATUS_AUTO:
+        case STATUS_APP_AUTO:
            strncpy(mnemonic, TEXT_STATUS_APP_AUTO, 30);
         break;
-        case STATUS_MANUAL:
+        case STATUS_APP_MANUAL:
            strncpy(mnemonic, TEXT_STATUS_APP_MANUAL, 30);
 
         break;
 
-        case STATUS_STARTING:
+        case STATUS_APP_STARTING:
            strncpy(mnemonic, TEXT_STATUS_APP_STARTING, 30);
 
         break;
 
-        case STATUS_CONNECTING:
+        case STATUS_APP_CONNECTING:
            strncpy(mnemonic, TEXT_STATUS_APP_CONNECTING, 30);
 
         break;
 
-        case STATUS_SYNC:
+        case STATUS_APP_SYNCING:
            strncpy(mnemonic, TEXT_STATUS_APP_SYNCING, 30);
 
         break;
 
-        case STATUS_UPGRADING:
+        case STATUS_APP_UPGRADING:
            strncpy(mnemonic, TEXT_STATUS_APP_UPGRADING, 30);
 
         break;
@@ -743,28 +745,28 @@ void set_app_status(status_app_t status) {
 
     switch(status) {
 
-        case STATUS_FACTORY:
+        case STATUS_APP_FACTORY:
         
         break;
 
-        case STATUS_ERROR:
+        case STATUS_APP_ERROR:
         break;
 
-        case STATUS_AUTO:
+        case STATUS_APP_AUTO:
         break;
-        case STATUS_MANUAL:
-        break;
-
-        case STATUS_STARTING:
+        case STATUS_APP_MANUAL:
         break;
 
-        case STATUS_CONNECTING:
+        case STATUS_APP_STARTING:
         break;
 
-        case STATUS_SYNC:
+        case STATUS_APP_CONNECTING:
         break;
 
-        case STATUS_UPGRADING:
+        case STATUS_APP_SYNCING:
+        break;
+
+        case STATUS_APP_UPGRADING:
         break;
 
 

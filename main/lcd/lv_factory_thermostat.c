@@ -85,8 +85,8 @@ static void paint_qr_code(char *qrcode) {
 
     // Tamaño del código QR y color
 uint16_t qr_size = 130; // Tamaño en píxeles
-lv_color_t qr_fg_color = lv_color_black(); // Color de los píxeles del QR
-lv_color_t qr_bg_color = lv_color_white(); // Color de fondo del QR
+//lv_color_t qr_fg_color = lv_color_black(); // Color de los píxeles del QR
+//lv_color_t qr_bg_color = lv_color_white(); // Color de fondo del QR
 
 // Crear el objeto QR code
 qr = lv_qrcode_create(screen_init_thermostat);
@@ -223,7 +223,7 @@ void lv_qrcode_confirmed() {
 
 void lv_set_error_factory() {
 
-    set_app_status(STATUS_ERROR);
+    set_app_status(STATUS_APP_ERROR);
     lv_label_set_text(title_aplication, "ERROR AL INSTALAR!!!");
     lv_obj_set_style_text_color(title_aplication, lv_color_hex(LV_COLOR_TEXT_FAIL_NOTIFICATION), LV_PART_MAIN);
     lv_span_set_text(span, "Pulsa reset para volver a instalar el dispositivo.");

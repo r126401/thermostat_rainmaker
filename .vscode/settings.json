@@ -98,7 +98,8 @@
         "cjson.h": "c",
         "compare": "c",
         "cstdint": "c",
-        "variant": "c"
+        "variant": "c",
+        "lvgl.h": "c"
     },
     "idf.flashType": "UART"
 }

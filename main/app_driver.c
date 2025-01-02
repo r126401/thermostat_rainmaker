@@ -126,25 +126,30 @@ void register_parameters()
 
     esp_rmaker_param_t *param;
 
+
+    esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Thermostat"));
+    esp_rmaker_device_add_model(thermostat_device,"Modelo de prueba");
+
     /**
      * Create temperature param
      */
-    esp_rmaker_device_add_param(thermostat_device, esp_rmaker_name_param_create(ESP_RMAKER_DEF_NAME_PARAM, "Thermostat"));
-
     param = esp_rmaker_temperature_param_create(ESP_RMAKER_DEF_TEMPERATURE_NAME, DEFAULT_TEMPERATURE);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_device_assign_primary_param(thermostat_device, param);
+    esp_rmaker_device_add_subtype(thermostat_device, ESP_RMAKER_DEVICE_THERMOSTAT);
+    
 
     /**
      * Create threshold param
      */
-    //params->threshold = esp_rmaker_schedules_param_create(SETPOINT_TEMPERATURE, 10);
-    ESP_LOGE(TAG, "CURRENT_THRESHOLD VALE %.1f", current_threshold);
     param = esp_rmaker_param_create(SETPOINT_TEMPERATURE, NULL, esp_rmaker_float(current_threshold), PROP_FLAG_READ | PROP_FLAG_WRITE | PROP_FLAG_PERSIST);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_SLIDER);
     esp_rmaker_param_add_bounds(param, esp_rmaker_float(10), esp_rmaker_float(30), esp_rmaker_float(0.5));
- 
+     
+    //esp_rmaker_device_assign_primary_param(thermostat_device, param);
+    
+
 
 
     
@@ -161,18 +166,21 @@ void register_parameters()
      */
     param = esp_rmaker_param_create(READ_INTERVAL, NULL, esp_rmaker_int(60), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_device_add_param(thermostat_device, param);
+    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_HIDDEN);
 
     /**
      * Create power param
      */
-    param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
+    param = esp_rmaker_param_create(ESP_RMAKER_DEF_POWER_NAME, NULL, esp_rmaker_bool(false), PROP_FLAG_READ);
     esp_rmaker_device_add_param(thermostat_device, param);
+    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);
 
     /**
      * Create margin temperature. Its used to switch on/off thermostat in order direcction of temperature
      */
     param = esp_rmaker_param_create(MARGIN_TEMPERATURE, NULL, esp_rmaker_float(0.5), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_device_add_param(thermostat_device, param);
+    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_HIDDEN);
 
     /**
      * Create temperature sensor. If sensor is empty, sensor is into device. If sensor is a mac, sensor is remote.
@@ -181,6 +189,7 @@ void register_parameters()
     param = esp_rmaker_param_create(ID_SENSOR, NULL, esp_rmaker_str(NULSENSOR), PROP_FLAG_READ | PROP_FLAG_WRITE);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_QR_SCAN);
     esp_rmaker_device_add_param(thermostat_device, param);
+    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_HIDDEN);
 
     /**
      * Create mode thermostat
@@ -193,9 +202,11 @@ void register_parameters()
     /**
      * Create alarm sensor
      */
+    /*
     param = esp_rmaker_param_create(ALARM, NULL, esp_rmaker_int(0), PROP_FLAG_READ);
     esp_rmaker_device_add_param(thermostat_device, param);
-
+    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_HIDDEN);
+*/
 
     esp_rmaker_system_serv_config_t system_serv_config = {
      .flags = SYSTEM_SERV_FLAGS_ALL,

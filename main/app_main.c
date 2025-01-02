@@ -92,6 +92,7 @@ void init_app()
      * You can optionally use the helper API esp_rmaker_thermostat_device_create() to
      * avoid writing code for adding the name and power parameters.
      */
+
     thermostat_device = esp_rmaker_device_create(NAME_DEVICE, ESP_RMAKER_DEVICE_THERMOSTAT, NULL);
 
     /* Register all parameters
@@ -99,8 +100,6 @@ void init_app()
      */
 
    register_parameters();
-
-   
 
 
     /* Add the write callback for the device. We aren't registering any read callback yet as
@@ -150,10 +149,6 @@ void init_app()
         abort();
     } else {
 
-        //send_event_app_alarm(WIFI_ALARM,ALARM_APP_OFF );
-        //event.event_type = UPDATE_WIFI_STATUS;
-        //event.status = true;
-        //send_event_lcd(event);
         set_lcd_update_wifi_status(true);
         set_alarm(WIFI_ALARM, ALARM_APP_OFF);
         
@@ -175,23 +170,13 @@ void app_main() {
     init_alarms();
     create_event_app_task();
     init_lcdrgb();
-
-    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
     create_task_thermostat();
     set_app_status(STATUS_STARTING);
-    //set_lcd_update_text_mode(TEXT_STATUS_APP_STARTING);
-
     init_app();
-    //xTaskCreatePinnedToCore(task_iotThermostat, "tarea_lectura_temperatura", CONFIG_RESOURCE_THERMOSTAT_TASK, (void*) NULL, 4, NULL,0);
-
     sntp_set_time_sync_notification_cb(event_handler_sync);
-    //set_status_app(STATUS_SYNC);
  
    ESP_LOGI(TAG, "FIN DE LA APLICACION");
-   
-
-
-   
+      
 }
 
 

@@ -101,6 +101,7 @@ void delay_get_schedules(void *arg) {
     int index;
     uint32_t time_end;
     esp_rmaker_param_t *param;
+    float threshold;
 
     ESP_LOGW(TAG, "Vamos a chequear los schedules en la ultima tarea del arranque");
 
@@ -108,6 +109,13 @@ void delay_get_schedules(void *arg) {
     lv_update_schedule(true, time_end, index);
     set_app_status(STATUS_AUTO);
     lv_enable_button_mode(true);
+    //sacamos el ultimo schedule para poner el threshold correspndiente en el arranque.
+    index = get_last_schdule(&time_end, &threshold);
+
+    if (index >= 0) {
+
+        set_lcd_update_threshold_temperature(threshold);
+    }
    
 
 
@@ -149,6 +157,8 @@ void receive_event_app(event_app_t event) {
             };
             esp_timer_create(&delay_get_schedule_shot_timer_args, &timer_delay_get_schedule);
             esp_timer_start_once(timer_delay_get_schedule, 10 * 1000000);
+
+            
             
             }
 

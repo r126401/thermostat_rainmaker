@@ -20,6 +20,8 @@
 #include <esp_rmaker_console.h>
 #include <esp_rmaker_ota.h>
 
+#include "cJSON.h"
+
 
 
 
@@ -74,6 +76,92 @@ char* get_current_date(time_t now) {
 	return fecha_actual;
 
 }
+
+
+uint32_t get_last_schdule(uint32_t *time_end, float *threshold) {
+
+    esp_rmaker_schedule_t *list;
+    esp_schedule_t *schedule = NULL;
+    esp_schedule_t *next_schedule = NULL;
+    esp_rmaker_schedule_action_t action;
+    uint32_t diff = -1;
+    bool init_diff = true;
+    uint32_t index = -1;
+
+    //float threshold;
+
+    action.data = NULL;
+
+    list = esp_rmaker_get_schedule_list();
+
+    if (list == NULL) {
+        ESP_LOGW(TAG, "No hay schedules configurados");
+        return index;
+    }
+
+
+    while (list != NULL) {
+
+        schedule = (esp_schedule_t*) list->handle;
+
+        ESP_LOGI(TAG, "schedule %s, index %ld", schedule->name, list->index);
+        if (schedule->next_scheduled_time_diff != 0) {
+            if (init_diff) {
+                init_diff = false;
+                diff = schedule->next_scheduled_time_diff;
+                index = list->index;
+                next_schedule = schedule;
+                action = list->action;
+            } else {
+                if (diff < schedule->next_scheduled_time_diff) {
+                    diff = schedule->next_scheduled_time_diff;
+                    index = list->index;
+                    next_schedule = schedule;
+                    action = list->action;
+                }
+            }
+        } else {
+            ESP_LOGW(TAG, "El schedule %s esta inactivo", schedule->name);
+        }
+
+        list = list->next;
+    }
+    
+    *time_end = next_schedule->trigger.next_scheduled_time_utc;
+
+//action {"Thermostat":{"threshold":14.800000190734863}}
+    cJSON *json;
+    json = cJSON_Parse((char*) action.data);
+
+    if (json == NULL) {
+        ESP_LOGW(TAG, "No se encuentra action");
+        return -1;
+    } else {
+
+        json = cJSON_GetObjectItem(json, "Thermostat");
+        if (json == NULL) {
+            ESP_LOGW(TAG, "No se encuentra Thermostat");
+            return -1;  
+        } else {
+            json = cJSON_GetObjectItem(json, "threshold");
+            if (json == NULL) {
+                ESP_LOGW(TAG, "No se encuentra threshold");
+                return -1;
+
+            } else {
+                *threshold = cJSON_GetNumberValue(json);
+            }
+        }
+
+
+    }
+
+    ESP_LOGE(TAG, "El ultimo schedule es : %s, fecha fin: %ld, index %ld, action %s, threshold: %.1f", next_schedule->name, *time_end, index, (char*) action.data, *threshold);
+
+
+    return index;
+}
+
 
 
 uint32_t get_next_schedule(uint32_t *time_end) {

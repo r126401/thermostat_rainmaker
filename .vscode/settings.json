@@ -97,7 +97,8 @@
         "sdkconfig.h": "c",
         "cjson.h": "c",
         "compare": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "variant": "c"
     },
     "idf.flashType": "UART"
 }

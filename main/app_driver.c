@@ -16,6 +16,7 @@
 #include "thermostat_task.h"
 #include "events_app.h"
 #include "app_main.h"
+#include "schedule_app.h"
 #include "cJSON.h"
 #include <esp_rmaker_common_events.h>
 
@@ -227,9 +228,16 @@ esp_rmaker_system_service_enable(&system_serv_config);
 
 
 static void timer_delay_next_schedule(void *arg) {
-
+    uint32_t time_end;
+    float threshold;
     lv_update_lcd_schedule(true);
     ESP_LOGI(TAG, "UPDATE LCD SCHEDULE EJECUTADO DESPUES DE UNA OPERACION CON LOS SCHEDULES");
+    if (get_last_schedule(&time_end, &threshold) >= 0) {
+        set_app_update_threshold(threshold, true);
+        set_lcd_update_threshold_temperature(threshold);
+    } else {
+        ESP_LOGW(TAG, "No se han encontrado schedules para asignar threshold anterior");
+    }
 
 }
 
@@ -256,7 +264,7 @@ static void topic_cb (const char *topic, void *payload, size_t payload_len, void
         return;
     }
 
-    schedules = cJSON_GetObjectItem(json, "Schedule");
+    schedules = cJSON_GetObjectItem(json, SCHEDULE);
     if (schedules != NULL) {
 
         ESP_LOGW(TAG, "Se ha encontrado una operacion de schedules");
@@ -466,7 +474,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
 
 
 
-static bool get_current_date(uint32_t *hour, uint32_t *min, uint32_t *sec) {
+static bool get_now(uint32_t *hour, uint32_t *min, uint32_t *sec) {
 
     time_t now;
 	struct tm fecha;
@@ -498,7 +506,7 @@ void update_time_valid(bool timevalid) {
 
 
         if (!sync) {
-            get_current_date(&hour, &min, &sec);
+            get_now(&hour, &min, &sec);
             ESP_ERROR_CHECK(esp_timer_create(&text_date_shot_timer_args, &timer_date_text));
             resto = 60 - sec;
             ESP_ERROR_CHECK(esp_timer_start_once(timer_date_text, (resto * 1000000)));
@@ -560,7 +568,7 @@ void time_refresh(void *arg) {
         ESP_LOGI(TAG, "Hora invalida");
         interval = 60;
     } else {
-        get_current_date(&hour, &min, &sec);
+        get_now(&hour, &min, &sec);
 
         set_lcd_update_time(hour, min);
         interval = 60 - sec;

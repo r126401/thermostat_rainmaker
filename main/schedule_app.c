@@ -10,6 +10,7 @@
 #include "events_lcd.h"
 #include <strings.h>
 #include <string.h>
+#include "app_main.h"
 
 #include <esp_rmaker_core.h>
 #include <esp_rmaker_standard_types.h>
@@ -78,7 +79,7 @@ char* get_current_date(time_t now) {
 }
 
 
-uint32_t get_last_schdule(uint32_t *time_end, float *threshold) {
+int get_last_schedule(uint32_t *time_end, float *threshold) {
 
     esp_rmaker_schedule_t *list;
     esp_schedule_t *schedule = NULL;
@@ -104,7 +105,7 @@ uint32_t get_last_schdule(uint32_t *time_end, float *threshold) {
 
         schedule = (esp_schedule_t*) list->handle;
 
-        ESP_LOGI(TAG, "schedule %s, index %ld", schedule->name, list->index);
+        ESP_LOGI(TAG, "schedule %s, index %ld, action: %s", schedule->name, list->index, (char*) list->action.data);
         if (schedule->next_scheduled_time_diff != 0) {
             if (init_diff) {
                 init_diff = false;
@@ -143,7 +144,7 @@ uint32_t get_last_schdule(uint32_t *time_end, float *threshold) {
             ESP_LOGW(TAG, "No se encuentra Thermostat");
             return -1;  
         } else {
-            json = cJSON_GetObjectItem(json, "threshold");
+            json = cJSON_GetObjectItem(json, SETPOINT_TEMPERATURE);
             if (json == NULL) {
                 ESP_LOGW(TAG, "No se encuentra threshold");
                 return -1;
@@ -164,7 +165,7 @@ uint32_t get_last_schdule(uint32_t *time_end, float *threshold) {
 
 
 
-uint32_t get_next_schedule(uint32_t *time_end) {
+int get_next_schedule(uint32_t *time_end) {
 
     esp_rmaker_schedule_t *list;
     esp_schedule_t *schedule = NULL;

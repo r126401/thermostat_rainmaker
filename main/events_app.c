@@ -109,10 +109,10 @@ void delay_get_schedules(void *arg) {
     set_app_status(STATUS_APP_AUTO);
     lv_enable_button_mode(true);
     //sacamos el ultimo schedule para poner el threshold correspndiente en el arranque.
-    index = get_last_schdule(&time_end, &threshold);
+    index = get_last_schedule(&time_end, &threshold);
 
     if (index >= 0) {
-
+        set_app_update_threshold(threshold, true);
         set_lcd_update_threshold_temperature(threshold);
     }
    

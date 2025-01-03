@@ -176,6 +176,7 @@ void register_parameters()
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);
 
+
     /**
      * Create margin temperature. Its used to switch on/off thermostat in order direcction of temperature
      */
@@ -354,6 +355,7 @@ void event_handler(void* arg, esp_event_base_t event_base,
         
             case RMAKER_EVENT_REBOOT:
                 ESP_LOGI(TAG, "Rebooting in %d seconds.", *((uint8_t *)event_data));
+                set_lcd_update_schedule(false, 0, 100);
                 break;
             case RMAKER_EVENT_WIFI_RESET:
                 ESP_LOGI(TAG, "Wi-Fi credentials reset.");

@@ -32,6 +32,7 @@ void set_style_layout_schedule() {
     lv_style_init(&style_layout_schedule);
     lv_style_set_bg_opa(&style_layout_schedule, LV_OPA_TRANSP);
     lv_style_set_border_width(&style_layout_schedule, 0);
+    lv_style_set_pad_all(&style_layout_schedule, 0);
 
 }
 

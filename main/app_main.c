@@ -100,6 +100,7 @@ void init_app()
      */
 
    register_parameters();
+   lv_create_device_name();
 
 
     /* Add the write callback for the device. We aren't registering any read callback yet as
@@ -173,6 +174,7 @@ void app_main() {
     create_task_thermostat();
     set_app_status(STATUS_APP_STARTING);
     init_app();
+    
     sntp_set_time_sync_notification_cb(event_handler_sync);
  
    ESP_LOGI(TAG, "FIN DE LA APLICACION");

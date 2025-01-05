@@ -451,11 +451,17 @@ void event_handler(void* arg, esp_event_base_t event_base,
                 ESP_LOGI(TAG, "OTA Failed.");
                 esp_timer_stop(timer_upgrade);
                 esp_timer_delete(timer_upgrade);
-                lv_upgrade_firmware("Fallo la actualizacion", 100);
+                lv_upgrade_firmware("Fallo la actualizacion", 0);
+                set_app_status(STATUS_APP_AUTO);
 
                 break;
             case RMAKER_OTA_EVENT_REJECTED:
                 ESP_LOGI(TAG, "OTA Rejected.");
+                esp_timer_stop(timer_upgrade);
+                esp_timer_delete(timer_upgrade);
+                lv_upgrade_firmware("Error al actualizar", -1);
+                set_app_status(STATUS_APP_AUTO);
+
                 break;
             case RMAKER_OTA_EVENT_DELAYED:
                 ESP_LOGI(TAG, "OTA Delayed.");
@@ -515,7 +521,11 @@ void update_time_valid(bool timevalid) {
             sync = true;
 
             set_lcd_update_time(hour, min);
-            lv_update_lcd_schedule(true);
+            if (get_app_status() == STATUS_APP_AUTO) {
+                lv_update_lcd_schedule(true);
+
+            }
+            
 
         } 
 
@@ -573,8 +583,12 @@ void time_refresh(void *arg) {
         set_lcd_update_time(hour, min);
         interval = 60 - sec;
 
-        lv_update_lcd_schedule(true);
+        
         ESP_LOGI(TAG, "Actualizada la hora: %02d:%02d. proximo intervalo: %d", (int) hour, (int) min, (int) interval);
+        if (get_app_status() == STATUS_APP_AUTO) {
+            lv_update_lcd_schedule(true);
+        }
+        
     }
 
     //get_next_schedule(name, &time_end);
@@ -793,6 +807,16 @@ void set_app_status(status_app_t status) {
 status_app_t get_app_status() {
 
     return status_app;
+}
+
+
+char* get_device_name() {
+
+    esp_rmaker_param_t *param;
+
+    param = esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_NAME_PARAM);
+    return esp_rmaker_param_get_val(param)->val.s;
+
 }
 
 

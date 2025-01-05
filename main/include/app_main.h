@@ -142,3 +142,4 @@ float get_app_current_temperature();
 float get_app_current_threshold();
 void set_app_status(status_app_t status);
 status_app_t get_app_status();
+char* get_device_name();

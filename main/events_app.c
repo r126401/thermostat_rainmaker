@@ -140,6 +140,10 @@ void receive_event_app(event_app_t event) {
         case EVENT_APP_TIME_VALID:
             status_app = get_app_status();
 
+            if (status_app == STATUS_APP_UPGRADING) {
+                ESP_LOGW(TAG, "No se actualiza nada porque estamos en upgrading");
+            }
+
             if ((status_app == STATUS_APP_STARTING) || status_app == (STATUS_APP_CONNECTING) || status_app == (STATUS_APP_SYNCING)) {
                 esp_timer_handle_t timer_delay_get_schedule;
 

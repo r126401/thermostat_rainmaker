@@ -1,6 +1,0 @@
-
-1.- Arranque desde erase-flash
-
-- Arranque correcto, excepto cuando venimos de una nueva version que da fallo al localizar memoria. A partir de ahí, la memoria para almacenar la clave wifi queda mal y no hay manera de salir de ahi
-hasta que se hace un idf.py erase-flash.
-

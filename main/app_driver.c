@@ -92,7 +92,7 @@ enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
 			ESP_LOGE(TAG, "Accion: OFF->ON");
             esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_name(thermostat_device, HEATING),
-                esp_rmaker_bool(op));
+                esp_rmaker_int(op));
 
 		} else {
 			ESP_LOGE(TAG, "Accion: OFF->OFF");
@@ -106,7 +106,7 @@ enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
 			ESP_LOGE(TAG, "Accion: ON->OFF");
             esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_name(thermostat_device, HEATING),
-                esp_rmaker_bool(op));
+                esp_rmaker_int(op));
 
 			}
 	}
@@ -172,10 +172,10 @@ void register_parameters()
     /**
      * Create power param
      */
-    param = esp_rmaker_param_create(HEATING, ESP_RMAKER_PARAM_POWER, esp_rmaker_bool(false), PROP_FLAG_READ | PROP_FLAG_TIME_SERIES);
+    param = esp_rmaker_param_create(HEATING, NULL, esp_rmaker_int(0), PROP_FLAG_READ | PROP_FLAG_TIME_SERIES);
      //param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
     esp_rmaker_device_add_param(thermostat_device, param);
-    esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);
+    //esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);
 
 
     /**

@@ -172,7 +172,7 @@ void register_parameters()
     /**
      * Create power param
      */
-    param = esp_rmaker_param_create(HEATING, ESP_RMAKER_PARAM_POWER, esp_rmaker_bool(false), PROP_FLAG_READ);
+    param = esp_rmaker_param_create(HEATING, ESP_RMAKER_PARAM_POWER, esp_rmaker_bool(false), PROP_FLAG_READ | PROP_FLAG_TIME_SERIES);
      //param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
     esp_rmaker_device_add_param(thermostat_device, param);
     esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);

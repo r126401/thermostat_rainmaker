@@ -384,6 +384,23 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
                 set_app_update_threshold(val.val.f, false);
                 lv_update_lcd_schedule(true);   
             }
+
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, HEATING) == param) {
+                
+                ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
+                relay_operation(val.val.b);
+                esp_rmaker_param_update_and_report(param, val);
+                
+            }
+
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, STATS_HEATING) == param) {
+                
+                ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
+                relay_operation(val.val.i);
+                esp_rmaker_param_update_and_report(param, val);
+                
+            }
+
            
 
         break;
@@ -393,13 +410,22 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
              * Receive Power event. Activate/deactivate relay in remote
              */
 
-            if (esp_rmaker_device_get_param_by_name(thermostat_device, ESP_RMAKER_DEF_POWER_NAME) == param) {
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, HEATING) == param) {
                 
                 ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
                 relay_operation(val.val.b);
                 esp_rmaker_param_update_and_report(param, val);
                 
             }
+
+            if (esp_rmaker_device_get_param_by_name(thermostat_device, STATS_HEATING) == param) {
+                
+                ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
+                relay_operation(val.val.i);
+                esp_rmaker_param_update_and_report(param, val);
+                
+            }
+
 
             /**
              * Receive setpoint temperature. Change threshold in order activate/deactivate thermostat

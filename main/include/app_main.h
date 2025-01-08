@@ -35,6 +35,7 @@
 #define SELECT_MODE "SELECTMODE"
 #define HEATING "Caldera"
 #define SCHEDULE "Schedule"
+#define STATS_HEATING "stats heating"
 
 #define TEXT_STATUS_APP_FACTORY "SIN CONFIGURAR"
 #define TEXT_STATUS_APP_ERROR "ERROR"

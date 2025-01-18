@@ -951,9 +951,12 @@ void lv_update_schedule(bool show, int max, int index) {
     if (show) {
         if (lv_obj_has_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN)) {
             lv_obj_remove_flag(layout_schedule, LV_OBJ_FLAG_HIDDEN);
-            lv_bar_set_range(progress_schedule, 0, 100);
-            lv_bar_set_value(progress_schedule, cursor, LV_ANIM_OFF);
+            //lv_bar_set_range(progress_schedule, 0, 100);
+            //lv_bar_set_value(progress_schedule, cursor, LV_ANIM_OFF);
         }
+        
+        lv_bar_set_range(progress_schedule, 0, 100);
+        lv_bar_set_value(progress_schedule, cursor, LV_ANIM_OFF);
 
 
     } else {

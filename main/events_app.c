@@ -396,7 +396,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             if (esp_rmaker_device_get_param_by_name(thermostat_device, STATS_HEATING) == param) {
                 
                 ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
-                relay_operation(val.val.i);
+                relay_operation(val.val.f);
                 esp_rmaker_param_update_and_report(param, val);
                 
             }
@@ -421,7 +421,7 @@ esp_err_t write_cb(const esp_rmaker_device_t *device, const esp_rmaker_param_t *
             if (esp_rmaker_device_get_param_by_name(thermostat_device, STATS_HEATING) == param) {
                 
                 ESP_LOGI(TAG, "Received value = %s for %s - %s", val.val.b? "true" : "false", esp_rmaker_device_get_name(device), esp_rmaker_param_get_name(param));
-                relay_operation(val.val.i);
+                relay_operation(val.val.f);
                 esp_rmaker_param_update_and_report(param, val);
                 
             }

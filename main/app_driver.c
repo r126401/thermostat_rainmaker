@@ -95,7 +95,7 @@ enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
                 esp_rmaker_bool(op));
             esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_name(thermostat_device, STATS_HEATING),
-                esp_rmaker_int(op));
+                esp_rmaker_float(op));
                 
 
 		} else {
@@ -114,7 +114,7 @@ enum STATUS_RELAY IRAM_ATTR relay_operation(STATUS_RELAY op) {
 
             esp_rmaker_param_update_and_report(
                 esp_rmaker_device_get_param_by_name(thermostat_device, STATS_HEATING),
-                esp_rmaker_int(op));
+                esp_rmaker_float(op));
 
 			}
 	}
@@ -185,7 +185,7 @@ void register_parameters()
     esp_rmaker_device_add_param(thermostat_device, param);
     //esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);
 
-     param = esp_rmaker_param_create(STATS_HEATING, NULL, esp_rmaker_int(0), PROP_FLAG_READ | PROP_FLAG_TIME_SERIES);
+     param = esp_rmaker_param_create(STATS_HEATING, NULL, esp_rmaker_float(0), PROP_FLAG_READ | PROP_FLAG_TIME_SERIES);
      //param = esp_rmaker_power_param_create(ESP_RMAKER_DEF_POWER_NAME, DEFAULT_POWER);
     esp_rmaker_device_add_param(thermostat_device, param);
     //esp_rmaker_param_add_ui_type(param, ESP_RMAKER_UI_TOGGLE);

@@ -1,30 +1,30 @@
 dependencies:
   atanisoft/esp_lcd_touch_xpt2046:
-    component_hash: 94c1d199922bc7468b5e14912ab0eb053a4a5a25680ce8a4ca2f4f18febbb01a
+    component_hash: 7e6381b67b6e487379118368b8e91624dc87036ef5734818de1db9eb35697998
     dependencies:
-    - name: idf
-      require: private
-      version: '>=4.4'
     - name: espressif/esp_lcd_touch
       registry_url: https://components.espressif.com
       require: private
       version: '>=1.0.4'
+    - name: idf
+      require: private
+      version: '>=4.4'
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.5
+    version: 1.0.6
   espressif/cbor:
-    component_hash: 440f4ee4504841cc9b4f3a8ef755776a612ac9dace355514c68b999868f990ff
+    component_hash: 37b68b0730fb9a0b71334e4cc41b7de443fc2069152fdedcfe63dac8eb94a73a
     dependencies:
     - name: idf
       require: private
-      version: '>=4.3'
+      version: '>=5.0'
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 0.6.0~1
+    version: 0.6.1~3
   espressif/ds18b20:
-    component_hash: d676429d9f1f686b65ed895e418eb4b331477bcd5d63c27f43dc3d6a2de8f13b
+    component_hash: 9792f38a20eb2fe7435cba349e3b4b7085381f05400233aacd849ced69e2207f
     dependencies:
     - name: espressif/onewire_bus
       registry_url: https://components.espressif.com
@@ -33,7 +33,7 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 0.1.1
+    version: 0.2.0
   espressif/esp-serial-flasher:
     component_hash: dcc42a16712a1a636509cf0bf90e14032d7f2141784b533613b267b6aa318d52
     dependencies: []
@@ -46,7 +46,7 @@ dependencies:
     - name: idf
       version: '>=4.1'
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp-insights/components/esp_diag_data_store
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp-insights/components/esp_diag_data_store
       type: local
     version: 1.0.1
   espressif/esp_diagnostics:
@@ -57,7 +57,7 @@ dependencies:
       override_path: ../rmaker_common/
       version: ~1.4.0
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp-insights/components/esp_diagnostics
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp-insights/components/esp_diagnostics
       type: local
     version: 1.2.0
   espressif/esp_insights:
@@ -78,7 +78,7 @@ dependencies:
       - if: idf_version >=5.0
       version: ~0.6
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp-insights/components/esp_insights
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp-insights/components/esp_insights
       type: local
     version: 1.2.0
   espressif/esp_lcd_touch:
@@ -122,19 +122,19 @@ dependencies:
       - if: idf_version >= 5.1
       version: ~1.2.0
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp_rainmaker
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp_rainmaker
       type: local
     version: 1.5.1
   espressif/esp_rcp_update:
     component_hash: c10afbd54a17f27eed880e61262b161656e6d36ad63376c307f9273e99d0abcd
     dependencies:
-    - name: idf
-      require: private
-      version: '>=5.0'
     - name: espressif/esp-serial-flasher
       registry_url: https://components.espressif.com
       require: private
       version: ~0.0.0
+    - name: idf
+      require: private
+      version: '>=5.0'
     source:
       registry_url: https://components.espressif.com/
       type: service
@@ -145,11 +145,11 @@ dependencies:
       override_path: ../rmaker_common/
       version: ~1.4.2
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp_schedule
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp_schedule
       type: local
     version: 1.2.0
   espressif/esp_secure_cert_mgr:
-    component_hash: 5d9175b416f751ba6a7cb35bdf092f0af85658ce06c4a592c7c541d8017ebeb9
+    component_hash: 47589860736b456608035b06d88e6a5dab566419fa8737a76a4f33c611ec539b
     dependencies:
     - name: idf
       require: private
@@ -157,11 +157,11 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 2.5.0
+    version: 2.7.0
   espressif/json_generator:
     dependencies: []
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/json_generator
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/json_generator
       type: local
     version: 1.1.1
   espressif/json_parser:
@@ -171,11 +171,11 @@ dependencies:
       - if: idf_version >=5.0
       version: ~1.1
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/json_parser
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/json_parser
       type: local
     version: 1.0.3
   espressif/mdns:
-    component_hash: d36b265164be5139f92de993f08f5ecaa0de0c0acbf84deee1f10bb5902d04ff
+    component_hash: 3ec0af5f6bce310512e90f482388d21cc7c0e99668172d2f895356165fc6f7c5
     dependencies:
     - name: idf
       require: private
@@ -183,9 +183,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.4.3
+    version: 1.8.2
   espressif/network_provisioning:
-    component_hash: 1c0f76f4a37c3f2101ae9735e9da901ef4469a07af9cc075fc8f08fee43281e4
+    component_hash: 21c45dd9cf570c12671e1678ddcfabe77471afa979bcff207a8478b45b58667a
     dependencies:
     - name: idf
       require: private
@@ -193,9 +193,9 @@ dependencies:
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 1.0.3
+    version: 1.0.5
   espressif/onewire_bus:
-    component_hash: c4c781940d8bd988432b47ac3ee68479c69e14e01fdfba0b61365b233a3ba5d6
+    component_hash: 11729fd9a5de80225177a61e9cd77de91683b8ec300e83710d5327b666dbe884
     dependencies:
     - name: idf
       require: private
@@ -203,36 +203,33 @@ dependencies:
     source:
       registry_url: https://components.espressif.com
       type: service
-    version: 1.0.2
+    version: 1.0.4
   espressif/rmaker_common:
     dependencies: []
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/esp-insights/components/rmaker_common
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/rmaker_common
       type: local
     version: 1.4.6
   idf:
     source:
       type: idf
-    version: 5.5.0
+    version: 5.5.1
   jsmn:
     dependencies: []
     source:
-      path: /opt/desarrollo/espidf/master/esp-idf/esp-rainmaker/components/jsmn
+      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/jsmn
       type: local
     version: 1.1.0
   lvgl/lvgl:
-    component_hash: 096c69af22eaf8a2b721e3913da91918c5e6bf1a762a113ec01f401aa61337a0
+    component_hash: 17e68bfd21f0edf4c3ee838e2273da840bf3930e5dbc3bfa6c1190c3aed41f9f
     dependencies: []
     source:
       registry_url: https://components.espressif.com/
       type: service
-    version: 9.2.2
+    version: 9.4.0
 direct_dependencies:
 - atanisoft/esp_lcd_touch_xpt2046
-- espressif/cbor
 - espressif/ds18b20
-- espressif/esp_diag_data_store
-- espressif/esp_diagnostics
 - espressif/esp_insights
 - espressif/esp_rainmaker
 - espressif/esp_rcp_update
@@ -246,6 +243,6 @@ direct_dependencies:
 - espressif/rmaker_common
 - idf
 - lvgl/lvgl
-manifest_hash: 31beb68dbe015e441b3b1911a9fe9df50cfdb5c1602c5552d5aa4605c130d199
+manifest_hash: 99bd83af181d585abc15777b0b16f443fc8dec89f345c14acfd772162af44fa1
 target: esp32s3
 version: 2.0.0

@@ -37,6 +37,9 @@ static void init_ds18b20()
     onewire_bus_handle_t bus = NULL;
     onewire_bus_config_t bus_config = {
         .bus_gpio_num = CONFIG_SENSOR_THERMOSTAT_GPIO,
+		.flags = {
+            .en_pull_up = true, // enable the internal pull-up resistor in case the external device didn't have one
+        }
     };
     onewire_bus_rmt_config_t rmt_config = {
         .max_rx_bytes = 10, // 1byte ROM command + 8byte ROM number + 1byte device command
@@ -56,8 +59,11 @@ static void init_ds18b20()
         search_result = onewire_device_iter_get_next(iter, &next_onewire_device);
         if (search_result == ESP_OK) { // found a new device, let's check if we can upgrade it to a DS18B20
             ds18b20_config_t ds_cfg = {};
+			onewire_device_address_t address;
             // check if the device is a DS18B20, if so, return the ds18b20 handle
-            if (ds18b20_new_device(&next_onewire_device, &ds_cfg, &ds18b20s[ds18b20_device_num]) == ESP_OK) {
+
+            if (ds18b20_new_device_from_enumeration(&next_onewire_device, &ds_cfg, &ds18b20s[ds18b20_device_num]) == ESP_OK) {
+				ds18b20_get_device_address(ds18b20s[ds18b20_device_num], &address);
                 ESP_LOGI(TAG, "Found a DS18B20[%d], address: %016llX", ds18b20_device_num, next_onewire_device.address);
                 ds18b20_device_num++;
             } else {

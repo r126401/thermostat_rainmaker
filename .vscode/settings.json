@@ -6,13 +6,13 @@
         "OPENOCD_SCRIPTS": "/home/t126401/espidf/.espidftools/tools/openocd-esp32/v0.12.0-esp32-20240821/openocd-esp32/share/openocd/scripts",
         "ESP_ROM_ELF_DIR": "/home/t126401/espidf/.espidftools/tools/esp-rom-elfs/20240305/"
     },
-    "idf.espIdfPath": "/opt/desarrollo/espidf/master/esp-idf",
+    "idf.espIdfPath": "/home/t126401/esp-idf",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg"
     ],
     "idf.port": "/dev/ttyUSB0",
     "idf.pythonBinPath": "/home/t126401/espidf/.espidftools/python_env/idf5.4_py3.12_env/bin/python",
-    "idf.toolsPath": "/home/t126401/espidf/.espidftools",
+    "idf.toolsPath": "/home/t126401/.espressif",
     "files.associations": {
         "app_priv.h": "c",
         "esp_rmaker_standard_types.h": "c",
@@ -101,5 +101,6 @@
         "variant": "c",
         "lvgl.h": "c"
     },
-    "idf.flashType": "UART"
+    "idf.flashType": "UART",
+    "idf.pythonInstallPath": "/usr/bin/python3"
 }

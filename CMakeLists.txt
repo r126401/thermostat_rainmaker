@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 #set(RMAKER_PATH $ENV{IDF_PATH}/esp-rainmaker)
-set(RMAKER_PATH $ENV{HOME}/trabajo/antiguo/esp-rainmaker)
+set(RMAKER_PATH $ENV{HOME}/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker)
 
 message(STATUS "RMAKER_PATH está definido: ${RMAKER_PATH}")
 

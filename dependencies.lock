@@ -46,7 +46,7 @@ dependencies:
     - name: idf
       version: '>=4.1'
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp-insights/components/esp_diag_data_store
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/esp-insights/components/esp_diag_data_store
       type: local
     version: 1.0.1
   espressif/esp_diagnostics:
@@ -57,7 +57,7 @@ dependencies:
       override_path: ../rmaker_common/
       version: ~1.4.0
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp-insights/components/esp_diagnostics
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/esp-insights/components/esp_diagnostics
       type: local
     version: 1.2.0
   espressif/esp_insights:
@@ -78,7 +78,7 @@ dependencies:
       - if: idf_version >=5.0
       version: ~0.6
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp-insights/components/esp_insights
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/esp-insights/components/esp_insights
       type: local
     version: 1.2.0
   espressif/esp_lcd_touch:
@@ -122,7 +122,7 @@ dependencies:
       - if: idf_version >= 5.1
       version: ~1.2.0
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp_rainmaker
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/esp_rainmaker
       type: local
     version: 1.5.1
   espressif/esp_rcp_update:
@@ -145,7 +145,7 @@ dependencies:
       override_path: ../rmaker_common/
       version: ~1.4.2
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/esp_schedule
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/esp_schedule
       type: local
     version: 1.2.0
   espressif/esp_secure_cert_mgr:
@@ -161,7 +161,7 @@ dependencies:
   espressif/json_generator:
     dependencies: []
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/json_generator
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/json_generator
       type: local
     version: 1.1.1
   espressif/json_parser:
@@ -171,7 +171,7 @@ dependencies:
       - if: idf_version >=5.0
       version: ~1.1
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/json_parser
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/json_parser
       type: local
     version: 1.0.3
   espressif/mdns:
@@ -207,7 +207,7 @@ dependencies:
   espressif/rmaker_common:
     dependencies: []
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/rmaker_common
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/rmaker_common
       type: local
     version: 1.4.6
   idf:
@@ -217,7 +217,7 @@ dependencies:
   jsmn:
     dependencies: []
     source:
-      path: /home/t126401/trabajo/antiguo/esp-rainmaker/components/jsmn
+      path: /home/t126401/trabajo/antiguo/thermostat_rainmaker/esp-rainmaker/components/jsmn
       type: local
     version: 1.1.0
   lvgl/lvgl:

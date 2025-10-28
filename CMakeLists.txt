@@ -11,6 +11,6 @@ message(STATUS "RMAKER_PATH está definido: ${RMAKER_PATH}")
 # Add RainMaker components and other common application components
 set(EXTRA_COMPONENT_DIRS ${RMAKER_PATH}/components ${RMAKER_PATH}/examples/common)
 
-set(PROJECT_VER "1.3")
+set(PROJECT_VER "1.4")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(thermostat_rainmaker)

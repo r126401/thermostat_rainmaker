@@ -99,7 +99,9 @@
         "compare": "c",
         "cstdint": "c",
         "variant": "c",
-        "lvgl.h": "c"
+        "lvgl.h": "c",
+        "app_network.h": "c",
+        "qrcode.h": "c"
     },
     "idf.flashType": "UART",
     "idf.pythonInstallPath": "/usr/bin/python3"

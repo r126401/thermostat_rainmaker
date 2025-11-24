@@ -1,2 +1,0 @@
-/home/t126401/trabajo/thermostat_rainmaker/main/lcd/build/CMakeFiles/edit_cache.dir
-/home/t126401/trabajo/thermostat_rainmaker/main/lcd/build/CMakeFiles/rebuild_cache.dir

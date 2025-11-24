@@ -1,5 +1,6 @@
 build/
 main/build/
+main/lcd/build/
 managed_components/
 dependencies.lock
 

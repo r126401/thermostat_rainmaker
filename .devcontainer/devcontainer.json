@@ -1,7 +1,7 @@
 {
   "name": "ESP-IDF Container",
   "image": "nuevodocker-proyectos_esp32:latest",
-  "workspaceFolder": "/home/ubuntu/projects/mi_proyecto",
+  "workspaceFolder": "/home/ubuntu/projects/thermostat_rainmaker",
   "extensions": [
     "ms-vscode.cpptools",
     "espressif.esp-idf-extension"

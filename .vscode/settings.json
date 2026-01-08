@@ -104,5 +104,5 @@
         "qrcode.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.pythonInstallPath": "/home/ubuntu/.espressif/python_env/idf5.5_py3.13_env/bin/python"
+    "idf.pythonInstallPath": "/usr/bin/python3"
 }

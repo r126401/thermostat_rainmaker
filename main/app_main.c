@@ -19,8 +19,6 @@
 #include <esp_err.h>
 
 
-
-
 #include "alarms_app.h"
 #include "app_main.h"
 #include "events_lcd.h"
